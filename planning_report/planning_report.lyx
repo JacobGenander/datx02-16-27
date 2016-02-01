@@ -2,7 +2,7 @@
 \lyxformat 474
 \begin_document
 \begin_header
-\textclass article
+\textclass scrartcl
 \use_default_options true
 \maintain_unincluded_children false
 \language english
@@ -22,7 +22,7 @@
 \graphics default
 \default_output_format default
 \output_sync 0
-\bibtex_command default
+\bibtex_command bibtex8
 \index_command default
 \paperfontsize default
 \spacing single
@@ -62,7 +62,7 @@
 \color #008000
 \end_index
 \secnumdepth 3
-\tocdepth 3
+\tocdepth 2
 \paragraph_separation indent
 \paragraph_indentation default
 \quotes_language english
@@ -78,11 +78,11 @@
 
 \begin_body
 
-\begin_layout Title
-Planning report,
-\begin_inset Newline newline
-\end_inset
+\begin_layout Subject
+Planning report
+\end_layout
 
+\begin_layout Title
 Generating headlines with deep learning
 \end_layout
 
@@ -100,7 +100,7 @@ and
 
 \end_inset
 
- Jakob Genander 
+ Jacob Genander 
 \begin_inset ERT
 status open
 
@@ -113,7 +113,7 @@ and
 
 \end_inset
 
- Niclas Lallo 
+ Nicklas Lallo 
 \begin_inset ERT
 status open
 
@@ -142,9 +142,53 @@ and
  Filip Nilsson 
 \end_layout
 
+\begin_layout Publishers
+Chalmers University of Technology
+\end_layout
+
 \begin_layout Date
 2016-02-01
 \end_layout
+
+\begin_layout Standard
+\begin_inset VSpace vfill
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Text bodies coped from Google Docs 2016-02-01 22:06
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
 
 \begin_layout Section*
 Abbreviations
@@ -162,52 +206,409 @@ RNN: Recurrent Neural Network
 LSTM: Long Short-Term Memory
 \end_layout
 
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Background
+\end_layout
+
+\begin_layout Standard
+Trying to create a computer program that recognize speech or handwriting
+ is a difficult task for the common programmer.
+ A person’s voice is something highly individual and to find the common
+ denominator between different people, a very sophisticated way of judgement
+ is needed.
+ Taking inspiration from how the human brain works, a branch of computer
+ science has emerged to tackle these kinds of problems.
+ This is the science of artificial neural networks and it is a field where
+ many major breakthroughs has been made in recent years.
+\end_layout
+
+\begin_layout Standard
+The idea is to make a computer learn a specific task or function by observing
+ data.
+ It can be mathematically shown that any function (within a compact set)
+ can be modeled with a sufficiently big neural network and enough data to
+ train on
+\begin_inset CommandInset citation
+LatexCommand cite
+key "kolmogorovs_theorem"
+
+\end_inset
+
+.
+ The data is processed by interconnected “neurons” in different layers.
+ We have an input layer, an output layer and layers in between these two.
+ When the number of intermediate layers increase, we often refer to the
+ network as a deep neural network.
+ Generally deep nets are better at high-level abstraction needed in, for
+ example, image recognition.
+\end_layout
+
+\begin_layout Standard
+By making it possible for the neurons to loop back information to earlier
+ stages we also get something similar to memory.
+ These kinds of neural networks where information can persist is known as
+ recurrent neural networks (RNNs).
+ The ability to remember things makes these networks especially interesting
+ in language modeling where we might try to generate sentences based on
+ previous words the network has seen.
+\end_layout
+
+\begin_layout Standard
+Even though ordinary recurrent networks can remember their state, they are
+ often bad at long term dependencies.
+ In these kind of situations a special incarnation of RNN is used called
+ Long Short Term Memory or simply LSTM.
+ Basically an LSTM network contains read, write and reset operations that
+ makes it possible for the network to learn when to discard, modify or keep
+ information.
+ This makes them excellent when information needs to be remembered over
+ long periods of time.
+ 
 \end_layout
 
 \begin_layout Section
 Purpose
 \end_layout
 
+\begin_layout Standard
+This project is about developing an artificial neural network of LSTM type
+ that can learn to generate common news headlines, based on some input text.
+ We also want to implement an attention model that makes it possible for
+ the network to choose, on its own, which parts of an article that are most
+ relevant for its conditioning.
+\end_layout
+
 \begin_layout Section
 Problem and task description
+\end_layout
+
+\begin_layout Standard
+Our goal is to construct a neural network capable of generating titles for
+ articles
+\begin_inset CommandInset citation
+LatexCommand cite
+key "proj_spec"
+
+\end_inset
+
+.
+ This is quite a complex task which can be broken down in the following
+ sub-tasks: 
 \end_layout
 
 \begin_layout Subsection
 Collecting data
 \end_layout
 
+\begin_layout Standard
+To acquire good results, it is essential that the network has a high-quality
+ and extensive data-set to learn from.
+ It is also preferable to have data which can be used to validate the performanc
+e of the network (such data should be separate from the training data).
+ In our case, the primary source of data is articles and their titles.
+ Assembling such a data-set can be done either manually or automatically
+ by scraping websites, or more preferably by utilizing already existing
+ article databases.
+\end_layout
+
 \begin_layout Subsection
 Processing the data
+\end_layout
+
+\begin_layout Standard
+The articles must be prepared before they can be used in training the network.
+ One purpose of the processing is to reduce the inherent complexity of written
+ text into something more manageable for the neural network.
+ Data processed in different ways can also change which patterns are recognized
+ by the network.
 \end_layout
 
 \begin_layout Subsection
 Deciding hyperparameters
 \end_layout
 
+\begin_layout Standard
+Some parameters has to be decided before the learning process can begin.
+ These so called hyper-parameters are mainly related to the training and
+ structure of the network.
+ Essentially, the structural parameters are the number of layers in the
+ network and how many neurons they contain.
+ For the training process we also need to decide the number of training
+ iterations, learning rate and what type of optimization method that is
+ going to be used.
+\end_layout
+
 \begin_layout Subsection
 Training the network
 \end_layout
 
-\begin_layout Subsection
-Network design and tuning
+\begin_layout Standard
+The process in which the internal parameters of the network is decided to
+ make it generate the best results is commonly known as training.
+ By comparing generated results with real life answers we get an error (or
+ cost) that we want to minimize.
+ This can be done in several ways, both numerical and exact.
+ The best choice depends on the specific task and the number of features
+ (inputs).
 \end_layout
 
 \begin_layout Subsection
 Multimodal conditioning
 \end_layout
 
+\begin_layout Standard
+Apart from setting up the initial Deep Neural Network for the generation
+ of headlines, we will attempt, if time allows it, to make the network take
+ both text as well as images into consideration as inputs.
+\end_layout
+
 \begin_layout Subsection
-Overfitting
+Avoiding overfitting 
+\end_layout
+
+\begin_layout Standard
+A trained network should be able to generalize what is has learnt to new
+ cases it has never seen before.
+ Sometimes this is not true if the new data differ too much from the training
+ input.
+ This is the problem of overfitting and might arise when we try to map a
+ function too closely to previous values.
+ To get better approximations there are several things one can do.
+ 
+\end_layout
+
+\begin_layout Standard
+One way is to use different data-sets for training and testing and another
+ one is simply to increase the amount of data.
+ There is also the process of regularization where we include some additional
+ information in the optimisation step to give the model more knowledge about
+ the data.
 \end_layout
 
 \begin_layout Section
 Scope
 \end_layout
 
+\begin_layout Standard
+Networks of the LSTM-type involve various mathematical calculations, both
+ during the training phase and generation of headlines.
+ However, there seems to be a lack of mathematical proofs that LSTM-networks
+ and artificial neural networks in general always works as intended.
+ As mentioned in the background section, many breakthroughs have been made
+ in recent years using LSTM-networks.
+ Therefore, the project will not involve any attempts for such a proof,
+ but rather rely on the fact that the technique is evidently working great
+ for tasks like this.
+\end_layout
+
+\begin_layout Standard
+The project will only involve training the network for one language, since
+ it might take time to find good training data.
+ Also, there would have to be modifications to the LSTM-network in order
+ for it to function with multiple languages.
+ It seems to be possible to do so, but that would perhaps be a task for
+ a project involving machine translation.
+ Learning multiple languages, the training time of the network would probably
+ be longer as well.
+ The language to train on has not been decided, but is likely to be either
+ English or Swedish.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Greyedout
+status open
+
+\begin_layout Plain Layout
+Further, the network(s) will only be trained on written text and images.
+ One could imagine training a network on a sequence of video frames or audio
+ data and then generate a suitable text string to indicate what the video
+ or audio was about.
+ This is not the aim of the project and would therefore be an excessive
+ workload to implement.
+ However, in order to generate a headline based on some image that belongs
+ to an article, a network must be trained on image data.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+More specifically, the network will only be trained to generate headlines
+ for articles, not for books or other written media.
+ When training a neural network to recognize patterns, it could (and in
+ this project - should) learn the specific style of headlines.
+ To mix this style with e.g.
+ book titles could lead to headlines that do not seem natural to find among
+ articles.
+ 
+\end_layout
+
+\begin_layout Standard
+The network approximates an unknown conditional distribution that changes
+ dramatically over time, i.e.
+ the style of newspaper articles from the 1800’s may be very different from
+ those written in the past 10 years.
+ Articles stemming from different sources may also be very different in
+ style.
+ This could potentially be a problem when measuring how good the network
+ generates an appropriate headline for a given article.
+ Therefore, we will either train a suite of networks and compare the results,
+ or narrow down the timespan for publication dates of the articles and use
+ a concise source of articles, e.g.
+ from one newspaper.
+\end_layout
+
 \begin_layout Section
 Method
+\end_layout
+
+\begin_layout Subsection
+Data collection
+\end_layout
+
+\begin_layout Standard
+We intend to use existing datasets, and have identified two possible contenders
+\end_layout
+
+\begin_layout Itemize
+Språkbanken
+\begin_inset CommandInset citation
+LatexCommand cite
+key "sprakbanken"
+
+\end_inset
+
+ for Swedish data
+\end_layout
+
+\begin_layout Itemize
+The Corpus of Contemporary American English (COCA)
+\begin_inset CommandInset citation
+LatexCommand cite
+key "coca"
+
+\end_inset
+
+ for English.
+\end_layout
+
+\begin_layout Subsubsection
+Data Processing
+\end_layout
+
+\begin_layout Standard
+Before the text corpus will be given to the network we will use a word embedding
+ like word2vec
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rehurek_lrec"
+
+\end_inset
+
+ to create vector representations of the words.
+ This representation has the advantage of placing related words close to
+ each other in vector space
+\begin_inset CommandInset citation
+LatexCommand cite
+key "eff_est_of_words_in_vector_space"
+
+\end_inset
+
+.
+ When generating headlines, a vector representation will give us some error
+ margin since a wrongly predicted word hopefully is close to the relevant
+ context.
+ 
+\end_layout
+
+\begin_layout Subsection
+Network construction and evaluation
+\end_layout
+
+\begin_layout Standard
+The network construction will be done with a high level of abstraction ---
+ instead of implementing algorithms etc.
+ from scratch using the mathematical definitions, we intend to use a framework
+ called TensorFlow
+\begin_inset CommandInset citation
+LatexCommand cite
+key "tensorflow"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Python will be used as the primary programming language, as it is the default
+ language in the framework.
+ The source-code will be version controlled with Git and hosted on GitHub.
+\end_layout
+
+\begin_layout Subsubsection
+TensorFlow
+\end_layout
+
+\begin_layout Standard
+TensorFlow is a framework by Google which provides many functions frequently
+ used when working with machine learning.
+ We will use many of its methods for constructing and training neural networks.
+ In addition, TensorFlow has native support for multi-threaded computation
+ on both CPUs and GPUs, which allows for computational speedups
+\end_layout
+
+\begin_layout Subsubsection
+Network training
+\end_layout
+
+\begin_layout Standard
+The training process, the validation process, and the tuning of parameters
+ will be a somewhat iterative process.
+ Experiments with certain parameters will be recorded, and the parameters
+ optimized in steps.
+\end_layout
+
+\begin_layout Standard
+In addition to our personal computers, we have been given access to a powerful
+ GPU-equipped workstation.
+ Since the training process can be computationally expensive and time-consuming,
+ training sessions with larger datasets must be planned and parameters evaluated
+ before using this resource.
+\end_layout
+
+\begin_layout Subsubsection
+Performance evaluation
+\end_layout
+
+\begin_layout Standard
+Evaluation of our results will be done using a Turing-style test where subjects
+ will be shown news articles with both generated and real headlines and
+ asked to pick out the generated headline.
+ We will also evaluate the form of the headlines in a similar manner but
+ without making the subjects read the article but simply try to pick out
+ machine generated headlines.
+ 
+\end_layout
+
+\begin_layout Standard
+Apart from the manual evaluation we will also use the Recall-Oriented Understudy
+ for Gisting Evaluation
+\begin_inset CommandInset citation
+LatexCommand cite
+key "lin2004rouge"
+
+\end_inset
+
+, ROUGE, framework developed by Yin-Yew Lin to automatically score our generated
+ headlines.
 \end_layout
 
 \begin_layout Section
@@ -215,10 +616,62 @@ Time plan
 \end_layout
 
 \begin_layout Standard
+The initial time plan can be seen in 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:Gantt-chart"
+
+\end_inset
+
+, which may be due to changes.
+ The dates are presented as a Gantt chart.
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename projektplan.png
+	height 100theight%
+	rotateAngle 90
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Gantt chart of the project plan, with red milestones and green mandatory
+ activities
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Gantt-chart"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 \begin_inset CommandInset bibtex
 LatexCommand bibtex
-bibfiles "references"
-options "vancouver"
+bibfiles "../references"
+options "bibtotoc,vancouver"
 
 \end_inset
 
