@@ -49,6 +49,7 @@
         <task id="53" name="Have learnt enough to train an NN" color="#ff0000" meeting="true" start="2016-02-15" duration="0" complete="0" expand="true"/>
         <task id="3" name="Implementation (headline based on text)" color="#8cb6ce" meeting="false" start="2016-02-15" duration="68" complete="0" expand="true"/>
         <task id="63" name="Hyperparameter Optimization" meeting="false" start="2016-02-15" duration="68" complete="0" expand="true"/>
+        <task id="64" name="Possibly implementation of attention model" meeting="false" start="2016-03-07" duration="47" complete="0" expand="true"/>
         <task id="45" name="Creating program for exhibition (If time left)" color="#8cb6ce" meeting="false" start="2016-04-25" duration="7" complete="0" expand="true"/>
         <task id="6" name="Preparing half time presentation" meeting="false" start="2016-02-22" duration="8" complete="0" expand="true">
             <depend id="18" type="2" difference="0" hardness="Strong"/>
@@ -75,7 +76,7 @@
         <task id="39" name="Adding opposition comments to project report" color="#8cb6ce" meeting="false" start="2016-05-28" duration="5" complete="0" expand="true">
             <depend id="37" type="2" difference="0" hardness="Strong"/>
         </task>
-        <task id="37" name="Deadline: Final hand in of project report w/ opposition comments" color="#ff0000" meeting="true" start="2016-06-02" duration="0" complete="0" expand="true"/>
+        <task id="37" name="Deadline: Project report w/ opposition comments" color="#ff0000" meeting="true" start="2016-06-02" duration="0" complete="0" expand="true"/>
     </tasks>
     <resources/>
     <allocations/>
