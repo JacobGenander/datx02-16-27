@@ -143,7 +143,7 @@ and
 \end_layout
 
 \begin_layout Date
-2016-02-01
+2016-02-04
 \end_layout
 
 \begin_layout Standard
@@ -321,14 +321,7 @@ Task
 
 \begin_layout Standard
 Our goal is to construct a neural network capable of generating titles for
- articles 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "proj_spec"
-
-\end_inset
-
-.
+ articles.
  This is quite a complex task which can be broken down into the following
  sub-tasks:
 \end_layout
@@ -639,9 +632,8 @@ status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename projektplan.png
-	height 100theight%
-	rotateAngle 90
+	filename gantt-schedule.svg
+	width 100col%
 
 \end_inset
 
