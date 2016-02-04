@@ -262,7 +262,7 @@ The idea is to make a computer learn a specific task or function by observing
  data.
  It can be mathematically shown that any function (within a compact set)
  can be modeled with a sufficiently big neural network and enough data to
- train on
+ train on 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "kolmogorovs_theorem"
@@ -321,7 +321,7 @@ Task
 
 \begin_layout Standard
 Our goal is to construct a neural network capable of generating titles for
- articles
+ articles 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "proj_spec"
@@ -405,7 +405,7 @@ Apart from setting up the initial deep neural network for the generation
  Doing so, the network could possibly generate more accurate headlines,
  since words with less importance with respect to the content and intention
  of the article are omitted.
- This would be especially useful when dealing with longer text
+ This would be especially useful when dealing with longer text 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "bahdanau2014neural"
@@ -448,7 +448,7 @@ Networks of the LSTM-type involve various mathematical calculations, both
  in recent years using LSTM-networks.
  Therefore, the project will not involve any attempts for such a proof,
  but rather rely on the fact that the technique is evidently working great
- for tasks like this
+ for tasks like this 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "sequences_rnn"
@@ -511,14 +511,14 @@ Processing
 
 \begin_layout Standard
 Before the text corpus will be given to the network we will use a word embedding
- like word2vec
+ like word2vec 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "word2vec"
 
 \end_inset
 
- or Glove
+ or Glove 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "glove"
@@ -527,7 +527,7 @@ key "glove"
 
  to create vector representations of the words.
  This representation has the advantage of placing related words close to
- each other in vector space
+ each other in vector space 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "eff_est_of_words_in_vector_space"
@@ -548,7 +548,7 @@ Network construction and evaluation
 The network construction will be done with a high level of abstraction ---
  instead of implementing algorithms etc.
  from scratch using the mathematical definitions, we intend to use a framework
- called TensorFlow
+ called TensorFlow 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "tensorflow"
@@ -605,7 +605,7 @@ Evaluation of our results will be done using a Turing-style test where subjects
 
 \begin_layout Standard
 Apart from the manual evaluation we will also use the Recall-Oriented Understudy
- for Gisting Evaluation
+ for Gisting Evaluation 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "lin2004rouge"
@@ -653,7 +653,7 @@ status open
 
 \begin_layout Plain Layout
 Gantt chart of the project plan, with red milestones and green mandatory
- activities
+ activities 
 \begin_inset CommandInset label
 LatexCommand label
 name "fig:Gantt-chart"
