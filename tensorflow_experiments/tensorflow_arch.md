@@ -18,3 +18,15 @@ mv tensorflow-0.6.0-cp34-none-linux_x86_64.whl tensorflow-0.6.0-cp35-none-linux_
 sudo pip3 install --upgrade tensorflow-0.6.0-cp35-none-linux_x86_64.whl
 ```
 
+This can of course be used together with virtualenv to avoid the possibility of an upset pacman...
+
+Just create and enter the environment first:
+
+```bash
+# Create the virtual environment
+virtualenv --system-site-packages ~/tensorflow
+# "Enter" the environment
+source ~/tensorflow/bin/activate
+```
+
+Then issue the commands described earlier
