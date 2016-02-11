@@ -179,7 +179,7 @@ setlength{
 \backslash
 parskip}{
 \backslash
-bigskipamount}
+medskipamount}
 \end_layout
 
 \begin_layout Plain Layout
@@ -241,20 +241,108 @@ LSTM: Long Short-Term Memory
 
 \end_layout
 
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Section*
+Respons från Mikael
+\end_layout
+
+\begin_layout Plain Layout
+Hej,
+\end_layout
+
+\begin_layout Plain Layout
+Först måste jag säga att jag tycker den ser väldigt bra ut! fin struktur
+ och det mesta är på plats.
+\end_layout
+
+\begin_layout Plain Layout
+Bra jobbat.
+\end_layout
+
+\begin_layout Plain Layout
+Nu lite kommentarer:
+\end_layout
+
+\begin_layout Itemize
+första stycket "for the common programmer" Låter lite underligt.
+ skulle stryka nog stryka det.
+\end_layout
+
+\begin_layout Itemize
+Senare i första stycket står det "This is the science of artificial neural
+ networks and it..." Här skulle det nog passa bättre med den mer allmänna termen
+ Machine learning.
+ Dock blir det tokigt om ni bara byter rakt av utan att anpassa då det påverkar
+ stycket under.
+\end_layout
+
+\begin_layout Itemize
+andra stycket "...better at high-level abstraction needed in" menar ni kanske
+ hierarchical?
+\end_layout
+
+\begin_layout Itemize
+tredje stycket "...stages we also get..." stryk also.
+ Tips: alltid bra att titta igenom texten och se om det finns såna här ord
+ man kan stryka för att göra budskapet tydligare.
+\end_layout
+
+\begin_layout Itemize
+Ordningen på tasks.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Deciding hyperparameters är något man gör medan man tränar i en iterative
+ process.
+ 
+\end_layout
+
+\begin_layout Itemize
+Avoiding overfitting är en del i hyperparameter sökningen.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+5.2.3: Lägg till information om vilka experiment ni vill köra för att evaluera
+ era mål.
+\end_layout
+
+\begin_layout Itemize
+6: Omöjligt att läsa erat gantt diag utskrivet på papper.
+ Försök att göra det tydligare, eventuellt genom att ta bort onödiga detaljer.
+\end_layout
+
+\begin_layout Plain Layout
+Annars var det som sagt bra.
+ Bådar gott för framtiden!
+\end_layout
+
+\begin_layout Plain Layout
+Mikael
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Background
 \end_layout
 
 \begin_layout Standard
 Trying to create a computer program that recognizes speech or handwriting
- is a difficult task for the common programmer.
+ is a difficult task.
  A person’s voice is something highly individual and to find the common
  denominator between different people, a very sophisticated way of judgement
  is needed.
- Taking inspiration from how the human brain works, a branch of computer
- science has emerged to tackle these kinds of problems.
- This is the science of artificial neural networks and it is a field where
- many major breakthroughs has been made in recent years.
+ In machine learning this has been tackled with artificial neural networks,
+ taking inspiration from how the human brain works.
 \end_layout
 
 \begin_layout Standard
@@ -274,13 +362,13 @@ key "kolmogorovs_theorem"
  We have an input layer, an output layer and layers in between these two.
  When the number of intermediate layers increase, we often refer to the
  network as a deep neural network.
- Generally deep nets are better at high-level abstraction needed in, for
+ Generally deep nets are better at hierarchical abstraction needed in, for
  example, image recognition.
 \end_layout
 
 \begin_layout Standard
 By making it possible for the neurons to loop back information to earlier
- stages we also get something similar to memory.
+ stages we get something similar to memory.
  These kinds of neural networks where information can persist is known as
  recurrent neural networks (RNNs).
  The ability to remember things makes these networks especially interesting
@@ -357,21 +445,6 @@ The articles must be prepared before they can be used in training the network.
 \end_layout
 
 \begin_layout Subsection
-Deciding hyperparameters
-\end_layout
-
-\begin_layout Standard
-Some parameters has to be decided before the learning process can begin.
- These so called hyper-parameters are mainly related to the training and
- structure of the network.
- Essentially, the structural parameters are the number of layers in the
- network and how many neurons they contain.
- For the training process we also need to decide the number of training
- iterations, learning rate and what type of optimization method that is
- going to be used.
-\end_layout
-
-\begin_layout Subsection
 Training the network
 \end_layout
 
@@ -383,6 +456,35 @@ The process in which the internal parameters of the network are decided
  This can be done in several ways, both numerical and exact.
  The best choice depends on the specific task and the number of features
  (inputs).
+\end_layout
+
+\begin_layout Standard
+Some parameters cannot be learned, but has to be set manually.
+ These so called hyper-parameters are mainly related to the specific learning
+ algorithm and structure of the network.
+ Essentially, the structural parameters are the number of layers in the
+ network and how many neurons they contain.
+ For the training process we also need to decide the number of iterations,
+ learning rate and what type of optimization method that is going to be
+ used.
+\end_layout
+
+\begin_layout Standard
+A trained network should be able to generalize what it has learnt to new
+ cases it has never seen before.
+ Sometimes this can not be done if the new data differ too much from the
+ training set.
+ This is the problem of overfitting and might arise when we try to approximate
+ dependencies in a training set too closely.
+ The decision of hyper parameters is closely related to this, but there
+ are several other ways to get better approximations.
+ One is to simply increase the amount of training data, another is to use
+ the process of regularization where we include some additional information
+ in the optimization step to give the model more knowledge about the data.
+ Two popular such methods are “Early stopping” - where a validation set
+ is used to determine when to stop the training - and “Dropout” - where
+ only a fraction of the neurons are simultaneously active during training.
+ 
 \end_layout
 
 \begin_layout Subsection
@@ -406,26 +508,6 @@ key "bahdanau2014neural"
 \end_inset
 
 .
-\end_layout
-
-\begin_layout Subsection
-Avoiding overfitting 
-\end_layout
-
-\begin_layout Standard
-A trained network should be able to generalize what it has learnt to new
- cases it has never seen before.
- Sometimes this can not be done if the new data differ too much from the
- training set.
- This is the problem of overfitting and might arise when we try to approximate
- dependencies in a training set too closely.
- To get better approximations there are several things one can do.
- One is to simply increase the amount of training data, another is to use
- the process of regularization where we include some additional information
- in the optimisation step to give the model more knowledge about the data.
- Two popular such methods are “Early stopping” - where a validation set
- is used to determine when to stop the training - and “Dropout” - where
- only a fraction of the neurons are simultaneously active during training.
 \end_layout
 
 \begin_layout Section
@@ -587,6 +669,12 @@ Performance evaluation
 \end_layout
 
 \begin_layout Standard
+For every major design decision we will perform the same experiment on a
+ sample of the test set.
+ 
+\end_layout
+
+\begin_layout Standard
 Evaluation of our results will be done using a Turing-style test where subjects
  will be shown news articles with either generated or real headlines and
  asked to pick out the articles with generated headlines.
@@ -598,16 +686,15 @@ Evaluation of our results will be done using a Turing-style test where subjects
 
 \begin_layout Standard
 Apart from the manual evaluation we will also use the Recall-Oriented Understudy
- for Gisting Evaluation 
+ for Gisting Evaluation, ROUGE
 \begin_inset CommandInset citation
 LatexCommand cite
 key "lin2004rouge"
 
 \end_inset
 
-, ROUGE, framework developed by Yin-Yew Lin to automatically score our generated
+, framework developed by Yin-Yew Lin to automatically score our generated
  headlines.
- 
 \end_layout
 
 \begin_layout Section
