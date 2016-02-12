@@ -573,6 +573,13 @@ The network approximates an unknown conditional distribution that changes
 Method
 \end_layout
 
+\begin_layout Standard
+The following paragraphs explain the working process of the project.
+ It mentions what data will be obtained, how it will be processed and what
+ tools may be used for constructing the network and to evaluate its ability
+ to generate headlines
+\end_layout
+
 \begin_layout Subsection
 Data
 \end_layout
@@ -738,7 +745,7 @@ filename "pgfgantt/gantt_chart.tex"
 
 \begin_layout Plain Layout
 Gantt chart of the preliminary time plan.
- Milestones are marked with diamonds
+ Deadlines are marked with diamonds
 \begin_inset CommandInset label
 LatexCommand label
 name "fig:Gantt-chart"
