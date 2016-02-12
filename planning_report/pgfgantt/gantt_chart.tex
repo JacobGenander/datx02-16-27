@@ -1,24 +1,44 @@
 \begin{ganttchart}[
+		% Heights for titles and bars
 		y unit title=0.5cm,
 		y unit chart=0.6cm,
-		x unit=0.65mm,
+		% How wide a grid cell is. One cell is one day
+		x unit=0.65mm,	% Portrait, labels on left side
+		x unit=0.9mm,	% Portrait, inline labels
+		x unit=0.9mm,	% Landscape, Labels on left side
+		x unit=1.3mm,	% Landscape, inline labels
+		% Draw gridlines. One cell in the grid is one day, so this draws 6 gray lines followed by 1 black line to indicate weeks
+		vgrid={*6{black!10}, *1{black!70}},
+		% Defines the format in which dates are entered below
 		time slot format=isodate,
-		%compress calendar=true,
+		% If true, defines a grid cell to be a month instead of a day
+		compress calendar=false,
+		% Defines the format of the title
 		title/.append style={shape=rectangle, fill=black!10},
 		title height=1,
+		% Defines the style of the "normal" bars
 		bar/.append style={fill=green!90},
+		bar top shift=.6,
 		bar height=.6,
-		bar label font=\normalsize\color{black!50},
-		group top shift=.6,
+		bar label font=\normalsize\color{black!100},
+		% Defines the style of the grouping bars
+		group top shift=1.0,
 		group height=.3,
 		group peaks height=.2,
+		% Defines the style of the milestones
+		milestone top shift=1.0,
+		%%milestone inline label node/.append style={rotate=30},
+		milestone inline label node/.append style={anchor=east},
+		%%milestone label text={},
+		% Text labes are inside the bars
+		inline=true,
 		%milestone inline label node/.append style={left=5mm}
 		%%bar incomplete/.append style={fill=green!40}
-	]{2016-01-18}{2016-06-05}
+	]{2016-01-18}{2016-06-12}
 	\ganttset{calendar week text={\currentweek}}
 	%\gantttitlecalendar{year} \\
 	%\gantttitlecalendar{month} \\
-	\gantttitlecalendar{week=4} \\
+	\gantttitlecalendar{month=shortname, week=3} \\
 	\ganttset{progress label text={}, bar/.append style={fill=blue!40}, group/.append style={draw=black, fill=blue}}
 	%\ganttset{milestone label node/.append style={left=5mm}}
 	%\ganttset{milestone inline=true}
