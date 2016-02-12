@@ -8,7 +8,7 @@
 		x unit=0.9mm,	% Landscape, Labels on left side
 		x unit=1.3mm,	% Landscape, inline labels
 		% Draw gridlines. One cell in the grid is one day, so this draws 6 gray lines followed by 1 black line to indicate weeks
-		vgrid={*6{black!10}, *1{black!70}},
+		vgrid={*6{black!10}, *1{black!50}},
 		% Defines the format in which dates are entered below
 		time slot format=isodate,
 		% If true, defines a grid cell to be a month instead of a day
@@ -21,12 +21,14 @@
 		bar top shift=.6,
 		bar height=.6,
 		bar label font=\normalsize\color{black!100},
+		bar inline label node/.append style={anchor=center},
 		% Defines the style of the grouping bars
 		group top shift=1.0,
 		group height=.3,
 		group peaks height=.2,
+		%group inline label node/.append style={outer color=white},
 		% Defines the style of the milestones
-		milestone top shift=1.0,
+		milestone top shift=0.5,
 		%%milestone inline label node/.append style={rotate=30},
 		milestone inline label node/.append style={anchor=east},
 		%%milestone label text={},
@@ -52,6 +54,7 @@
 		\ganttbar[name=oppadj]{Opposition adjustments}{2016-05-28}{2016-06-01} \\
 		\ganttmilestone[name=handinprrfinal]{Final hand in of project report}{2016-06-01} \\
 	\ganttset{progress label text={}, bar/.append style={fill=green!40}, group/.append style={draw=black, fill=green}}
+	%\ganttset{bar inline label node/.append style={anchor=east}}
 	\ganttgroup{Presentations}{2016-02-22}{2016-05-27} \\
 		\ganttbar[name=htprep]{Half time preparation}{2016-02-22}{2016-02-29} \\
 		\ganttmilestone[name=htpres]{Half time presentation}{2016-03-01} \\
@@ -64,7 +67,7 @@
 		\ganttbar[name=prestudy]{Prestudy}{2016-01-19}{2016-02-05} \\
 		\ganttbar[name=datacol]{Data collection}{2016-02-08}{2016-02-28} \\
 	\ganttset{progress label text={}, bar/.append style={fill=red!40}, group/.append style={draw=black, fill=red}}
-	\ganttgroup{Implementation}{2016-02-08}{2016-04-22} \\
+	\ganttgroup{Implementation}{2016-02-08}{2016-05-01} \\
 		\ganttbar[name=randheadlines]{Random headlines}{2016-02-08}{2016-02-28} \\
 		\ganttbar[name=headlines]{Generating headlines}{2016-02-15}{2016-04-22} \\
 		\ganttbar[name=hyperopt]{Hyperparameter optimization}{2016-02-15}{2016-04-22} \\
