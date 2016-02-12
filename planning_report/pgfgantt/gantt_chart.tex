@@ -9,6 +9,7 @@
 		x unit=1.3mm,	% Landscape, inline labels
 		% Draw gridlines. One cell in the grid is one day, so this draws 6 gray lines followed by 1 black line to indicate weeks
 		vgrid={*6{black!10}, *1{black!50}},
+		vgrid={*4{black!15}, *2{red!15}, *1{black!50}},	% Mark saturday and sunday red
 		% Defines the format in which dates are entered below
 		time slot format=isodate,
 		% If true, defines a grid cell to be a month instead of a day
@@ -49,7 +50,8 @@
 		\ganttmilestone{Hand in planning report}{2016-02-12} \\
 		\ganttbar[name=prr]{Project report}{2016-02-08}{2016-05-16} \\
 		\ganttmilestone[name=handinprr]{1:st hand in of project report}{2016-05-16} \\
-		\ganttmilestone[name=persrep]{Hand in personal report}{2016-03-11} \\
+		\ganttmilestone[name=persrep]{Hand in personal report}{2016-03-11}
+		\ganttmilestone[name=persrep2]{Hand in personal report 2}{2016-05-07} \\
 		\ganttbar[name=opp]{Opposition preparation}{2016-05-16}{2016-05-25} \\
 		\ganttbar[name=oppadj]{Opposition adjustments}{2016-05-28}{2016-06-01} \\
 		\ganttmilestone[name=handinprrfinal]{Final hand in of project report}{2016-06-01} \\
@@ -69,7 +71,7 @@
 	\ganttset{progress label text={}, bar/.append style={fill=red!40}, group/.append style={draw=black, fill=red}}
 	\ganttgroup{Implementation}{2016-02-08}{2016-05-01} \\
 		\ganttbar[name=randheadlines]{Random headlines}{2016-02-08}{2016-02-28} \\
-		\ganttbar[name=headlines]{Generating headlines}{2016-02-15}{2016-04-22} \\
+		\ganttbar[name=headlines]{Generating headlines based on text}{2016-02-15}{2016-04-22} \\
 		\ganttbar[name=hyperopt]{Hyperparameter optimization}{2016-02-15}{2016-04-22} \\
 		\ganttbar[name=attmodel]{Attention model}{2016-03-07}{2016-04-22} \\
 		\ganttbar[name=exhibition]{Exhibition program}{2016-04-25}{2016-05-01} \\
