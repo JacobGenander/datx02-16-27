@@ -577,7 +577,7 @@ Method
 The following paragraphs explain the working process of the project.
  It mentions what data will be obtained, how it will be processed and what
  tools may be used for constructing the network and to evaluate its ability
- to generate headlines
+ to generate headlines.
 \end_layout
 
 \begin_layout Subsection
@@ -655,7 +655,7 @@ TensorFlow is a framework by Google which provides many functions frequently
  used when working with machine learning.
  We will use many of its methods for constructing and training neural networks.
  In addition, TensorFlow has native support for multi-threaded computation
- on both CPUs and GPUs, which allows for computational speedups
+ on both CPUs and GPUs, which allows for computational speedups.
 \end_layout
 
 \begin_layout Subsubsection
