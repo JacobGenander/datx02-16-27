@@ -737,8 +737,8 @@ filename "pgfgantt/gantt_chart.tex"
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Gantt chart of the project plan, with red milestones and green mandatory
- activities 
+Gantt chart of the preliminary time plan.
+ Milestones are marked with diamonds
 \begin_inset CommandInset label
 LatexCommand label
 name "fig:Gantt-chart"
