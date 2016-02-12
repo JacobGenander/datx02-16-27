@@ -1,12 +1,7 @@
-\ganttset{%
-	calendar week text={%
-		\currentweek
-	}%
-}
 \begin{ganttchart}[
 		y unit title=0.5cm,
 		y unit chart=0.6cm,
-		x unit=0.8mm,
+		x unit=0.65mm,
 		time slot format=isodate,
 		%compress calendar=true,
 		title/.append style={shape=rectangle, fill=black!10},
@@ -20,6 +15,7 @@
 		%milestone inline label node/.append style={left=5mm}
 		%%bar incomplete/.append style={fill=green!40}
 	]{2016-01-18}{2016-06-05}
+	\ganttset{calendar week text={\currentweek}}
 	%\gantttitlecalendar{year} \\
 	%\gantttitlecalendar{month} \\
 	\gantttitlecalendar{week=4} \\
@@ -27,7 +23,7 @@
 	%\ganttset{milestone label node/.append style={left=5mm}}
 	%\ganttset{milestone inline=true}
 	\ganttgroup{Report writing}{2016-01-19}{2016-06-01} \\
-		\ganttbar[name=plr]{Planning report}{2016-01-19}{2016-02-11} \\
+		\ganttbar[name=plr, progress=100]{Planning report}{2016-01-19}{2016-02-11} \\
 		\ganttmilestone{Hand in planning report}{2016-02-12} \\
 		\ganttbar[name=prr]{Project report}{2016-02-08}{2016-05-16} \\
 		\ganttmilestone[name=handinprr]{1:st hand in of project report}{2016-05-16} \\
@@ -54,38 +50,4 @@
 		\ganttbar[name=hyperopt]{Hyperparameter optimization}{2016-02-15}{2016-04-22} \\
 		\ganttbar[name=attmodel]{Attention model}{2016-03-07}{2016-04-22} \\
 		\ganttbar[name=exhibition]{Exhibition program}{2016-04-25}{2016-05-01} \\
-	
-
-  %\ganttgroup{Aim 1: Phenotypes}{2015-06}{2015-12} \\
-  %  \ganttbar[progress=00, name=rclone]{R cloning}{2015-06}{2015-07} \\
-  %  \ganttlinkedbar[progress=00, name=rflr]{R fluorescence}{2015-07}{2015-09} \\
-  %  \ganttlinkedbar[progress=00, name=rqpcr]{R RT-qPCR}{2015-10}{2015-11} \\
-  %  \ganttbar[progress=00, name=kover]{KO verification}{2015-06}{2015-07} \\
-  %  \ganttlinkedbar[progress=00, name=kogro]{KO growth}{2015-08}{2015-09} \\
-  %  \ganttbar[progress=00, name=koflr]{KO fluorescence}{2015-08}{2015-09} \\
-  %  \ganttlinkedbar[progress=00, name=koo2]{KO O2 evolution}{2015-10}{2015-11} \\
-  %\ganttgroup{Aim 2: Expression}{2015-06}{2017-02} \\
-  %  \ganttbar[progress=00, name=oeclone]{Clone OEs}{2016-01}{2016-03} \\
-  %  \ganttbar[progress=00, name=rnagrow]{Grow KOs + OEs}{2016-04}{2016-06} \\
-  %  \ganttlinkedbar[progress=00, name=rnaprep]{RNA library prep}{2016-07}{2016-09} \\
-  %  \ganttbar[progress=00, name=rnadev]{Develop analysis}{2015-06}{2015-07} \\
-  %  \ganttbar[progress=00, name=rnaanal]{Analyze reads}{2016-12}{2017-02} \\
-  %\ganttgroup{Aim 3: Binding sites}{2016-01}{2017-05} \\
-  %  \ganttbar[progress=00, name=chipgrow]{Grow KOs + OEs}{2016-04}{2016-06} \\
-  %  \ganttlinkedbar[progress=00, name=chipprep]{ChIP library prep}{2016-08}{2016-12} \\
-  %  \ganttbar[progress=00, name=chipdev]{Develop analysis}{2016-01}{2016-02} \\
-  %  \ganttbar[progress=00, name=chipanal]{Analyze reads}{2017-03}{2017-05}
-  %% misc links
-  %\ganttset{progress label text={}}
-  %\ganttlink[]{oeclone}{rnagrow}
-  %\ganttlink[link mid=0.082]{oeclone}{chipgrow}
-  %\ganttlink[]{rnaprep}{rnaanal}
-  %\ganttlink[link mid=0.25]{kover}{koflr}
-  %\ganttlink[link mid=0.75]{kogro}{koo2}
-  %\ganttlink[link mid=0.55]{koo2}{oeclone}
-  %\ganttlink[link mid=0.55]{rqpcr}{oeclone}
-  %\ganttlink[]{chipprep}{chipanal}
-  %\ganttlink[link mid=0.938]{rnadev}{rnaanal}
-  %\ganttlink[link mid=0.915]{chipdev}{chipanal}
 \end{ganttchart}
-
