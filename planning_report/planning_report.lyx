@@ -146,7 +146,7 @@ and
 \end_layout
 
 \begin_layout Date
-2016-02-04
+2016-02-12
 \end_layout
 
 \begin_layout Standard
@@ -689,7 +689,7 @@ Evaluation of our results will be done using a Turing-style test where subjects
 
 \begin_layout Standard
 Apart from the manual evaluation we will also use the Recall-Oriented Understudy
- for Gisting Evaluation, ROUGE
+ for Gisting Evaluation, ROUGE 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "lin2004rouge"
@@ -720,7 +720,7 @@ reference "fig:Gantt-chart"
 \begin_inset Float figure
 placement H
 wide false
-sideways false
+sideways true
 status open
 
 \begin_layout Plain Layout
