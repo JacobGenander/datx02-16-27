@@ -679,12 +679,6 @@ Performance evaluation
 \end_layout
 
 \begin_layout Standard
-For every major design decision we will perform the same experiment on a
- sample of the test set.
- 
-\end_layout
-
-\begin_layout Standard
 Evaluation of our results will be done using a Turing-style test where subjects
  will be shown news articles with either generated or real headlines and
  asked to pick out the articles with generated headlines.
