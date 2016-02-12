@@ -1,0 +1,91 @@
+\ganttset{%
+	calendar week text={%
+		\currentweek
+	}%
+}
+\begin{ganttchart}[
+		y unit title=0.5cm,
+		y unit chart=0.6cm,
+		x unit=0.8mm,
+		time slot format=isodate,
+		%compress calendar=true,
+		title/.append style={shape=rectangle, fill=black!10},
+		title height=1,
+		bar/.append style={fill=green!90},
+		bar height=.6,
+		bar label font=\normalsize\color{black!50},
+		group top shift=.6,
+		group height=.3,
+		group peaks height=.2,
+		%milestone inline label node/.append style={left=5mm}
+		%%bar incomplete/.append style={fill=green!40}
+	]{2016-01-18}{2016-06-05}
+	%\gantttitlecalendar{year} \\
+	%\gantttitlecalendar{month} \\
+	\gantttitlecalendar{week=4} \\
+	\ganttset{progress label text={}, bar/.append style={fill=blue!40}, group/.append style={draw=black, fill=blue}}
+	%\ganttset{milestone label node/.append style={left=5mm}}
+	%\ganttset{milestone inline=true}
+	\ganttgroup{Report writing}{2016-01-19}{2016-06-01} \\
+		\ganttbar[name=plr]{Planning report}{2016-01-19}{2016-02-11} \\
+		\ganttmilestone{Hand in planning report}{2016-02-12} \\
+		\ganttbar[name=prr]{Project report}{2016-02-08}{2016-05-16} \\
+		\ganttmilestone[name=handinprr]{1:st hand in of project report}{2016-05-16} \\
+		\ganttmilestone[name=persrep]{Hand in personal report}{2016-03-11} \\
+		\ganttbar[name=opp]{Opposition preparation}{2016-05-16}{2016-05-25} \\
+		\ganttbar[name=oppadj]{Opposition adjustments}{2016-05-28}{2016-06-01} \\
+		\ganttmilestone[name=handinprrfinal]{Final hand in of project report}{2016-06-01} \\
+	\ganttset{progress label text={}, bar/.append style={fill=green!40}, group/.append style={draw=black, fill=green}}
+	\ganttgroup{Presentations}{2016-02-22}{2016-05-27} \\
+		\ganttbar[name=htprep]{Half time preparation}{2016-02-22}{2016-02-29} \\
+		\ganttmilestone[name=htpres]{Half time presentation}{2016-03-01} \\
+		\ganttbar[name=prepexh]{Exhibition preparation}{2016-05-09}{2016-05-15} \\
+		\ganttmilestone[name=exh]{Exhibition of outcome}{2016-05-17} \\
+		\ganttbar[name=finalprep]{Final preperation}{2016-05-22}{2016-05-25} \\
+		\ganttmilestone[name=finalpres]{Final presentation}{2016-05-26} \\
+	\ganttset{progress label text={}, bar/.append style={fill=yellow!40}, group/.append style={draw=black, fill=yellow}}
+	\ganttgroup{Research}{2016-01-19}{2016-02-28} \\
+		\ganttbar[name=prestudy]{Prestudy}{2016-01-19}{2016-02-05} \\
+		\ganttbar[name=datacol]{Data collection}{2016-02-08}{2016-02-28} \\
+	\ganttset{progress label text={}, bar/.append style={fill=red!40}, group/.append style={draw=black, fill=red}}
+	\ganttgroup{Implementation}{2016-02-08}{2016-04-22} \\
+		\ganttbar[name=randheadlines]{Random headlines}{2016-02-08}{2016-02-28} \\
+		\ganttbar[name=headlines]{Generating headlines}{2016-02-15}{2016-04-22} \\
+		\ganttbar[name=hyperopt]{Hyperparameter optimization}{2016-02-15}{2016-04-22} \\
+		\ganttbar[name=attmodel]{Attention model}{2016-03-07}{2016-04-22} \\
+		\ganttbar[name=exhibition]{Exhibition program}{2016-04-25}{2016-05-01} \\
+	
+
+  %\ganttgroup{Aim 1: Phenotypes}{2015-06}{2015-12} \\
+  %  \ganttbar[progress=00, name=rclone]{R cloning}{2015-06}{2015-07} \\
+  %  \ganttlinkedbar[progress=00, name=rflr]{R fluorescence}{2015-07}{2015-09} \\
+  %  \ganttlinkedbar[progress=00, name=rqpcr]{R RT-qPCR}{2015-10}{2015-11} \\
+  %  \ganttbar[progress=00, name=kover]{KO verification}{2015-06}{2015-07} \\
+  %  \ganttlinkedbar[progress=00, name=kogro]{KO growth}{2015-08}{2015-09} \\
+  %  \ganttbar[progress=00, name=koflr]{KO fluorescence}{2015-08}{2015-09} \\
+  %  \ganttlinkedbar[progress=00, name=koo2]{KO O2 evolution}{2015-10}{2015-11} \\
+  %\ganttgroup{Aim 2: Expression}{2015-06}{2017-02} \\
+  %  \ganttbar[progress=00, name=oeclone]{Clone OEs}{2016-01}{2016-03} \\
+  %  \ganttbar[progress=00, name=rnagrow]{Grow KOs + OEs}{2016-04}{2016-06} \\
+  %  \ganttlinkedbar[progress=00, name=rnaprep]{RNA library prep}{2016-07}{2016-09} \\
+  %  \ganttbar[progress=00, name=rnadev]{Develop analysis}{2015-06}{2015-07} \\
+  %  \ganttbar[progress=00, name=rnaanal]{Analyze reads}{2016-12}{2017-02} \\
+  %\ganttgroup{Aim 3: Binding sites}{2016-01}{2017-05} \\
+  %  \ganttbar[progress=00, name=chipgrow]{Grow KOs + OEs}{2016-04}{2016-06} \\
+  %  \ganttlinkedbar[progress=00, name=chipprep]{ChIP library prep}{2016-08}{2016-12} \\
+  %  \ganttbar[progress=00, name=chipdev]{Develop analysis}{2016-01}{2016-02} \\
+  %  \ganttbar[progress=00, name=chipanal]{Analyze reads}{2017-03}{2017-05}
+  %% misc links
+  %\ganttset{progress label text={}}
+  %\ganttlink[]{oeclone}{rnagrow}
+  %\ganttlink[link mid=0.082]{oeclone}{chipgrow}
+  %\ganttlink[]{rnaprep}{rnaanal}
+  %\ganttlink[link mid=0.25]{kover}{koflr}
+  %\ganttlink[link mid=0.75]{kogro}{koo2}
+  %\ganttlink[link mid=0.55]{koo2}{oeclone}
+  %\ganttlink[link mid=0.55]{rqpcr}{oeclone}
+  %\ganttlink[]{chipprep}{chipanal}
+  %\ganttlink[link mid=0.938]{rnadev}{rnaanal}
+  %\ganttlink[link mid=0.915]{chipdev}{chipanal}
+\end{ganttchart}
+

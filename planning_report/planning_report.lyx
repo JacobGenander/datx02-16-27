@@ -3,6 +3,9 @@
 \begin_document
 \begin_header
 \textclass article
+\begin_preamble
+\usepackage{pgfgantt}
+\end_preamble
 \use_default_options true
 \maintain_unincluded_children false
 \language english
@@ -711,6 +714,9 @@ reference "fig:Gantt-chart"
 
 , which may be due to changes.
  The dates are presented as a Gantt chart.
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
 placement H
 wide false
@@ -718,9 +724,9 @@ sideways false
 status open
 
 \begin_layout Plain Layout
-\begin_inset Graphics
-	filename gantt-schedule.svg
-	width 100col%
+\begin_inset CommandInset include
+LatexCommand include
+filename "pgfgantt/gantt_chart.tex"
 
 \end_inset
 
