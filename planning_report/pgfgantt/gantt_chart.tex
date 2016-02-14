@@ -1,0 +1,78 @@
+\begin{ganttchart}[
+		% Heights for titles and bars
+		y unit title=0.5cm,
+		y unit chart=0.6cm,
+		% How wide a grid cell is. One cell is one day
+		x unit=0.65mm,	% Portrait, labels on left side
+		x unit=0.9mm,	% Portrait, inline labels
+		x unit=0.9mm,	% Landscape, Labels on left side
+		x unit=1.3mm,	% Landscape, inline labels
+		% Draw gridlines. One cell in the grid is one day, so this draws 6 gray lines followed by 1 black line to indicate weeks
+		vgrid={*6{black!10}, *1{black!50}},
+		vgrid={*4{black!15}, *2{red!15}, *1{black!50}},	% Mark saturday and sunday red
+		% Defines the format in which dates are entered below
+		time slot format=isodate,
+		% If true, defines a grid cell to be a month instead of a day
+		compress calendar=false,
+		% Defines the format of the title
+		title/.append style={shape=rectangle, fill=black!10},
+		title height=1,
+		% Defines the style of the "normal" bars
+		bar/.append style={fill=green!90},
+		bar top shift=.6,
+		bar height=.6,
+		bar label font=\normalsize\color{black!100},
+		bar inline label node/.append style={anchor=center},
+		% Defines the style of the grouping bars
+		group top shift=1.0,
+		group height=.3,
+		group peaks height=.2,
+		%group inline label node/.append style={outer color=white},
+		% Defines the style of the milestones
+		milestone top shift=0.5,
+		%%milestone inline label node/.append style={rotate=30},
+		milestone inline label node/.append style={anchor=east},
+		%%milestone label text={},
+		% Text labes are inside the bars
+		inline=true,
+		%milestone inline label node/.append style={left=5mm}
+		%%bar incomplete/.append style={fill=green!40}
+	]{2016-01-18}{2016-06-12}
+	\ganttset{calendar week text={\currentweek}}
+	%\gantttitlecalendar{year} \\
+	%\gantttitlecalendar{month} \\
+	\gantttitlecalendar{month=shortname, week=3} \\
+	\ganttset{progress label text={}, bar/.append style={fill=blue!40}, group/.append style={draw=black, fill=blue}}
+	%\ganttset{milestone label node/.append style={left=5mm}}
+	%\ganttset{milestone inline=true}
+	\ganttgroup{Report writing}{2016-01-19}{2016-06-01} \\
+		\ganttbar[name=plr, progress=100]{Planning report}{2016-01-19}{2016-02-11} \\
+		\ganttmilestone{Hand in planning report}{2016-02-12} \\
+		\ganttbar[name=prr]{Project report}{2016-02-08}{2016-05-16} \\
+		\ganttmilestone[name=handinprr]{1:st hand in of project report}{2016-05-16} \\
+		\ganttmilestone[name=persrep]{Hand in personal report}{2016-03-11}
+		\ganttmilestone[name=persrep2]{Hand in personal report 2}{2016-05-07} \\
+		\ganttbar[name=opp]{Opposition preparation}{2016-05-16}{2016-05-25} \\
+		\ganttbar[name=oppadj]{Opposition adjustments}{2016-05-28}{2016-06-01} \\
+		\ganttmilestone[name=handinprrfinal]{Final hand in of project report}{2016-06-01} \\
+	\ganttset{progress label text={}, bar/.append style={fill=green!40}, group/.append style={draw=black, fill=green}}
+	%\ganttset{bar inline label node/.append style={anchor=east}}
+	\ganttgroup{Presentations}{2016-02-22}{2016-05-27} \\
+		\ganttbar[name=htprep]{Half time preparation}{2016-02-22}{2016-02-29} \\
+		\ganttmilestone[name=htpres]{Half time presentation}{2016-03-01} \\
+		\ganttbar[name=prepexh]{Exhibition preparation}{2016-05-09}{2016-05-15} \\
+		\ganttmilestone[name=exh]{Exhibition of outcome}{2016-05-17} \\
+		\ganttbar[name=finalprep]{Final preperation}{2016-05-22}{2016-05-25} \\
+		\ganttmilestone[name=finalpres]{Final presentation}{2016-05-26} \\
+	\ganttset{progress label text={}, bar/.append style={fill=yellow!40}, group/.append style={draw=black, fill=yellow}}
+	\ganttgroup{Research}{2016-01-19}{2016-02-28} \\
+		\ganttbar[name=prestudy]{Prestudy}{2016-01-19}{2016-02-05} \\
+		\ganttbar[name=datacol]{Data collection}{2016-02-08}{2016-02-28} \\
+	\ganttset{progress label text={}, bar/.append style={fill=red!40}, group/.append style={draw=black, fill=red}}
+	\ganttgroup{Implementation}{2016-02-08}{2016-05-01} \\
+		\ganttbar[name=randheadlines]{Random headlines}{2016-02-08}{2016-02-28} \\
+		\ganttbar[name=headlines]{Generating headlines based on text}{2016-02-15}{2016-04-22} \\
+		\ganttbar[name=hyperopt]{Hyperparameter optimization}{2016-02-15}{2016-04-22} \\
+		\ganttbar[name=attmodel]{Attention model}{2016-03-07}{2016-04-22} \\
+		\ganttbar[name=exhibition]{Exhibition program}{2016-04-25}{2016-05-01} \\
+\end{ganttchart}
