@@ -56,7 +56,7 @@ class LSTM_Network(object):
                 # Theses calculations shoud be familiar to you
                 w = tf.get_variable("out_w", [hidden_layer_size, vocab_size])
                 b = tf.get_variable("out_b", [vocab_size])
-                z = tf.add(tf.matmul(output, w), b) # OBS! Add supports broadcasting over each column
+                z = tf.add(tf.matmul(output, w), b) # OBS! Add supports broadcasting over each row 
                 
                 # TensorFlow's built in costfunctions can take whole batches as input 
                 self._loss += tf.nn.softmax_cross_entropy_with_logits(z, y_target)
