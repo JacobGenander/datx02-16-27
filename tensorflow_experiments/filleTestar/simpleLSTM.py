@@ -4,8 +4,8 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.models.rnn import rnn
 from tensorflow.models.rnn import rnn_cell
-import logging
-from gensim.models import Word2Vec
+#import logging
+#from gensim.models import Word2Vec
 
 # Enable debug information to be written to the console
 #logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
