@@ -26,8 +26,7 @@ def read_glove(input_file, dimensions):
         converters={0: string_converter},
         comments=None,
         delimiter=' ',
-        loose=False,
-        max_rows=100
+        loose=False
     )
     return glove_data
 
