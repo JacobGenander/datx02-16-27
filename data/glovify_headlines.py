@@ -1,4 +1,14 @@
 import numpy as np
+import time
+
+
+# TODO: Determine whether the following string manipulations would improve the
+# translations.
+# * Use functions that strips sentences of special characters like ",.' etc.
+# * Convert all sentences to lowercase
+
+
+glove_dtype = np.dtype("f8")
 
 
 # Had to supply a converter to the `genfromtext`-function to get unicode
@@ -42,11 +52,43 @@ def read_lines(input_file):
     return headlines_lines
 
 
+def glove_data_to_dict(glove_data, dimensions):
+    index_words = "word"
+    index_vectors = []
+    for dim in range(dimensions):
+        index_vectors.append("dim{}".format(dim))
+
+    # print(index_words)
+    # print(index_vectors)
+
+    words = glove_data[index_words]
+    vectors = glove_data[index_vectors]
+
+    glove_dict = dict()
+
+    for i in range(glove_data.size):
+        glove_dict[words[i]] = vectors[i]
+
+    # print(words)
+    # print(vectors)
+
+    return glove_dict
+
+
+def glovify_text(glove_dict, text, dimensions):
+    # Get the array type from
+    np.empty([len(text), dimensions], dtype=glove_dtype)
+    for word in text:
+        vector = glove_dict.get(word, None)
+        if vector is not None:
+            print("{}:\t{}".format(word, vector))
+
+
 # TODO: Implement this using numpy (This function serves as an example only, it
 # is slow as ****)
 # I think that the best approach is to use a dict, as it uses a hash table
 # internally, which should speed things up a bit.
-def glovify_text(glove_data, text):
+def glovify_text_example(glove_data, text):
     print("Translating {} to glove vectors".format(text))
     for word in text:
         for key in glove_data:
@@ -85,4 +127,18 @@ counts_words.sort(axis=0)
 print(counts_words)
 
 test = headlines_lines[321].split(" ")
-glovify_text(glove_data, test)
+
+print("Translating sentence {} using \"slow as ****\" example version".format(test))
+timer = time.time()
+glovify_text_example(glove_data, test)
+print("Sentence looked up in {} seconds".format(time.time() - timer))
+
+print("Building dictionary...")
+timer = time.time()
+glove_dict = glove_data_to_dict(glove_data, glove_dimensions)
+print("Dictionary built in {} seconds".format(time.time() - timer))
+
+print("Translating...")
+timer = time.time()
+glovify_text(glove_dict, test, glove_dimensions)
+print("Sentence looked up in {} seconds".format(time.time() - timer))
