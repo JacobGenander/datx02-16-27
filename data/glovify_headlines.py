@@ -75,22 +75,29 @@ def glove_data_to_dict(glove_data, dimensions):
     return glove_dict
 
 
-def glovify_text(glove_dict, text, dimensions):
+def glovify_words(glove_dict, words, dimensions):
     # Get the array type from
-    np.empty([len(text), dimensions], dtype=glove_dtype)
-    for word in text:
+    vec_repr = np.empty([len(words), dimensions], dtype=glove_dtype)
+    for i, word in enumerate(words):
         vector = glove_dict.get(word, None)
         if vector is not None:
             print("{}:\t{}".format(word, vector))
+            # TODO: Figure out how to replace row in array. Combining normal
+            # numpy arrays and record arrays seems to create some problems as
+            # one type is indexed with strings (keys) and the other one with
+            # numerical indexes
+            vec_repr[1,:] = vector
+        else:
+            print("Word {} not found".format(word))
+            vec_repr[i] = None
+    return vec_repr
 
 
-# TODO: Implement this using numpy (This function serves as an example only, it
-# is slow as ****)
-# I think that the best approach is to use a dict, as it uses a hash table
-# internally, which should speed things up a bit.
-def glovify_text_example(glove_data, text):
-    print("Translating {} to glove vectors".format(text))
-    for word in text:
+# This function is implemented above using dicts
+# (This function can still serve as a validation, it is however slow as ****)
+def glovify_words_example(glove_data, words):
+    print("Translating {} to glove vectors".format(words))
+    for word in words:
         for key in glove_data:
             if np.core.defchararray.equal(key[0], word):
                 print(key)
@@ -128,9 +135,9 @@ print(counts_words)
 
 test = headlines_lines[321].split(" ")
 
-print("Translating sentence {} using \"slow as ****\" example version".format(test))
+print("Translating \"{}\" using slow as **** example version".format(test))
 timer = time.time()
-glovify_text_example(glove_data, test)
+glovify_words_example(glove_data, test)
 print("Sentence looked up in {} seconds".format(time.time() - timer))
 
 print("Building dictionary...")
@@ -140,5 +147,5 @@ print("Dictionary built in {} seconds".format(time.time() - timer))
 
 print("Translating...")
 timer = time.time()
-glovify_text(glove_dict, test, glove_dimensions)
+glovify_words(glove_dict, test, glove_dimensions)
 print("Sentence looked up in {} seconds".format(time.time() - timer))
