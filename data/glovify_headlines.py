@@ -42,6 +42,18 @@ def read_lines(input_file):
     return headlines_lines
 
 
+# TODO: Implement this using numpy (This function serves as an example only, it
+# is slow as ****)
+# I think that the best approach is to use a dict, as it uses a hash table
+# internally, which should speed things up a bit.
+def glovify_text(glove_data, text):
+    print("Translating {} to glove vectors".format(text))
+    for word in text:
+        for key in glove_data:
+            if np.core.defchararray.equal(key[0], word):
+                print(key)
+
+
 file_glove = "/mnt/ml_data/glove.6B.50d.txt"
 file_text = "/mnt/ml_data/headlines.test.txt"
 
@@ -71,3 +83,6 @@ print("Unique words: {} ({:%} of all words)".format(
 
 counts_words.sort(axis=0)
 print(counts_words)
+
+test = headlines_lines[321].split(" ")
+glovify_text(glove_data, test)
