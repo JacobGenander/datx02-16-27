@@ -28,6 +28,11 @@ learning_rate = 0.01
 data_size = 100
 vocab_size = 350 # Amount of words in our dictionary
 
+save_steps = 10 # the number of steps taken between each saved state
+
+# Counter for the number of training steps taken, used for saving the state
+global_step = tf.Variable(0, name='global_step', trainable=False)
+
 class LSTM_Network(object):
 
     def __init__(self):
@@ -48,6 +53,7 @@ class LSTM_Network(object):
         state = self._initial_state
         self._loss = tf.Variable(tf.zeros([1]))
         with tf.variable_scope("RNN"): # I'm not sure about variable scopes, but the code won't run unless I add this...
+        
             for i in range(max_word_seq):
                 if i > 0: tf.get_variable_scope().reuse_variables() # ... and this
                 # Pick out the specific batch
@@ -61,11 +67,13 @@ class LSTM_Network(object):
                 
                 # TensorFlow's built in costfunctions can take whole batches as input 
                 self._loss += tf.nn.softmax_cross_entropy_with_logits(z, y_target)
-
+            
         self._final_state = state # This is one of the operators we will run when training
         
         optimizer = tf.train.GradientDescentOptimizer(learning_rate)
-        self._train_op = optimizer.minimize(self._loss) # This is the other training operator (for the weights and biases)
+        # This is the other training operator (for the weights and biases)
+        # global_step is incremented every time the variables are optimized
+        self._train_op = optimizer.minimize(self._loss, global_step = global_step)
 
 def dummyInput():
     return np.random.rand(batch_size, max_word_seq, word_vec_size)
@@ -76,6 +84,9 @@ def dummyTarget():
 def main():
     # Create the network
     net = LSTM_Network()
+    
+    # Flag indicating whether the network is training or not
+    is_training = False
 
     # We always need to run this operation before anything else
     init = tf.initialize_all_variables()
@@ -84,12 +95,33 @@ def main():
     saver = tf.train.Saver()
     
     # Specify where the variables should be saved (for now, the directory of the script)
-    save_path = os.path.dirname(os.path.realpath(__file__)) + "/model.ckpt"
+    checkpoint_dir = os.path.dirname(os.path.realpath(__file__))
+    # This is the full path to the checkpoint file
+    checkpoint_path = checkpoint_dir + '/model-at-global-step'
 
     # Create a session and run the initialization
     with tf.Session() as sess:
         sess.run(init)
+        
         current_state = net._initial_state.eval()
+        
+        # Get the last saved checkpoint, if any.
+        latest_ckpt = tf.train.latest_checkpoint(checkpoint_dir, latest_filename=None)
+        
+        # Demonstrate that the current state may be erased
+        print('Weights when initialized:')
+        with tf.variable_scope("RNN", reuse=True):
+            print(tf.get_variable("out_w").eval())
+        
+        # Restore saved state if any existed
+        if latest_ckpt:
+            saver.restore(sess, latest_ckpt) # restore the saved state
+            print("Successfully restored " + os.path.basename(latest_ckpt))
+        
+        # demonstrate that it actually was restored
+        print('Weights after restoring:')
+        with tf.variable_scope("RNN", reuse=True):
+            print(tf.get_variable("out_w").eval())
 
         # This is where we iterate through all the data 
         for i in range(0, data_size, batch_size):
@@ -97,23 +129,18 @@ def main():
             feed = { net._input : dummyInput(), net._target : dummyTarget(), net._initial_state : current_state} # _initial_state is no placeholder, but we can still give it as an argument (???)
             current_state, _  = sess.run([net._final_state, net._train_op], feed_dict=feed) 
 
+            # Save the state of the network trained in the current session every save_steps step 
+            gs = sess.run(global_step)
+            if gs % save_steps == 0:
+                save_path = saver.save(sess, checkpoint_path, global_step = gs)
+                print("Saved at global step " + str(gs))
+                
         # To get some kind of output we print the last state in the list 
         print(current_state[-1])
-        
-        # Save the state of the network trained in the current session
-        save_path = saver.save(sess, save_path)
-        print("Model saved in file: %s" % save_path)
-        
-        # Demonstrate that the current state may be erased
-        current_state = net._initial_state.eval()
-        print(current_state[-1])
-        
-        # restore the saved state
-        saver.restore(sess, save_path)
-        
-        # demonstrate that it actually was restored
-        current_state, _  = sess.run([net._final_state, net._train_op], feed_dict=feed) 
-        print(current_state[-1])
+        print('Weights before ending:')
+        with tf.variable_scope("RNN", reuse=True):
+            print(tf.get_variable("out_w").eval())
+        print(sess.run(global_step))
    
 if __name__ == "__main__":
     main()
