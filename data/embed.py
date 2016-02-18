@@ -34,7 +34,7 @@ def _read_glove(glovename):
 
 def _read_words(filename):
   with open(filename, "r") as f:
-    return f.read().replace("\n", "<eos>").split()
+    return f.read().replace("\n", " <eos> ").split()
 
 
 def _build_vocab(filename):
