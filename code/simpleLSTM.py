@@ -30,41 +30,50 @@ vocab_size = 350 # Amount of words in our dictionary
 class LSTM_Network(object):
 
     def __init__(self):
-        # This 3-dimensional tensor will hold all data for a specific batch
-        self._input = tf.placeholder(tf.float32, [batch_size, max_word_seq, word_vec_size])
-        # And this one will hold our target data
-        self._target = tf.placeholder(tf.float32, [batch_size, max_word_seq, vocab_size])
+        # 3-dimensional tensors for input data and targets 
+        self._input = tf.placeholder(tf.float32, [batch_size, max_word_seq, word_vec_size], name="input_data")
+        self._target = tf.placeholder(tf.float32, [batch_size, max_word_seq, vocab_size], name= "target_data")
 
-        # Create a single lstm layer
-        cell = rnn_cell.BasicLSTMCell(hidden_layer_size, word_vec_size) # Possibility to set forget_bias
-        # Stack some layers together 
+        # Create the network 
+        cell = rnn_cell.BasicLSTMCell(hidden_layer_size, word_vec_size) 
         stacked_cells = rnn_cell.MultiRNNCell([cell] * number_of_layers)
+    
+        with tf.name_scope("initial_state"):
+            self._initial_state = stacked_cells.zero_state(batch_size, tf.float32)
+            state = self._initial_state
+        
+        with tf.name_scope("input"):
+            # Give our input the right shape
+            inputs = [ tf.squeeze(input_, [1]) for input_ in tf.split(1, max_word_seq, self._input)]
 
-        # Define the initial state 
-        self._initial_state = stacked_cells.zero_state(batch_size, tf.float32)
+        # Run through the whole batch and update state
+        outputs, state = rnn.rnn(stacked_cells, inputs, initial_state=self._initial_state)
+        
+        with tf.name_scope("output"):
+            # The output also needs some massaging
+            output = tf.reshape(tf.concat(1, outputs), [-1, hidden_layer_size])
 
-        # Run through the batch and update state 
-        state = self._initial_state
-        self._loss = tf.Variable(tf.zeros([1]))
-        with tf.variable_scope("RNN"): # I'm not sure about variable scopes, but the code won't run unless I add this...
-            for i in range(max_word_seq):
-                if i > 0: tf.get_variable_scope().reuse_variables() # ... and this
-                # Pick out the specific batch
-                output, state = stacked_cells(self._input[:, i, :], state)
-                y_target = self._target[:, i, :]
+        z = None
+        with tf.name_scope("softmax"):
+            w = tf.get_variable("out_w", [hidden_layer_size, vocab_size])
+            b = tf.get_variable("out_b", [vocab_size])
+            z = tf.matmul(output, w) + b # Add supports broadcasting over each row 
 
-                # Theses calculations shoud be familiar to you
-                w = tf.get_variable("out_w", [hidden_layer_size, vocab_size])
-                b = tf.get_variable("out_b", [vocab_size])
-                z = tf.add(tf.matmul(output, w), b) # OBS! Add supports broadcasting over each column
+            # This is just to enable information for TensorBoard 
+            w_hist = tf.histogram_summary("weights", w)
+            b_hist = tf.histogram_summary("biases", b)
                 
-                # TensorFlow's built in costfunctions can take whole batches as input 
-                self._loss += tf.nn.softmax_cross_entropy_with_logits(z, y_target)
+        # TensorFlow's built in costfunctions can take whole batches as input 
+        with tf.name_scope("cost"):
+            _y = tf.reshape(self._target, [-1, vocab_size])
+            loss = tf.nn.softmax_cross_entropy_with_logits(z, _y)
+            self._cost = cost = tf.reduce_sum(loss) / batch_size
+            ce_summ = tf.scalar_summary("cross_entropy", cost)
 
-        self._final_state = state # This is one of the operators we will run when training
+        self._final_state = state[-1] # We only want the latest state 
         
         optimizer = tf.train.GradientDescentOptimizer(learning_rate)
-        self._train_op = optimizer.minimize(self._loss) # This is the other training operator (for the weights and biases)
+        self._train_op = optimizer.minimize(self._cost) 
 
 def dummyInput():
     return np.random.rand(batch_size, max_word_seq, word_vec_size)
@@ -73,22 +82,29 @@ def dummyTarget():
     return np.random.rand(batch_size, max_word_seq, vocab_size)
 
 def main():
-    # Create the network
     net = LSTM_Network()
 
     # We always need to run this operation before anything else
     init = tf.initialize_all_variables()
 
-    # Create a session and run the initialization
     with tf.Session() as sess:
+        # Some initial stuff for TensorBoard
+        merged = tf.merge_all_summaries()
+        writer = tf.train.SummaryWriter("/tmp/tensorFlow_logs", sess.graph_def)
+
         sess.run(init)
         current_state = net._initial_state.eval()
 
         # This is where we iterate through all the data 
-        for i in range(0, data_size, batch_size):
+        for i in range(100):
             # Our input  will just be a batch with random values
             feed = { net._input : dummyInput(), net._target : dummyTarget(), net._initial_state : current_state} # _initial_state is no placeholder, but we can still give it as an argument (???)
             current_state, _  = sess.run([net._final_state, net._train_op], feed_dict=feed) 
+            
+            if i % 10 == 0:
+                res = sess.run(merged, feed_dict=feed)
+                summary_str = res
+                writer.add_summary(summary_str, i)
 
         # To get some kind of output we print the last state in the list 
         print(current_state[-1])
