@@ -2,6 +2,7 @@
 
 import tensorflow as tf
 import numpy as np
+import time
 from tensorflow.models.rnn import rnn
 from tensorflow.models.rnn import rnn_cell
 #import logging
@@ -53,11 +54,12 @@ class LSTM_Network(object):
             # The output also needs some massaging
             output = tf.reshape(tf.concat(1, outputs), [-1, hidden_layer_size])
 
-        z = None
+        y = None
         with tf.name_scope("softmax"):
             w = tf.get_variable("out_w", [hidden_layer_size, vocab_size])
             b = tf.get_variable("out_b", [vocab_size])
             z = tf.matmul(output, w) + b # Add supports broadcasting over each row 
+            y = tf.nn.softmax(z)
 
             # This is just to enable information for TensorBoard 
             w_hist = tf.histogram_summary("weights", w)
@@ -65,10 +67,13 @@ class LSTM_Network(object):
                 
         # TensorFlow's built in costfunctions can take whole batches as input 
         with tf.name_scope("cost"):
-            _y = tf.reshape(self._target, [-1, vocab_size])
-            loss = tf.nn.softmax_cross_entropy_with_logits(z, _y)
-            self._cost = cost = tf.reduce_sum(loss) / batch_size
-            ce_summ = tf.scalar_summary("cross_entropy", cost)
+            y_ = tf.reshape(self._target, [-1, vocab_size])
+            with tf.name_scope("cross_entropy"):
+                xent = -tf.reduce_sum(y_*tf.log(y))
+
+            with tf.name_scope("batch_mean"):
+                self._cost = cost = tf.reduce_sum(xent) / tf.constant(batch_size, name="batch_size", dtype=tf.float32)
+                ce_summ = tf.scalar_summary("cost", cost) 
 
         self._final_state = state[-1] # We only want the latest state 
         
@@ -82,6 +87,8 @@ def dummyTarget():
     return np.random.rand(batch_size, max_word_seq, vocab_size)
 
 def main():
+    start_time = time.time()
+    
     net = LSTM_Network()
 
     # We always need to run this operation before anything else
@@ -92,6 +99,7 @@ def main():
         merged = tf.merge_all_summaries()
         writer = tf.train.SummaryWriter("/tmp/tensorFlow_logs", sess.graph_def)
 
+        # Initialize everything else
         sess.run(init)
         current_state = net._initial_state.eval()
 
@@ -102,12 +110,14 @@ def main():
             current_state, _  = sess.run([net._final_state, net._train_op], feed_dict=feed) 
             
             if i % 10 == 0:
+                print("{0} % done".format(i))
                 res = sess.run(merged, feed_dict=feed)
                 summary_str = res
                 writer.add_summary(summary_str, i)
 
         # To get some kind of output we print the last state in the list 
         print(current_state[-1])
+        print("--- {:.5} seconds ---".format(time.time() - start_time))
    
 if __name__ == "__main__":
     main()
