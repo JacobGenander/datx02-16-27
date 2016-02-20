@@ -44,7 +44,7 @@ def prepare_data(filename, max_word_seq):
         fill = [0]*(max_word_seq - len(s_split))
         data[i] = s_split + fill
 
-    return data
+    return len(word_to_id), data
 
 def batch_iterator(data, sents_per_batch, max_word_seq):
     epoch_size = len(data) // sents_per_batch
@@ -54,18 +54,20 @@ def batch_iterator(data, sents_per_batch, max_word_seq):
     
     fill = np.zeros([sents_per_batch,1], dtype=np.int)
     for i in range(0, epoch_size, sents_per_batch):
-        x = data[i:sents_per_batch]
-        y = np.column_stack((data[i:sents_per_batch, 1:], fill))
+        x = data[i:i+sents_per_batch]
+        y = np.column_stack((data[i:i+sents_per_batch, 1:], fill))
         yield (x, y)
 
 # The main function is just here for testing
 def main():
-    data = prepare_data('./titles.txt', 40)
+    vocab_size, data = prepare_data('./titles.txt', 40)
 
-    for x, y in batch_iterator(data, 10, 40):
-        print(x[-1])
-        print(y[-1])
-        break;
+    for i, (x, y) in enumerate(batch_iterator(data, 10, 40)):
+        print("Iteration {0}".format(i))
+        #print(x[-1])
+        #print(y[-1])
+
+    print("Vocab size: {0}".format(vocab_size))
 
 if __name__ == "__main__":
     main()
