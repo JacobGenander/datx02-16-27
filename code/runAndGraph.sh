@@ -8,4 +8,4 @@ echo "---------- Running simpleLSTM.py ----------"
 ./simpleLSTM.py
 
 echo "---------- Launching TensorBoard -----------"
-tensorboard --logdir=/tmp/tensorFlow_logs/
+tensorboard --logdir=/tmp/tensorFlow_logs/ 2> /dev/null

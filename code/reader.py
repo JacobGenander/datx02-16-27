@@ -13,7 +13,7 @@ def _read_words(filename):
     with open(filename) as f:
         return _tokenize(f.read()) 
 
-def _build_vocab(filename):
+def build_vocab(filename):
     data = _read_words(filename) 
 
     # Give the words ids based on the number of occurrences in the data set 
@@ -30,7 +30,7 @@ def _sentence_to_ids(sentence, word_to_id):
     return [ word_to_id[word] for word in split_sent]
 
 def prepare_data(filename):
-    word_to_id, _ = _build_vocab(filename)
+    word_to_id, _ = build_vocab(filename)
 
     f = open(filename)
     sentences = f.readlines()
@@ -70,7 +70,7 @@ def batch_iterator(data, sents_per_batch, max_word_seq):
 
 # The main function is just here for testing
 def main():
-    data, data_len, vocab_size, max_word_seq = prepare_data('./titles.txt')
+    data, data_len, vocab_size, max_word_seq = prepare_data('./titles2.txt')
     batch_size = 10
 
     i = 0

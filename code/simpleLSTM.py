@@ -15,7 +15,7 @@ from tensorflow.models.rnn import rnn_cell
 batch_size = 20
 hidden_layer_size = 200 
 number_of_layers = 2
-learning_rate = 1.0
+learning_rate = 1.0 
 max_epoch = 13
 
 counter = 0 # Keeps track of number of batches processed
@@ -96,7 +96,7 @@ def run_epoch(sess, data, net, info_op, writer, max_word_seq):
             writer.add_summary(summary_str, counter) 
 
 def save_state(sess, saver):
-    print("Saving state.")
+    print("Saving model.")
     save_path = saver.save(sess, "/tmp/model.ckpt")
     print("Model saved in file: {}".format(save_path))
 
