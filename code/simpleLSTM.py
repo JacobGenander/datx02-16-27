@@ -13,9 +13,10 @@ from tensorflow.models.rnn import rnn_cell
 
 # Hyper parameters 
 batch_size = 20
-hidden_layer_size = 200 
+hidden_layer_size = embedding_size = 200 
 number_of_layers = 2
 learning_rate = 1.0 
+init_range = 0.1
 max_epoch = 13
 
 counter = 0 # Keeps track of number of batches processed
@@ -23,11 +24,16 @@ counter = 0 # Keeps track of number of batches processed
 class LSTM_Network(object):
 
     def __init__(self, vocab_size, max_word_seq):
+        initializer = tf.random_uniform_initializer(-init_range, init_range)
+
         # 2-dimensional tensors for input data and targets 
         self._input = tf.placeholder(tf.int32, [batch_size, max_word_seq], name="input_data")
         self._target = tf.placeholder(tf.int64, [batch_size, max_word_seq], name="target_data")
 
-        embedding = tf.get_variable("embedding", [vocab_size, hidden_layer_size]) # We choose the word embedding to have hidden_layer_size dimensions
+        # Fetch word vectors
+        embedding = tf.get_variable("embedding", 
+                [vocab_size, embedding_size], 
+                initializer=initializer) 
         inputs = tf.nn.embedding_lookup(embedding, self._input)
 
         # Create the network 
@@ -51,8 +57,8 @@ class LSTM_Network(object):
 
         z = None # Needed?
         with tf.name_scope("logits"):
-            w = tf.get_variable("out_w", [hidden_layer_size, vocab_size])
-            b = tf.get_variable("out_b", [vocab_size])
+            w = tf.get_variable("out_w", [hidden_layer_size, vocab_size], initializer=initializer)
+            b = tf.get_variable("out_b", [vocab_size], initializer=initializer)
             z = tf.matmul(output, w) + b # Add supports broadcasting over each row 
 
             # This is just to enable information for TensorBoard 
@@ -107,11 +113,12 @@ def main():
     saver = tf.train.Saver()
 
     with tf.Session() as sess:
+        # Initialize everything else
+        sess.run(init)
+
         # Some initial stuff for TensorBoard
         merged = tf.merge_all_summaries()
         writer = tf.train.SummaryWriter("/tmp/tensorFlow_logs", sess.graph_def)
-        # Initialize everything else
-        sess.run(init)
         
         print("Training.")
         for i in range(max_epoch):
