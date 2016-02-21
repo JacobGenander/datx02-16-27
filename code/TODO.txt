@@ -1,0 +1,4 @@
+TODO:
+* Terminal interface
+* Save progress as we train 
+* Create our own version of the cost function
