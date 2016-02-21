@@ -65,14 +65,13 @@ class LSTM_Network(object):
                 loss = tf.nn.seq2seq.sequence_loss_by_example(
                         [z],
                         [tf.reshape(self._target, [-1])],
-                        [tf.ones([batch_size * max_word_seq])], 
-                        vocab_size)
+                        [tf.ones([batch_size * max_word_seq])])
 
             with tf.name_scope("average"):
                 self._cost = cost = tf.reduce_sum(loss) / batch_size 
                 ce_summ = tf.scalar_summary("cost", cost) 
 
-        self._final_state = state[-1] # We only want the latest state 
+        self._final_state = state  
         
         # Gradient descent training op
         optimizer = tf.train.GradientDescentOptimizer(learning_rate)
