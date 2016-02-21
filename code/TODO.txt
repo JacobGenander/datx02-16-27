@@ -1,4 +1,5 @@
 TODO:
+* Initiate embedding matrix with GloVe or word2vec
 * Terminal interface
 * Save progress as we train 
 * Create our own version of the cost function
