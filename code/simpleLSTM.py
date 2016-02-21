@@ -25,7 +25,7 @@ class LSTM_Network(object):
     def __init__(self, vocab_size, max_word_seq):
         # 2-dimensional tensors for input data and targets 
         self._input = tf.placeholder(tf.int32, [batch_size, max_word_seq], name="input_data")
-        self._target = tf.placeholder(tf.int32, [batch_size, max_word_seq], name="target_data")
+        self._target = tf.placeholder(tf.int64, [batch_size, max_word_seq], name="target_data")
 
         embedding = tf.get_variable("embedding", [vocab_size, hidden_layer_size]) # We choose the word embedding to have hidden_layer_size dimensions
         inputs = tf.nn.embedding_lookup(embedding, self._input)
@@ -62,10 +62,7 @@ class LSTM_Network(object):
         # Average negative log probability
         with tf.name_scope("cost"):
             with tf.name_scope("negative_log"):
-                loss = tf.nn.seq2seq.sequence_loss_by_example(
-                        [z],
-                        [tf.reshape(self._target, [-1])],
-                        [tf.ones([batch_size * max_word_seq])])
+                loss = tf.nn.sparse_softmax_cross_entropy_with_logits(z, tf.reshape(self._target, [-1]))
 
             with tf.name_scope("average"):
                 self._cost = cost = tf.reduce_sum(loss) / batch_size 
