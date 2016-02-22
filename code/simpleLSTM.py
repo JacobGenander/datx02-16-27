@@ -5,8 +5,6 @@ import numpy as np
 import time
 import sys
 import reader
-from tensorflow.models.rnn import rnn
-from tensorflow.models.rnn import rnn_cell
 
 # TensorFlow's API (if you want to know what arguments we pass to the different methods)
 # https://www.tensorflow.org/versions/0.6.0/api_docs/python/index.html
@@ -37,8 +35,8 @@ class LSTM_Network(object):
         inputs = tf.nn.embedding_lookup(embedding, self._input)
 
         # Create the network 
-        cell = rnn_cell.BasicLSTMCell(hidden_layer_size) 
-        stacked_cells = rnn_cell.MultiRNNCell([cell] * number_of_layers)
+        cell = tf.nn.rnn_cell.BasicLSTMCell(hidden_layer_size) 
+        stacked_cells = tf.nn.rnn_cell.MultiRNNCell([cell] * number_of_layers)
     
         with tf.name_scope("initial_state"):
             self._initial_state = stacked_cells.zero_state(batch_size, tf.float32)
@@ -49,7 +47,7 @@ class LSTM_Network(object):
             inputs = [ tf.squeeze(input_, [1]) for input_ in tf.split(1, max_word_seq, inputs)]
 
         # Run through the whole batch and update state
-        outputs, state = rnn.rnn(stacked_cells, inputs, initial_state=self._initial_state)
+        outputs, state = tf.nn.rnn(stacked_cells, inputs, initial_state=self._initial_state)
         
         with tf.name_scope("output"):
             # The output also needs some massaging
