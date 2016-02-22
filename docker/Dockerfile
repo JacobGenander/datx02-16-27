@@ -1,0 +1,32 @@
+
+# This image is based on the TensorFlow image provided by Google
+FROM b.gcr.io/tensorflow/tensorflow
+ENV TENSORFLOW_VERSION 0.7.0
+
+# TODO: Fix python3 support. The supplied .whl-file will not install
+
+RUN apt-get update && apt-get install -y \
+		vim \
+		man \
+		git \
+#		python3-numpy \
+#		python3-scipy \
+#		python3-pip \
+		&& \
+	apt-get clean && \
+	rm -rf /var/lib/apt/lists/*
+
+
+#RUN pip3 install \
+#		ipykernel \
+#		jupyter \
+#		matplotlib \
+#		https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-${TENSORFLOW_VERSION}-py3-none-linux_x86_64.whl \
+#		&& \
+#	python3 -m ipykernel.kernelspec
+
+
+COPY vim /root/
+RUN vim +PlugInstall +qall
+
+
