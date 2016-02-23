@@ -10,7 +10,7 @@ import numpy as np
 import os
 import random
 from six.moves import urllib
-from six.moves import xrange  # pylint: disable=redefined-builtin
+from six.moves import xrange
 import tensorflow as tf
 import zipfile
 import embed
@@ -21,7 +21,7 @@ glovename = 'glove.6B.100d.txt'
 # Read the data into a string.
 def read_data(filename):
   with open(filename) as f:
-    return f.read().split()
+    return f.read().replace('\n',' EOS ').split()
   f.close()
   
 def read_glove(glovename):
@@ -36,7 +36,7 @@ def read_glove(glovename):
       lookup[key] = value
   return lookup 
   
-words = [ w if w != '\n' else 'EOS' for w in read_data(filename)]
+words = read_data(filename)
 print('Data size', len(words))
 
 # Step 2: Build the dictionary and replace rare words with UNK token.
@@ -126,8 +126,8 @@ with graph.as_default():
   # Ops and variables pinned to the CPU because of missing GPU implementation
   with tf.device('/cpu:0'):
     # Look up embeddings for inputs.
-    lookup = read_glove(glovename)
-    #gv = np.array([lookup[dictionary.get('w','UNK')] for w in dictionary.keys()])
+    #lookup = read_glove(glovename)
+    #gv = [lookup[dictionary.get('w','UNK')] for w in dictionary.keys()])
     #embeddings = tf.Variable(tf.constant(gv))
     embeddings = tf.Variable(
       tf.random_uniform([vocabulary_size, embedding_size], -1.0, 1.0))
@@ -198,7 +198,7 @@ with tf.Session(graph=graph) as session:
         average_loss /= 2000
       # The average loss is an estimate of the loss over the last 2000 batches.
       print("Average loss at step ", step, ": ", average_loss)
-      if average_loss < 2:
+      if average_loss < 3:
         print("Good enough!")
         break
       average_loss = 0
