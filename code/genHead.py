@@ -2,7 +2,7 @@
 
 import tensorflow as tf
 import numpy as np
-import reader
+from DataMan import DataMan
 
 # Hardcoded for the moment
 batch_size = 20
@@ -59,9 +59,8 @@ def format_sentence(s):
     return s.split("<eos>", 1)[0].capitalize()
 
 def main():
-    _, id_to_word = reader.build_vocab("./titles2.txt") 
-    _, _, vocab_size, max_word_seq = reader.prepare_data("./titles2.txt") # Really unnecessary, but have to do for now
-    net = LSTM_Network(vocab_size)
+    reader = DataMan("./titles2.txt")
+    net = LSTM_Network(reader.vocab_size)
     init = tf.initialize_all_variables()
 
     with tf.Session() as sess:
@@ -70,13 +69,13 @@ def main():
         saver = tf.train.Saver() # Is this correct? Will it overwrite eariler inits?
         saver.restore(sess, "/tmp/model.ckpt") # Should cell state be restored from training?
 
-        sentences = gen_sentences(net, sess, vocab_size, max_word_seq)
+        sentences = gen_sentences(net, sess, reader.vocab_size, reader.max_seq)
         
         for i, s in enumerate(sentences):
             if i >= 20: # Decides how many titles we should display
                 break
             print("Sentence {}:".format(i+1))
-            s = [ id_to_word[w] for w in s]
+            s = [ reader.id_to_word[w] for w in s]
             s = " ".join(s)
             print(format_sentence(s))
 

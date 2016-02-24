@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 import time
 import sys
-import reader
+from DataMan import DataMan 
 
 # TensorFlow's API (if you want to know what arguments we pass to the different methods)
 # https://www.tensorflow.org/versions/0.6.0/api_docs/python/index.html
@@ -78,10 +78,10 @@ class LSTM_Network(object):
         optimizer = tf.train.GradientDescentOptimizer(learning_rate)
         self._train_op = optimizer.minimize(self._cost) 
 
-def run_epoch(sess, data, net, info_op, writer, max_word_seq):
+def run_epoch(sess, reader, net, info_op, writer):
     
     current_state = net._initial_state.eval()
-    for x, y in reader.batch_iterator(data, batch_size, max_word_seq): 
+    for x, y in reader.batch_iterator(batch_size): 
         # Input
         feed = { net._input : x, net._target : y, net._initial_state : current_state}
         # Run the computational graph
@@ -102,8 +102,8 @@ def save_state(sess, saver):
 
 def main():
     start_time = time.time()
-    data, data_len, vocab_size, max_word_seq = reader.prepare_data("./titles2.txt")
-    net = LSTM_Network(vocab_size, max_word_seq)
+    reader = DataMan("./titles2.txt")
+    net = LSTM_Network(reader.vocab_size, reader.max_seq)
 
     # We always need to run this operation before anything else
     init = tf.initialize_all_variables()
@@ -121,7 +121,7 @@ def main():
         print("Training.")
         for i in range(max_epoch):
             print("\r{}% done".format(int(i/max_epoch * 100)), end='')
-            run_epoch(sess, data, net, merged, writer, max_word_seq)
+            run_epoch(sess, reader, net, merged, writer)
         print("Finished training.")
         
         save_state(sess, saver)
