@@ -1,4 +1,8 @@
-#! /usr/bin/env python3
+#! /usr/bin/python2
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import tensorflow as tf
 import numpy as np
@@ -120,7 +124,7 @@ def main():
         
         print("Training.")
         for i in range(max_epoch):
-            print("\r{}% done".format(int(i/max_epoch * 100)), end='')
+            print("\r{}% done".format(int(i/max_epoch * 100)))
             run_epoch(sess, reader, net, merged, writer)
         print("Finished training.")
         
