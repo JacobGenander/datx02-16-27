@@ -11,7 +11,7 @@ import sys
 from DataMan import DataMan 
 
 # TensorFlow's API (if you want to know what arguments we pass to the different methods)
-# https://www.tensorflow.org/versions/0.6.0/api_docs/python/index.html
+# https://www.tensorflow.org/versions/r0.7/api_docs/python/index.html
 
 # Hyper parameters 
 batch_size = 20
