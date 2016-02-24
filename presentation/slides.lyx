@@ -1,0 +1,439 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass beamer
+\begin_preamble
+
+\usetheme[left,width=4em]{Berkeley}
+\useinnertheme{default}
+\usecolortheme{default}
+\end_preamble
+\use_default_options true
+\maintain_unincluded_children false
+\language swedish
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language swedish
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Generera rubriker med deep learning
+\end_layout
+
+\begin_layout Subtitle
+DATX02-16-27
+\end_layout
+
+\begin_layout Author
+Jacob Genander 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+and
+\end_layout
+
+\end_inset
+
+ Rickard Lantz
+\end_layout
+
+\begin_layout Institute
+Alex Evert
+\begin_inset space \qquad{}
+\end_inset
+
+Filip Nilsson
+\begin_inset space \qquad{}
+\end_inset
+
+Nicklas Lallo
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+and
+\end_layout
+
+\end_inset
+
+ Chalmers Tekniska Högskola
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Introduktion
+\end_layout
+
+\begin_layout Subsection
+Syfte och mål
+\end_layout
+
+\begin_layout Frame
+\begin_inset Argument 4
+status open
+
+\begin_layout Plain Layout
+Projektets mål
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Generering av:
+\end_layout
+
+\begin_layout Enumerate
+Slumpmässiga men 
+\begin_inset Quotes sld
+\end_inset
+
+vettiga
+\begin_inset Quotes srd
+\end_inset
+
+ rubriker
+\end_layout
+
+\begin_layout Enumerate
+Rubriker baserade på artiklar
+\end_layout
+
+\begin_layout Enumerate
+Rubriker baserade på artiklar i kombination med bilder
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+Neurala Nätverk
+\end_layout
+
+\begin_layout Frame
+\begin_inset Argument 4
+status open
+
+\begin_layout Plain Layout
+Artificiella Neurala Nätverk
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Metod med inspiration från den mänskliga hjärnan
+\end_layout
+
+\begin_layout Itemize
+Kan hitta mönster i mycket komplexa data
+\end_layout
+
+\end_deeper
+\begin_layout Frame
+
+\end_layout
+
+\begin_layout Section
+Projektfaser
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Frame
+\begin_inset Argument 4
+status open
+
+\begin_layout Plain Layout
+Projektets faser
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Datainsamling
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Artiklar med titlar/rubriker
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Quotes sld
+\end_inset
+
+Word embeddings
+\begin_inset Quotes srd
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Databehandling
+\end_layout
+
+\begin_layout Itemize
+Modellimplementation
+\end_layout
+
+\end_deeper
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Datainsamling
+\end_layout
+
+\begin_layout Frame
+\begin_inset Argument 4
+status open
+
+\begin_layout Plain Layout
+Datainsamling
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Databearbetning
+\end_layout
+
+\begin_layout Frame
+\begin_inset Argument 4
+status open
+
+\begin_layout Plain Layout
+Databearbetning
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Implementation
+\end_layout
+
+\begin_layout Frame
+\begin_inset Argument 4
+status open
+
+\begin_layout Plain Layout
+Implementation
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+TensorFlow
+\end_layout
+
+\begin_layout Frame
+\begin_inset Argument 4
+status open
+
+\begin_layout Plain Layout
+TensorFlow
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Ramverk från Google
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Innehåller vanliga byggstenar för maskininlärning.
+ Ex.
+ LSTM-celler
+\end_layout
+
+\begin_layout Itemize
+Möjliggör parallell exekvering på CPU och GPU
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Subsubsection
+Arbetsmetod
+\end_layout
+
+\begin_layout Frame
+\begin_inset Argument 4
+status open
+
+\begin_layout Plain Layout
+Arbetsmetodik
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Iterativ, testbaserad process
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Konstruktion av modell
+\end_layout
+
+\begin_layout Enumerate
+Evaluering av modell
+\end_layout
+
+\begin_layout Enumerate
+Utvärdering av resultat
+\end_layout
+
+\begin_layout Enumerate
+Justerande av parametrar
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Section
+Sammanfattning
+\end_layout
+
+\begin_layout Subsection
+Status
+\end_layout
+
+\begin_layout Frame
+\begin_inset Argument 4
+status open
+
+\begin_layout Plain Layout
+Nuvarande status
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Erfarenheter
+\end_layout
+
+\begin_layout Frame
+\begin_inset Argument 4
+status open
+
+\begin_layout Plain Layout
+Erfarenheter och lärdomar
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
