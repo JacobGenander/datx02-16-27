@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
 		vim \
 		man \
 		git \
+		tmux \
 #		python3-numpy \
 #		python3-scipy \
 #		python3-pip \
@@ -26,7 +27,7 @@ RUN apt-get update && apt-get install -y \
 #	python3 -m ipykernel.kernelspec
 
 
-COPY vim /root/
+COPY dotfiles /root/
 RUN vim +PlugInstall +qall
 
 
