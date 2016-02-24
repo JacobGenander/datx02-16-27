@@ -11,7 +11,7 @@ from DataMan import DataMan
 
 # Hyper parameters 
 batch_size = 20
-hidden_layer_size = embedding_size = 100 
+hidden_layer_size = embedding_size = 200 
 number_of_layers = 2
 learning_rate = 1.0 
 init_range = 0.1
@@ -21,10 +21,8 @@ counter = 0 # Keeps track of number of batches processed
 
 class LSTM_Network(object):
 
-    def __init__(self, vocab_size, max_word_seq,initial_embedding):
-        
-	# Set embedding initialization to Glove vectors
-        initializer = tf.constant_initializer(initial_embedding)
+    def __init__(self, vocab_size, max_word_seq):
+        initializer = tf.random_uniform_initializer(-init_range, init_range)
 
         # 2-dimensional tensors for input data and targets 
         self._input = tf.placeholder(tf.int32, [batch_size, max_word_seq], name="input_data")
@@ -101,30 +99,11 @@ def save_state(sess, saver):
     print("Saving model.")
     save_path = saver.save(sess, "/tmp/model.ckpt")
     print("Model saved in file: {}".format(save_path))
-    
-def read_glove(glovename):
-    lookup = {}
-    lookup["<eos>"]= np.random.rand(100)
-    lookup["<unk>"]= np.random.rand(100)
-    with open(glovename, "r") as f:
-      for line in f:
-        data = line.split()
-        key = data[0]
-        value =np.array(map(float, data[1:]))
-        lookup[key] = value
-    return lookup 
 
 def main():
     start_time = time.time()
     reader = DataMan("./titles2.txt")
-
-    # Create embedding initializer
-    glove_lookup = read_glove('glove.6B.100d.txt')
-    glove_tuples = [(id, glove_lookup.get(w,np.random.uniform(-1,1,100))) for (w,id) in reader.word_to_id.items()]
-    initial_embedding =[ vec for (vec, _) in sorted(glove_tuples, key=lambda tup: tup[0])]
-
-    # Create network
-    net = LSTM_Network(reader.vocab_size, reader.max_seq, initial_embedding)
+    net = LSTM_Network(reader.vocab_size, reader.max_seq)
 
     # We always need to run this operation before anything else
     init = tf.initialize_all_variables()
