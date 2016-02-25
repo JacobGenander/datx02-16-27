@@ -1,3 +1,5 @@
+#! /usr/bin/python2
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -39,15 +41,12 @@ class DataMan(object):
         self._max_seq = max_seq = max([ len(s) for s in s_split])
 
         self._data = np.zeros([data_len, max_seq], dtype=np.int)
-        for i in range(data_len):
-            s = sentences[i]
-            s_split = self._sentence_to_ids(s)
-            fill = [0]*(max_seq - len(s_split))
-            self._data[i] = s_split + fill
+        for i, s  in enumerate(s_split):
+            fill = [0]*(max_seq - len(s))
+            self._data[i] = s + fill
 
     def batch_iterator(self, batch_size):
         epoch_size = self._data_len // batch_size 
-    
         if epoch_size == 0:
             raise ValueError("epoch_size == 0, decrease batch_size or num_steps")
     
@@ -58,8 +57,7 @@ class DataMan(object):
         fill = np.zeros([batch_size,1], dtype=np.int)
         for i in range(0, epoch_size, batch_size):
             x = self._data[i : i+batch_size]
-            # Output is just the input shifted to the right by one
-            # We also pad with a column of zeros to keep dimensions
+            # Shift by one and pad with zeros to get targets
             y = np.column_stack((self._data[i : i+batch_size, 1:], fill))
             yield (x, y)
 
@@ -84,3 +82,24 @@ class DataMan(object):
     def data_len(self):
         return self._data_len
 
+def main():
+    reader = DataMan('titles.txt')
+    batch_size = 10
+    
+    i = 0
+    for x, y in reader.batch_iterator(batch_size):
+        i += 1
+        if i == 100:
+            print('X:')
+            print(x[0])
+            print('Y:')
+            print(y[0])
+                
+    print("Data length: {0}".format(reader.data_len))
+    print("Batches: {0}".format(i))
+    print("Vocab size: {0}".format(reader.vocab_size))
+    print("Longest sentence: {0}".format(reader.max_seq))
+            
+if __name__ == "__main__":
+    main()
+            
