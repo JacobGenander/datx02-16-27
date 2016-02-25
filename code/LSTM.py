@@ -45,8 +45,7 @@ class LSTM_Network(object):
         stacked_cells = tf.nn.rnn_cell.MultiRNNCell([cell] * number_of_layers)
     
         with tf.name_scope("initial_state"):
-            self._initial_state = stacked_cells.zero_state(batch_size, tf.float32)
-            state = self._initial_state
+            self._initial_state = state = stacked_cells.zero_state(batch_size, tf.float32)
         
         with tf.name_scope("input"):
             # Give input the right shape
@@ -85,13 +84,11 @@ class LSTM_Network(object):
         self._train_op = optimizer.minimize(self._cost) 
 
 def run_epoch(sess, reader, net, info_op, writer):
-    
-    current_state = net._initial_state.eval()
     for x, y, z in reader.batch_iterator(batch_size): 
         # Input
-        feed = { net._input : x, net._target : y, net._initial_state : current_state, net._seq_lens : z}
+        feed = { net._input : x, net._target : y, net._seq_lens : z}
         # Run the computational graph
-        current_state, _  = sess.run([net._final_state, net._train_op], feed_dict=feed)
+        sess.run([net._final_state, net._train_op], feed_dict=feed)
         
         # Write information to TensorBoard log file
         global counter
