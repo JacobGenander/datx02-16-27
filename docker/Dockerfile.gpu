@@ -1,6 +1,6 @@
 
 # This image is based on the TensorFlow image provided by Google
-FROM b.gcr.io/tensorflow/tensorflow
+FROM b.gcr.io/tensorflow/tensorflow:latest-gpu
 ENV TENSORFLOW_VERSION 0.7.1
 
 # TODO: Fix python3 support. The supplied .whl-file will not install
