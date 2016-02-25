@@ -41,9 +41,18 @@ class DataMan(object):
         self._max_seq = max_seq = max([ len(s) for s in s_split])
 
         self._data = np.zeros([data_len, max_seq], dtype=np.int)
+        self._seq_lens = np.zeros([data_len], dtype=np.int)
         for i, s  in enumerate(s_split):
+            self._seq_lens[i] = len(s)
             fill = [0]*(max_seq - len(s))
             self._data[i] = s + fill
+
+    def _shuffle_data(self):
+        seed = np.random.randint(10000)
+        np.random.seed(seed)
+        np.random.shuffle(self._data)
+        np.random.seed(seed)
+        np.random.shuffle(self._seq_lens)
 
     def batch_iterator(self, batch_size):
         epoch_size = self._data_len // batch_size 
@@ -51,7 +60,7 @@ class DataMan(object):
             raise ValueError("epoch_size == 0, decrease batch_size or num_steps")
     
         # Shuffle the data to generate different batches each time
-        np.random.shuffle(self._data)
+        self._shuffle_data()
     
         # Generate batches (not foolproof but should work if the data is sane) 
         fill = np.zeros([batch_size,1], dtype=np.int)
@@ -59,7 +68,8 @@ class DataMan(object):
             x = self._data[i : i+batch_size]
             # Shift by one and pad with zeros to get targets
             y = np.column_stack((self._data[i : i+batch_size, 1:], fill))
-            yield (x, y)
+            z = self._seq_lens[i : i+batch_size]
+            yield (x, y, z)
 
     @property
     def id_to_word(self):
@@ -82,24 +92,3 @@ class DataMan(object):
     def data_len(self):
         return self._data_len
 
-def main():
-    reader = DataMan('titles.txt')
-    batch_size = 10
-    
-    i = 0
-    for x, y in reader.batch_iterator(batch_size):
-        i += 1
-        if i == 100:
-            print('X:')
-            print(x[0])
-            print('Y:')
-            print(y[0])
-                
-    print("Data length: {0}".format(reader.data_len))
-    print("Batches: {0}".format(i))
-    print("Vocab size: {0}".format(reader.vocab_size))
-    print("Longest sentence: {0}".format(reader.max_seq))
-            
-if __name__ == "__main__":
-    main()
-            

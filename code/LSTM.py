@@ -31,6 +31,8 @@ class LSTM_Network(object):
         # 2-dimensional tensors for input data and targets 
         self._input = tf.placeholder(tf.int32, [batch_size, max_word_seq], name="input_data")
         self._target = tf.placeholder(tf.int64, [batch_size, max_word_seq], name="target_data")
+        # This is the length of each sentence
+        self._seq_lens = tf.placeholder(tf.int32, [batch_size], name="sequence_lengths")
 
         # Fetch word vectors
         embedding = tf.get_variable("embedding", 
@@ -51,7 +53,7 @@ class LSTM_Network(object):
             inputs = [ tf.squeeze(input_, [1]) for input_ in tf.split(1, max_word_seq, inputs)]
 
         # Run through the whole batch and update state
-        outputs, state = tf.nn.rnn(stacked_cells, inputs, initial_state=self._initial_state)
+        outputs, state = tf.nn.rnn(stacked_cells, inputs, initial_state=self._initial_state, sequence_length=self._seq_lens)
         
         with tf.name_scope("output"):
             # The output also needs some massaging
@@ -85,9 +87,9 @@ class LSTM_Network(object):
 def run_epoch(sess, reader, net, info_op, writer):
     
     current_state = net._initial_state.eval()
-    for x, y in reader.batch_iterator(batch_size): 
+    for x, y, z in reader.batch_iterator(batch_size): 
         # Input
-        feed = { net._input : x, net._target : y, net._initial_state : current_state}
+        feed = { net._input : x, net._target : y, net._initial_state : current_state, net._seq_lens : z}
         # Run the computational graph
         current_state, _  = sess.run([net._final_state, net._train_op], feed_dict=feed)
         

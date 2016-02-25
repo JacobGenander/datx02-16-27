@@ -4,7 +4,7 @@ if [ -e /tmp/tensorFlow_logs ]; then
     rm /tmp/tensorFlow_logs/*
 fi
 
-echo "---------- Running simpleLSTM.py ----------"
+echo "---------- Running LSTM.py ----------"
 ./LSTM.py
 
 echo "---------- Launching TensorBoard -----------"
