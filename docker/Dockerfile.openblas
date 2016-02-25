@@ -32,4 +32,22 @@ RUN apt-get update && apt-get install -y \
 COPY dotfiles /root/
 RUN vim +PlugInstall +qall
 
+RUN git clone git://github.com/xianyi/OpenBLAS.git /root/OpenBLAS && \
+		cd /root/OpenBLAS && \
+		make -j4 && \
+		make PREFIX=/opt/OpenBLAS install
+
+COPY openblas_configs /root/
+
+RUN apt-get remove -y python-numpy
+
+RUN mkdir /root/numpy && cd /root/numpy && \
+		wget https://sourceforge.net/projects/numpy/files/NumPy/1.10.4/numpy-1.10.4.tar.gz && \
+		tar -xvf numpy-1.10.4.tar.gz && \
+		cd numpy-1.10.4 && \
+		python setup.py build -j 4 install
+
+RUN echo "export LD_LIBRARY_PATH=/opt/OpenBLAS/lib/:$LD_LIBRARY_PATH" >> /root/.bashrc
+
+
 
