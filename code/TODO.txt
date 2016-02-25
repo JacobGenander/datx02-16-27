@@ -2,4 +2,4 @@ TODO:
 * Initiate embedding matrix with GloVe or word2vec
 * Implement dropout and other enhancements
 * Save progress as we train 
-* Implement regex tokenizer in reader.py
+* Implement regex tokenizer in DataMan.py

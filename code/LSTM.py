@@ -9,17 +9,10 @@ import numpy as np
 import time
 import sys
 from DataMan import DataMan 
+from hyperParams import *
 
 # TensorFlow's API (if you want to know what arguments we pass to the different methods)
 # https://www.tensorflow.org/versions/r0.7/api_docs/python/index.html
-
-# Hyper parameters 
-batch_size = 20
-hidden_layer_size = embedding_size = 200 
-number_of_layers = 2
-learning_rate = 1.0 
-init_range = 0.1
-max_epoch = 13
 
 counter = 0 # Keeps track of number of batches processed
 
@@ -31,6 +24,8 @@ class LSTM_Network(object):
         # 2-dimensional tensors for input data and targets 
         self._input = tf.placeholder(tf.int32, [batch_size, max_word_seq], name="input_data")
         self._target = tf.placeholder(tf.int64, [batch_size, max_word_seq], name="target_data")
+        # This is the length of each sentence
+        self._seq_lens = tf.placeholder(tf.int32, [batch_size], name="sequence_lengths")
 
         # Fetch word vectors
         embedding = tf.get_variable("embedding", 
@@ -43,15 +38,14 @@ class LSTM_Network(object):
         stacked_cells = tf.nn.rnn_cell.MultiRNNCell([cell] * number_of_layers)
     
         with tf.name_scope("initial_state"):
-            self._initial_state = stacked_cells.zero_state(batch_size, tf.float32)
-            state = self._initial_state
+            self._initial_state = state = stacked_cells.zero_state(batch_size, tf.float32)
         
         with tf.name_scope("input"):
             # Give input the right shape
             inputs = [ tf.squeeze(input_, [1]) for input_ in tf.split(1, max_word_seq, inputs)]
 
         # Run through the whole batch and update state
-        outputs, state = tf.nn.rnn(stacked_cells, inputs, initial_state=self._initial_state)
+        outputs, state = tf.nn.rnn(stacked_cells, inputs, initial_state=self._initial_state, sequence_length=self._seq_lens)
         
         with tf.name_scope("output"):
             # The output also needs some massaging
@@ -83,13 +77,11 @@ class LSTM_Network(object):
         self._train_op = optimizer.minimize(self._cost) 
 
 def run_epoch(sess, reader, net, info_op, writer):
-    
-    current_state = net._initial_state.eval()
-    for x, y in reader.batch_iterator(batch_size): 
+    for x, y, z in reader.batch_iterator(batch_size): 
         # Input
-        feed = { net._input : x, net._target : y, net._initial_state : current_state}
+        feed = { net._input : x, net._target : y, net._seq_lens : z}
         # Run the computational graph
-        current_state, _  = sess.run([net._final_state, net._train_op], feed_dict=feed)
+        sess.run([net._final_state, net._train_op], feed_dict=feed)
         
         # Write information to TensorBoard log file
         global counter

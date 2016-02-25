@@ -1,3 +1,5 @@
+#! /usr/bin/python2
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -39,29 +41,35 @@ class DataMan(object):
         self._max_seq = max_seq = max([ len(s) for s in s_split])
 
         self._data = np.zeros([data_len, max_seq], dtype=np.int)
-        for i in range(data_len):
-            s = sentences[i]
-            s_split = self._sentence_to_ids(s)
-            fill = [0]*(max_seq - len(s_split))
-            self._data[i] = s_split + fill
+        self._seq_lens = np.zeros([data_len], dtype=np.int)
+        for i, s  in enumerate(s_split):
+            self._seq_lens[i] = len(s)
+            fill = [0]*(max_seq - len(s))
+            self._data[i] = s + fill
+
+    def _shuffle_data(self):
+        seed = np.random.randint(10000)
+        np.random.seed(seed)
+        np.random.shuffle(self._data)
+        np.random.seed(seed)
+        np.random.shuffle(self._seq_lens)
 
     def batch_iterator(self, batch_size):
         epoch_size = self._data_len // batch_size 
-    
         if epoch_size == 0:
             raise ValueError("epoch_size == 0, decrease batch_size or num_steps")
     
         # Shuffle the data to generate different batches each time
-        np.random.shuffle(self._data)
+        self._shuffle_data()
     
         # Generate batches (not foolproof but should work if the data is sane) 
         fill = np.zeros([batch_size,1], dtype=np.int)
         for i in range(0, epoch_size, batch_size):
             x = self._data[i : i+batch_size]
-            # Output is just the input shifted to the right by one
-            # We also pad with a column of zeros to keep dimensions
+            # Shift by one and pad with zeros to get targets
             y = np.column_stack((self._data[i : i+batch_size, 1:], fill))
-            yield (x, y)
+            z = self._seq_lens[i : i+batch_size]
+            yield (x, y, z)
 
     @property
     def id_to_word(self):
