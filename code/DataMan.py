@@ -12,7 +12,7 @@ class DataMan(object):
     def __init__(self, filename):
         raw_data = None
         with open(filename, 'r') as f:
-            raw_data = f.read() 
+            raw_data = f.read()
         self._build_vocab(raw_data)
         self._prepare_data(raw_data)
 
@@ -21,10 +21,10 @@ class DataMan(object):
 
     def _build_vocab(self, raw_data):
         self._data = self._tokenize(raw_data)
-        
-        # Give the words ids based on the number of occurrences in the data set 
+
+        # Give the words ids based on the number of occurrences in the data set
         counter = collections.Counter(self._data)
-        count_pairs = counter.most_common() 
+        count_pairs = counter.most_common()
         self._id_to_word = sort_words = [ word for word, _ in count_pairs ]
         self._word_to_id = dict(zip(sort_words, range(len(sort_words))))
         self._vocab_size = len(self._word_to_id)
@@ -34,9 +34,9 @@ class DataMan(object):
         return [ self._word_to_id[word] for word in split_sent]
 
     def _prepare_data(self, raw_data):
-        sentences = raw_data.splitlines(True) 
+        sentences = raw_data.splitlines(True)
         self._data_len = data_len = len(sentences)
-    
+
         s_split = [ self._sentence_to_ids(s) for s in sentences]
         self._max_seq = max_seq = max([ len(s) for s in s_split])
 
@@ -55,14 +55,14 @@ class DataMan(object):
         np.random.shuffle(self._seq_lens)
 
     def batch_iterator(self, batch_size):
-        epoch_size = self._data_len // batch_size 
+        epoch_size = self._data_len // batch_size
         if epoch_size == 0:
             raise ValueError("epoch_size == 0, decrease batch_size or num_steps")
-    
+
         # Shuffle the data to generate different batches each time
         self._shuffle_data()
-    
-        # Generate batches (not foolproof but should work if the data is sane) 
+
+        # Generate batches (not foolproof but should work if the data is sane)
         fill = np.zeros([batch_size,1], dtype=np.int)
         for i in range(0, epoch_size, batch_size):
             x = self._data[i : i+batch_size]
