@@ -48,9 +48,6 @@ class PTBModel(object):
     self._input_data = tf.placeholder(tf.int32, [batch_size, num_steps])
     self._targets = tf.placeholder(tf.int32, [batch_size, num_steps])
 
-    # Slightly better results can be obtained with forget gate biases
-    # initialized to 1 but the hyperparameters of the model would need to be
-    # different than reported in the paper.
     lstm_cell = tf.nn.rnn_cell.BasicLSTMCell(size, forget_bias=0.0)
     if is_training and config.keep_prob < 1:
       lstm_cell = tf.nn.rnn_cell.DropoutWrapper(
@@ -81,7 +78,9 @@ class PTBModel(object):
     self._cost = cost = tf.reduce_sum(loss) / batch_size
     self._final_state = state
 
+    # TODO: When not training calculate the next word in the first sequence of the batch.
     if not is_training:
+   #   self._nw = tf.argmax(logits[0],1)
       return
 
     self._lr = tf.Variable(0.0, trainable=False)
@@ -122,6 +121,10 @@ class PTBModel(object):
   def train_op(self):
     return self._train_op
 
+#  @property 
+#  def next_word(self):
+#    return self._nw
+   
 
 class SmallConfig(object):
   """Small config."""
@@ -195,13 +198,16 @@ def main(unused_args):
       print("Epoch: %d Learning rate: %.3f" % (i + 1, session.run(m.lr)))
       train_perplexity = run_epoch(session, m, train_data, m.train_op,
                                    verbose=True)
-      print("Epoch: %d Train Perplexity: %.3f" % (i + 1, train_perplexity))
-      valid_perplexity = run_epoch(session, mvalid, valid_data, tf.no_op())
-      print("Epoch: %d Valid Perplexity: %.3f" % (i + 1, valid_perplexity))
-
-    test_perplexity = run_epoch(session, mtest, test_data, tf.no_op())
-    print("Test Perplexity: %.3f" % test_perplexity)
-
+    
+#    # Print a sequence of words.
+#    state = mtest.initial_state.eval()
+#    words = []
+#    for i in range(100):
+#      session.run([next_word],
+#                  {mtest.x:words,
+#                   mtest.initial_state: state})
+#      words.append(mtest.next_word)
+#    print (words)
 
 if __name__ == "__main__":
   tf.app.run()
