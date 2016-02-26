@@ -1,18 +1,3 @@
-# Copyright 2015 Google Inc. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-
 """
 The hyperparameters used in the model:
 - init_scale - the initial scale of the weights
@@ -81,23 +66,9 @@ class PTBModel(object):
     if is_training and config.keep_prob < 1:
       inputs = tf.nn.dropout(inputs, config.keep_prob)
 
-    # Simplified version of tensorflow.models.rnn.rnn.py's rnn().
-    # This builds an unrolled LSTM for tutorial purposes only.
-    # In general, use the rnn() or state_saving_rnn() from rnn.py.
-    #
-    # The alternative version of the code below is:
-    #
-
     inputs = [tf.squeeze(input_, [1])
                for input_ in tf.split(1, num_steps, inputs)]
     outputs, state = rnn.rnn(cell, inputs, initial_state=self._initial_state)
-    # outputs = []
-    # state = self._initial_state
-    # with tf.variable_scope("RNN"):
-    #   for time_step in range(num_steps):
-    #     if time_step > 0: tf.get_variable_scope().reuse_variables()
-    #     (cell_output, state) = cell(inputs[:, time_step, :], state)
-    #     outputs.append(cell_output)
 
     output = tf.reshape(tf.concat(1, outputs), [-1, size])
     softmax_w = tf.get_variable("softmax_w", [size, vocab_size])
@@ -165,7 +136,7 @@ class SmallConfig(object):
   keep_prob = 1.0
   lr_decay = 0.5
   batch_size = 20
-  vocab_size = 18981
+  vocab_size = 27004
 
 
 def run_epoch(session, m, data, eval_op, verbose=False):
@@ -195,13 +166,13 @@ def run_epoch(session, m, data, eval_op, verbose=False):
 def get_config():
   return SmallConfig()
 
-
 def main(unused_args):
 
   raw_data = reader.ptb_raw_data(FLAGS.data_path)
-  train_data, _ = raw_data
+  train_data, vocab_size = raw_data
 
   config = get_config()
+  config.vocab_size = vocab_size
   eval_config = get_config()
   eval_config.batch_size = 1
   eval_config.num_steps = 1

@@ -71,8 +71,8 @@ def ptb_raw_data(data_path=None):
 
   word_to_id = _build_vocab(train_path)
   train_data = _file_to_word_ids(train_path, word_to_id)
-  vocabulary = len(word_to_id)
-  return train_data, vocabulary
+  vocab_size = len(word_to_id)
+  return train_data, vocab_size
 
 
 def ptb_iterator(raw_data, batch_size, num_steps):
