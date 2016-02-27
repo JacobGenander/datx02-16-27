@@ -73,7 +73,7 @@ class LSTM_Network(object):
         self._final_state = state
 
         # Gradient descent training op
-        optimizer = tf.train.AdamOptimizer(learning_rate)
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate)
         self._train_op = optimizer.minimize(self._cost)
 
 def run_epoch(sess, reader, net, info_op, writer):
