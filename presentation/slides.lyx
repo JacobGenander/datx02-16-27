@@ -210,10 +210,6 @@ vettiga
 Rubriker baserade på artiklar
 \end_layout
 
-\begin_layout Enumerate
-Rubriker baserade på artiklar i kombination med bilder
-\end_layout
-
 \end_deeper
 \begin_layout Subsection
 Neuronnät
@@ -283,7 +279,7 @@ Nätverket identifierar mönster som experter tidigare behövt representera
 \end_layout
 
 \begin_layout Section
-Projektets faser
+Arbetsmetodik
 \end_layout
 
 \begin_layout Frame
@@ -291,7 +287,7 @@ Projektets faser
 status open
 
 \begin_layout Plain Layout
-Projektets faser
+Arbetsmetodik
 \end_layout
 
 \end_inset
@@ -300,6 +296,10 @@ Projektets faser
 \end_layout
 
 \begin_deeper
+\begin_layout Standard
+Separata modeller för varje delmål
+\end_layout
+
 \begin_layout Itemize
 Datainsamling och bearbetning
 \end_layout
@@ -310,14 +310,7 @@ Artiklar med titlar/rubriker
 \end_layout
 
 \begin_layout Itemize
-\begin_inset Quotes sld
-\end_inset
-
-Word embeddings
-\begin_inset Quotes srd
-\end_inset
-
-
+Ordinbäddningar
 \end_layout
 
 \end_deeper
@@ -377,7 +370,7 @@ status collapsed
 
 \end_deeper
 \begin_layout Itemize
-Word embeddings
+Ordinbäddningar
 \end_layout
 
 \begin_deeper
@@ -616,7 +609,7 @@ Utvärdering av nätverkets prestanda
 \end_layout
 
 \begin_layout Enumerate
-Justerande av hyperparametrar
+Justerande av hyperparametrar, ex.
 \end_layout
 
 \begin_deeper
@@ -628,11 +621,11 @@ Nätverkets storlek
 Inlärningstakt
 \end_layout
 
-\begin_layout Itemize
+\end_deeper
+\begin_layout Standard
 ...
 \end_layout
 
-\end_deeper
 \end_deeper
 \end_deeper
 \begin_layout Section
@@ -706,13 +699,6 @@ vettiga
 \end_inset
 
  Rubriker baserade på artiklar
-\end_layout
-
-\begin_layout Description
-\begin_inset space ~
-\end_inset
-
- Rubriker baserade på artiklar i kombination med bilder
 \end_layout
 
 \end_deeper
