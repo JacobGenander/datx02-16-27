@@ -17,7 +17,7 @@ class LSTM_Network(object):
         cell = tf.nn.rnn_cell.BasicLSTMCell(hidden_layer_size)
         stacked_cell = tf.nn.rnn_cell.MultiRNNCell([cell] * number_of_layers)
         self._initial_state = state = stacked_cell.zero_state(batch_size, tf.float32)
- 
+
         with tf.device("/cpu:0"):
             embedding = tf.get_variable("embedding", [vocab_size, embedding_size])
             inputs = tf.nn.embedding_lookup(embedding, self._inputs)
@@ -30,10 +30,10 @@ class LSTM_Network(object):
         b = tf.get_variable("out_b", [vocab_size])
         z = tf.matmul(output, w) + b
         softmax = tf.nn.softmax(z)
-        
+
         words = tf.argmax(softmax, 1)
-        
-        self._next_words = tf.reshape(words, [batch_size, 1]) 
+
+        self._next_words = tf.reshape(words, [batch_size, 1])
         self._final_state = state
 
 def generate_input(vocab_size):
@@ -42,14 +42,14 @@ def generate_input(vocab_size):
 def gen_sentences(net, sess, vocab_size, max_word_seq):
     inputs = generate_input(vocab_size)
     current_state = net._initial_state.eval()
-    
+
     sentences = [inputs]
     for i in range(max_word_seq):
         feed = {net._inputs : inputs, net._initial_state : current_state}
         output, current_state = sess.run([net._next_words, net._final_state], feed_dict=feed)
         sentences.append(output)
-        inputs = output 
-        
+        inputs = output
+
     return np.concatenate(sentences, 1) # Check if done on right dimension
 
 def format_sentence(s):
@@ -67,7 +67,7 @@ def main():
         saver.restore(sess, "/tmp/model.ckpt") # Should cell state be restored from training?
 
         sentences = gen_sentences(net, sess, reader.vocab_size, reader.max_seq)
-        
+
         for i, s in enumerate(sentences):
             if i >= 20: # Decides how many titles we should display
                 break
