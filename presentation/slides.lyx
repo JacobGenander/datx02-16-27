@@ -212,7 +212,7 @@ Rubriker baserade på artiklar
 
 \end_deeper
 \begin_layout Subsection
-Neuronnät
+Artificiella Neuronnät
 \end_layout
 
 \begin_layout Frame
@@ -297,10 +297,40 @@ Arbetsmetodik
 
 \begin_deeper
 \begin_layout Standard
-Separata modeller för varje delmål
+Separata modeller för varje delmål:
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Description
+\begin_inset space \qquad{}
+\end_inset
+
+Slumpmässiga
+\begin_inset space ~
+\end_inset
+
+rubriker: Sekvensmodellering
+\end_layout
+
+\begin_layout Description
+\begin_inset space \qquad{}
+\end_inset
+
+Rubriker
+\begin_inset space ~
+\end_inset
+
+till
+\begin_inset space ~
+\end_inset
+
+artiklar: Sekvens till sekvens-modellering
+\end_layout
+
+\begin_layout Standard
+Liknande arbetssätt
+\end_layout
+
+\begin_layout Enumerate
 Datainsamling och bearbetning
 \end_layout
 
@@ -314,11 +344,11 @@ Ordinbäddningar
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
+\begin_layout Enumerate
 Modellkonstruktion
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Enumerate
 Modelljustering
 \end_layout
 
@@ -622,10 +652,6 @@ Inlärningstakt
 \end_layout
 
 \end_deeper
-\begin_layout Standard
-...
-\end_layout
-
 \end_deeper
 \end_deeper
 \begin_layout Section
