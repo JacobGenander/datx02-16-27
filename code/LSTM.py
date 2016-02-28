@@ -18,7 +18,7 @@ counter = 0 # Keeps track of number of batches processed
 
 class LSTM_Network(object):
 
-    def __init__(self, vocab_size, max_word_seq):
+    def __init__(self, vocab_size, keep_prob, max_word_seq):
         initializer = tf.random_uniform_initializer(-init_range, init_range)
 
         # 2-dimensional tensors for input data and targets
@@ -28,13 +28,19 @@ class LSTM_Network(object):
         self._seq_lens = tf.placeholder(tf.int32, [batch_size], name="sequence_lengths")
 
         # Fetch word vectors
-        embedding = tf.get_variable("embedding",
-                [vocab_size, embedding_size],
-                initializer=initializer)
-        inputs = tf.nn.embedding_lookup(embedding, self._input)
+        with tf.device("/cpu:0"):
+            embedding = tf.get_variable("embedding",
+                    [vocab_size, embedding_size],
+                    initializer=initializer)
+            inputs = tf.nn.embedding_lookup(embedding, self._input)
+
+        if keep_prob < 1:
+            inputs = tf.nn.dropout(inputs, keep_prob)
 
         # Create the network
         cell = tf.nn.rnn_cell.BasicLSTMCell(hidden_layer_size)
+        if keep_prob < 1:
+            cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob)
         stacked_cells = tf.nn.rnn_cell.MultiRNNCell([cell] * number_of_layers)
 
         with tf.name_scope("initial_state"):
@@ -99,7 +105,7 @@ def save_state(sess, saver):
 def main():
     start_time = time.time()
     reader = DataMan("titles.txt")
-    net = LSTM_Network(reader.vocab_size, reader.max_seq)
+    net = LSTM_Network(reader.vocab_size, 1 - drop_out, reader.max_seq)
 
     # We always need to run this operation before anything else
     init = tf.initialize_all_variables()
