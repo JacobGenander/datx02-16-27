@@ -1,11 +1,11 @@
-# Hyper parameters
+# Hyperparameters
 
 # Data processing
 batch_size = 20 # Number of sentences we will train on each training step
 max_epoch = 50 # This decides how many times we will run through the data
 
 # Network size
-hidden_layer_size = 800 # Number of neuons in each layer
+hidden_layer_size = 800 # Number of neurons in each layer
 embedding_size = 200 # Dimensions of our word vectors
 number_of_layers = 2 # Layers of neurons in the network
 
