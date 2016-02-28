@@ -14,7 +14,8 @@ from hyperParams import *
 # TensorFlow's API (if you want to know what arguments we pass to the different methods)
 # https://www.tensorflow.org/versions/r0.7/api_docs/python/index.html
 
-counter = 0 # Keeps track of number of batches processed
+batch_counter = 0 # Keeps track of number of batches processed
+epoch_counter = 0 # Keeps track of the epochs
 
 class LSTM_Network(object):
 
@@ -78,24 +79,38 @@ class LSTM_Network(object):
 
         self._final_state = state
 
+        self._learning_rate = tf.Variable(learning_rate, trainable=False)
         # Gradient descent training op
-        optimizer = tf.train.GradientDescentOptimizer(learning_rate)
+        optimizer = tf.train.GradientDescentOptimizer(self._learning_rate)
         self._train_op = optimizer.minimize(self._cost)
 
+    def set_learning_rate(self, sess, value):
+        sess.run(tf.assign(self._learning_rate, value))
+
+def lr_decay_and_set(sess, net, counter):
+    if counter > decay_start:
+       decay = learning_decay ** (counter - decay_start)
+       net.set_learning_rate(sess, learning_rate * decay)
+
 def run_epoch(sess, reader, net, info_op, writer):
+    global epoch_counter
+    epoch_counter += 1
+
+    lr_decay_and_set(sess, net, epoch_counter)
+
     for x, y, z in reader.batch_iterator(batch_size):
         # Input
         feed = { net._input : x, net._target : y, net._seq_lens : z}
         # Run the computational graph
         sess.run([net._final_state, net._train_op], feed_dict=feed)
 
+        global batch_counter
+        batch_counter += 1
         # Write information to TensorBoard log file
-        global counter
-        counter += 1
-        if counter % 10 == 0:
+        if batch_counter % 10 == 0:
             info = sess.run(info_op, feed_dict=feed)
             summary_str = info
-            writer.add_summary(summary_str, counter)
+            writer.add_summary(summary_str, batch_counter)
 
 def save_state(sess, saver):
     print("Saving model.")
@@ -105,7 +120,7 @@ def save_state(sess, saver):
 def main():
     start_time = time.time()
     reader = DataMan("titles.txt")
-    net = LSTM_Network(reader.vocab_size, 1 - drop_out, reader.max_seq)
+    net = LSTM_Network(reader.vocab_size, 1 - dropout, reader.max_seq)
 
     # We always need to run this operation before anything else
     init = tf.initialize_all_variables()
