@@ -176,6 +176,19 @@ Introduktion
 Syfte och mål
 \end_layout
 
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Filip: Ha med tidningsrubriker
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Frame
 \begin_inset Argument 4
 status open
@@ -203,7 +216,7 @@ vettiga
 \begin_inset Quotes srd
 \end_inset
 
- rubriker
+ tidningsrubriker
 \end_layout
 
 \begin_layout Enumerate
@@ -213,6 +226,36 @@ Rubriker baserade på artiklar
 \end_deeper
 \begin_layout Subsection
 Artificiella Neuronnät
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Filip: Ha med hur de lär sig och att det är en 
+\begin_inset Quotes sld
+\end_inset
+
+automatisk
+\begin_inset Quotes srd
+\end_inset
+
+ process.
+ Nätverket 
+\begin_inset Quotes sld
+\end_inset
+
+lär sig
+\begin_inset Quotes srd
+\end_inset
+
+ detta själv
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Frame
@@ -268,11 +311,23 @@ Metod med inspiration från den mänskliga hjärnan
 Kan hitta mönster i mycket komplexa data
 \end_layout
 
+\begin_deeper
 \begin_layout Itemize
+Dessa behövde tidigare representeras explicit i kod.
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
 Nätverket identifierar mönster som experter tidigare behövt representera
  i kod.
 \end_layout
 
+\end_inset
+
+
+\end_layout
+
+\end_deeper
 \end_deeper
 \begin_layout Frame
 
@@ -280,6 +335,31 @@ Nätverket identifierar mönster som experter tidigare behövt representera
 
 \begin_layout Section
 Arbetsmetodik
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Filip: 
+\end_layout
+
+\begin_layout Plain Layout
+Allmänt mer berättande av vad vi gjort, inte så mycket presentera teori
+\end_layout
+
+\begin_layout Itemize
+Redan här visa på status?
+\end_layout
+
+\begin_layout Itemize
+Visa att justeringarna tar tid?
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Frame
@@ -297,53 +377,13 @@ Arbetsmetodik
 
 \begin_deeper
 \begin_layout Standard
-Separata modeller för varje delmål:
-\end_layout
-
-\begin_layout Description
-\begin_inset space \qquad{}
-\end_inset
-
-Slumpmässiga
-\begin_inset space ~
-\end_inset
-
-rubriker: Sekvensmodellering
-\end_layout
-
-\begin_layout Description
-\begin_inset space \qquad{}
-\end_inset
-
-Rubriker
-\begin_inset space ~
-\end_inset
-
-till
-\begin_inset space ~
-\end_inset
-
-artiklar: Sekvens till sekvens-modellering
-\end_layout
-
-\begin_layout Standard
-Liknande arbetssätt
+Separata modeller för varje delmål, men liknande arbetssätt.
 \end_layout
 
 \begin_layout Enumerate
 Datainsamling och bearbetning
 \end_layout
 
-\begin_deeper
-\begin_layout Itemize
-Artiklar med titlar/rubriker
-\end_layout
-
-\begin_layout Itemize
-Ordinbäddningar
-\end_layout
-
-\end_deeper
 \begin_layout Enumerate
 Modellkonstruktion
 \end_layout
@@ -355,6 +395,28 @@ Modelljustering
 \end_deeper
 \begin_layout Subsection
 Datainsamling
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Filip: 
+\end_layout
+
+\begin_layout Itemize
+Nämna var vi får data ifrån.
+ fråga Alex
+\end_layout
+
+\begin_layout Itemize
+Lång tid, kan vi korta ner?
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Frame
@@ -376,21 +438,27 @@ Två sorters data:
 \end_layout
 
 \begin_layout Itemize
-Artiklar och titlar
+Artiklar och rubriker
 \end_layout
 
 \begin_deeper
 \begin_layout Itemize
 Större dataset ger bättre generaliseringar
-\end_layout
+\begin_inset Note Note
+status open
 
-\begin_layout Itemize
+\begin_layout Plain Layout
 Homogent dataset
 \begin_inset Note Note
 status collapsed
 
 \begin_layout Plain Layout
  -- samma källa ger samma språk och stil
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -405,7 +473,7 @@ Ordinbäddningar
 
 \begin_deeper
 \begin_layout Itemize
-Neuronnät kan endast hantera numeriska data 
+Neuronnät kan endast hantera numeriska data
 \begin_inset Note Note
 status collapsed
 
@@ -512,6 +580,38 @@ GloVe: Global Vectors for Word Representation
 Modellkonstruktion
 \end_layout
 
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Nämna att LSTM är en variant av RNN där cellen lär sig mer om vad den ska
+ komma ihåg och glömma bort.
+\end_layout
+
+\begin_layout Itemize
+Loopar, minne
+\end_layout
+
+\begin_layout Itemize
+Första bilden grov förenkling, vi använder celler som har minne.
+ 
+\end_layout
+
+\begin_layout Itemize
+Börja med att motivera: vi behöver minne, därför LSTM.
+\end_layout
+
+\begin_layout Itemize
+Tryck på vilkter av GPU-beräkningar.
+ Nämn matrisberäkningar, och dess lämpande
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Frame
 \begin_inset Argument 4
 status open
@@ -540,11 +640,11 @@ Long Short-Term Memory
 
 \begin_deeper
 \begin_layout Itemize
-Viktar in ny data
+Bra på sekvenser
 \end_layout
 
 \begin_layout Itemize
-Bra på sekvenser
+Minns tidigare data, viktar in ny data
 \end_layout
 
 \end_deeper
@@ -576,7 +676,7 @@ Färdiga implementationer av ex.
 \end_layout
 
 \begin_layout Itemize
-Parallell exekvering på CPU:er och GPU:er
+Tillåter beräkningar på grafikkort
 \end_layout
 
 \end_deeper
@@ -587,6 +687,24 @@ Parallell exekvering på CPU:er och GPU:er
 
 \begin_layout Subsection
 Modelljustering
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Filip:
+\end_layout
+
+\begin_layout Itemize
+Ta med overfitting.
+ Nämn detta under punkter 1 och 2
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Frame
@@ -622,7 +740,11 @@ Ok med citattecken?
 
 \end_inset
 
-, endast riktlinjer
+, endast riktlinjer.
+\end_layout
+
+\begin_layout Itemize
+Balanserande av många aspekter
 \end_layout
 
 \begin_layout Itemize
@@ -644,7 +766,7 @@ Justerande av hyperparametrar, ex.
 
 \begin_deeper
 \begin_layout Itemize
-Nätverkets storlek
+Nätverkets storlek.
 \end_layout
 
 \begin_layout Itemize
@@ -662,6 +784,19 @@ Sammanfattning
 Status
 \end_layout
 
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Filip: Kan man kalla rubrikerna vettiga
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Frame
 \begin_inset Argument 4
 status open
@@ -677,7 +812,15 @@ Nuvarande status
 
 \begin_deeper
 \begin_layout Standard
-Projektets fas:
+Slumpmässiga men 
+\begin_inset Quotes sld
+\end_inset
+
+vettiga
+\begin_inset Quotes srd
+\end_inset
+
+ rubriker:
 \end_layout
 
 \begin_layout Description
@@ -702,34 +845,97 @@ Projektets fas:
 \end_layout
 
 \begin_layout Standard
-Uppnådda mål:
+Rubriker baserade på artiklar
 \end_layout
 
 \begin_layout Description
 \begin_inset Formula $\checkmark$
 \end_inset
 
- Slumpmässiga men 
-\begin_inset Quotes sld
-\end_inset
-
-vettiga
-\begin_inset Quotes srd
-\end_inset
-
- rubriker
+ Datainsamling och bearbetning
 \end_layout
 
 \begin_layout Description
 \begin_inset space ~
 \end_inset
 
- Rubriker baserade på artiklar
+ Modellkonstruktion
+\end_layout
+
+\begin_layout Description
+\begin_inset space ~
+\end_inset
+
+ Modelljustering
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+Demo
+\end_layout
+
+\begin_layout Frame
+\begin_inset Argument 4
+status open
+
+\begin_layout Plain Layout
+Demo
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+“Jesus, man who killed in his crash“
+\end_layout
+
+\begin_layout Itemize
+“Superstore of the year” 
+\end_layout
+
+\begin_layout Itemize
+“Game-industry - the galveston county daily news : nation:“
+\end_layout
+
+\begin_layout Itemize
+“Beats: the flu season“
+\end_layout
+
+\begin_layout Itemize
+“Litzy's and the best of the great”
 \end_layout
 
 \end_deeper
 \begin_layout Subsection
 Erfarenheter
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Filip:
+\end_layout
+
+\begin_layout Itemize
+Tid spenderas på teori, inte på nätverkskonstruktionen
+\end_layout
+
+\begin_layout Itemize
+Mycket trial-and-error.
+\end_layout
+
+\begin_layout Itemize
+Komplexa problem kan modelleras med lätta funktioner.
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Frame
@@ -751,11 +957,37 @@ Tar tid att sätta sig in i ett komplext ramverk inom ett nytt fält
 \end_layout
 
 \begin_layout Itemize
-Ingen exakt vetenskap
+Trial-and-error
 \end_layout
 
 \begin_layout Itemize
-Verkar som magi på ytan, men går ändå att förstå på ett intuitivt plan
+Komplexa problem kan lösas med sammansatta enkla funktioner
+\end_layout
+
+\end_deeper
+\begin_layout Separator
+
+\end_layout
+
+\begin_layout Frame
+\begin_inset Argument 4
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\align center
+
+\size giant
+Frågor?
 \end_layout
 
 \end_deeper
