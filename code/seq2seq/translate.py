@@ -189,14 +189,6 @@ def train():
         checkpoint_path = os.path.join(FLAGS.train_dir, "translate.ckpt")
         model.saver.save(sess, checkpoint_path, global_step=model.global_step)
         step_time, loss = 0.0, 0.0
-        # Run evals on development set and print their perplexity.
-        for bucket_id in xrange(len(_buckets)):
-          encoder_inputs, decoder_inputs, target_weights = model.get_batch(
-              dev_set, bucket_id)
-          _, eval_loss, _ = model.step(sess, encoder_inputs, decoder_inputs,
-                                       target_weights, bucket_id, True)
-          eval_ppx = math.exp(eval_loss) if eval_loss < 300 else float('inf')
-          print("  eval: bucket %d perplexity %.2f" % (bucket_id, eval_ppx))
         sys.stdout.flush()
 
 
@@ -214,7 +206,7 @@ def decode():
     article_vocab, _ = data_utils.initialize_vocabulary(article_vocab_path)
     _, rev_title_vocab = data_utils.initialize_vocabulary(title_vocab_path)
 
-    # Decode from standard input.
+    # Decode from three random article.
     sys.stdout.write("Decide headline for three articles:")
     sys.stdout.flush()
     articles = random.sample(list(open('articles.txt')a),3)
