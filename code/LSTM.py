@@ -15,7 +15,6 @@ from hyperParams import *
 # https://www.tensorflow.org/versions/r0.7/api_docs/python/index.html
 
 batch_counter = 0 # Keeps track of number of batches processed
-epoch_counter = 0 # Keeps track of the epochs
 
 class LSTM_Network(object):
 
@@ -93,11 +92,6 @@ def lr_decay_and_set(sess, net, counter):
        net.set_learning_rate(sess, learning_rate * decay)
 
 def run_epoch(sess, reader, net, info_op, writer):
-    global epoch_counter
-    epoch_counter += 1
-
-    lr_decay_and_set(sess, net, epoch_counter)
-
     for x, y, z in reader.batch_iterator(batch_size):
         # Input
         feed = { net._input : x, net._target : y, net._seq_lens : z}
@@ -138,6 +132,7 @@ def main():
         print("Training.")
         for i in range(max_epoch):
             print("\r{}% done".format(int(i/max_epoch * 100)))
+            lr_decay_and_set(sess, net, i)
             run_epoch(sess, reader, net, merged, writer)
         print("Finished training.")
 
