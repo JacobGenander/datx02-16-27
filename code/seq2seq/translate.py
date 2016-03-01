@@ -69,8 +69,11 @@ FLAGS = tf.app.flags.FLAGS
 
 # We use a number of buckets and pad to the closest one for efficiency.
 # See seq2seq_model.Seq2SeqModel for details of how they work.
-# TODO: Adjust buckets!
-_buckets = [(5, 10), (10, 15), (20, 25), (40, 50)]
+# 
+# Buckets are from the 100000 headline articles pairs in our small data set,
+# they are very preliminary and we also opted to pad all titles since
+# there's no apperent correlation between title and article lengths.
+_buckets = [(250, 36), (1000,36), (8000, 46), (44266, 36)]
 
 
 def read_data(source_path, target_path, max_size=None):
