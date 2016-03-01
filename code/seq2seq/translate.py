@@ -41,8 +41,8 @@ import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
-from tensorflow.models.rnn.translate import data_utils
-from tensorflow.models.rnn.translate import seq2seq_model
+import data_utils
+import seq2seq_model
 
 
 tf.app.flags.DEFINE_float("learning_rate", 0.5, "Learning rate.")
@@ -132,8 +132,8 @@ def train():
   """Train a article->title translation model using news data."""
   # Prepare news data.
   print("Preparing news data in %s" % FLAGS.data_dir)
-  articles_train, titles_train, _, _ = data_utils.prepare_new_data(
-      FLAGS.data_dir, FLAGS.articles_vocab_size, FLAGS.titles_vocab_size)
+  articles_train, titles_train, _, _ = data_utils.prepare_news_data(
+      FLAGS.data_dir, FLAGS.article_vocab_size, FLAGS.title_vocab_size)
 
   with tf.Session() as sess:
     # Create model.
@@ -209,7 +209,7 @@ def decode():
     # Decode from three random article.
     sys.stdout.write("Decide headline for three articles:")
     sys.stdout.flush()
-    articles = random.sample(list(open('articles.txt')a),3)
+    articles = random.sample(list(open('articles.txt')),3)
     for article in articles:
       # Get token-ids for the input sentence.
       token_ids = data_utils.sentence_to_token_ids(article, article_vocab)

@@ -183,7 +183,7 @@ def data_to_token_ids(data_path, target_path, vocabulary_path,
           tokens_file.write(" ".join([str(tok) for tok in token_ids]) + "\n")
 
 
-def prepare_news_data(data_dir, article_vocabulary_size, titles_vocabulary_size):
+def prepare_news_data(data_dir, article_vocabulary_size, title_vocabulary_size):
   """Get new data into data_dir, create vocabularies and tokenize data.
 
   Args:
@@ -200,10 +200,10 @@ def prepare_news_data(data_dir, article_vocabulary_size, titles_vocabulary_size)
   """
 
   # Create vocabularies of the appropriate sizes.
-  title_vocab_path = os.path.join(data_dir, "vocab%d.title" % titles_vocabulary_size)
-  article_vocab_path = os.path.join(data_dir, "vocab%d.article" % articles_vocabulary_size)
-  create_vocabulary(title_vocab_path, "titles.txt", articles_vocabulary_size)
-  create_vocabulary(article_vocab_path, "articles.txt", titles_vocabulary_size)
+  title_vocab_path = os.path.join(data_dir, "vocab%d.title" % title_vocabulary_size)
+  article_vocab_path = os.path.join(data_dir, "vocab%d.article" % article_vocabulary_size)
+  create_vocabulary(title_vocab_path, "titles.txt", article_vocabulary_size)
+  create_vocabulary(article_vocab_path, "articles.txt", title_vocabulary_size)
 
   # Create token ids for the training data.
   title_train_ids_path = train_path + (".ids%d.title" % titles_vocabulary_size)
