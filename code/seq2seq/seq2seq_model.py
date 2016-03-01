@@ -112,13 +112,13 @@ class Seq2SeqModel(object):
       self.outputs, self.losses = tf.nn.seq2seq.model_with_buckets(
           self.encoder_inputs, self.decoder_inputs, targets,
           self.target_weights, buckets, lambda x, y: seq2seq_f(x, y, True),
-          softmax_loss_function=softmax_loss_function)
+          softmax_loss_function=None)
     else:
       self.outputs, self.losses = tf.nn.seq2seq.model_with_buckets(
           self.encoder_inputs, self.decoder_inputs, targets,
           self.target_weights, buckets,
           lambda x, y: seq2seq_f(x, y, False),
-          softmax_loss_function=softmax_loss_function)
+          softmax_loss_function=None)
 
     # Gradients and SGD update operation for training the model.
     params = tf.trainable_variables()
