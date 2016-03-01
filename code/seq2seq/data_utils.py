@@ -206,10 +206,10 @@ def prepare_news_data(data_dir, article_vocabulary_size, title_vocabulary_size):
   create_vocabulary(article_vocab_path, "articles.txt", title_vocabulary_size)
 
   # Create token ids for the training data.
-  title_train_ids_path = train_path + (".ids%d.title" % titles_vocabulary_size)
-  article_train_ids_path = train_path + (".ids%d.article" % article_vocabulary_size)
-  data_to_token_ids("titles.txt", title_train_ids_path, titles_vocab_path)
-  data_to_token_ids("articles.txt", article_train_ids_path, articles_vocab_path)
+  title_train_ids_path = ("train_ids.ids%d.title" % title_vocabulary_size)
+  article_train_ids_path =  ("train_ids.ids%d.article" % article_vocabulary_size)
+  data_to_token_ids("titles.txt", title_train_ids_path, title_vocab_path)
+  data_to_token_ids("articles.txt", article_train_ids_path, article_vocab_path)
 
   return (article_train_ids_path, title_train_ids_path,
           article_vocab_path, title_vocab_path)
