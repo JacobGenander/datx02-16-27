@@ -9,29 +9,34 @@ import numpy as np
 import tensorflow as tf
 
 class DataMan(object):
-    def __init__(self, filename):
+    def __init__(self, filename, dicts=None):
         raw_data = None
         with open(filename, 'r') as f:
             raw_data = f.read()
-        self._build_vocab(raw_data)
+        if dicts == None:
+            self._build_vocab(raw_data)
+        else:
+            self._word_to_id = dicts[0]
+            self._id_to_words = dicts[1]
         self._prepare_data(raw_data)
 
     def _tokenize(self, text):
         return text.replace('\n', ' <eos> ').split()
 
     def _build_vocab(self, raw_data):
-        self._data = self._tokenize(raw_data)
+        self._data = self._tokenize(raw_data) + ['<unk>']
 
         # Give the words ids based on the number of occurrences in the data set
         counter = collections.Counter(self._data)
         count_pairs = counter.most_common()
         self._id_to_word = sort_words = [ word for word, _ in count_pairs ]
         self._word_to_id = dict(zip(sort_words, range(len(sort_words))))
+        self._unk_id = self._word_to_id['<unk>']
         self._vocab_size = len(self._word_to_id)
 
     def _sentence_to_ids(self, sentence):
         split_sent = self._tokenize(sentence)
-        return [ self._word_to_id[word] for word in split_sent]
+        return [ self._word_to_id.get(word, self._unk_id) for word in split_sent]
 
     def _prepare_data(self, raw_data):
         sentences = raw_data.splitlines(True)
@@ -71,13 +76,16 @@ class DataMan(object):
             z = self._seq_lens[i : i+batch_size]
             yield (x, y, z)
 
-    @property
-    def id_to_word(self):
-        return self._id_to_word
+    def get_dicts(self):
+        return (self._word_to_id, self._id_to_word)
 
     @property
     def word_to_id(self):
         return self._word_to_id
+
+    @property
+    def id_to_word(self):
+        return self._id_to_word
 
     @property
     def vocab_size(self):
