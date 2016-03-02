@@ -110,7 +110,7 @@ def run_epoch(sess, reader, net, merged, writer):
             summary_str = sess.run(merged, feed_dict=feed)
             writer.add_summary(summary_str, batch_counter)
 
-    return total_cost / i
+    return total_cost / (i+1)
 
 def save_state(sess, saver):
     print("Saving model.")
