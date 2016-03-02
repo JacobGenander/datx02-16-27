@@ -18,8 +18,10 @@ batch_counter = 0 # Keeps track of number of batches processed
 
 class LSTM_Network(object):
 
-    def __init__(self, vocab_size, keep_prob, max_word_seq):
+    def __init__(self, data_set, keep_prob=1.0):
         initializer = tf.random_uniform_initializer(-init_range, init_range)
+        max_word_seq = data_set.max_seq
+        vocab_size = data_set.vocab_size
 
         # 2-dimensional tensors for input data and targets
         self._input = tf.placeholder(tf.int32, [batch_size, max_word_seq], name="input_data")
@@ -92,11 +94,14 @@ class LSTM_Network(object):
             self.set_learning_rate(sess, learning_rate * decay)
 
 def run_epoch(sess, reader, net, merged, writer):
-    for x, y, z in reader.batch_iterator(batch_size):
+    total_cost = 0
+    i = 0
+    for i, (x, y, z) in enumerate(reader.batch_iterator(batch_size)):
         # Input
         feed = { net._input : x, net._target : y, net._seq_lens : z}
         # Run the computational graph
-        sess.run([net._final_state, net._train_op], feed_dict=feed)
+        cost, _ = sess.run([net._cost, net._train_op], feed_dict=feed) # Do we even have to run final state?
+        total_cost += cost
 
         global batch_counter
         batch_counter += 1
@@ -105,6 +110,8 @@ def run_epoch(sess, reader, net, merged, writer):
             summary_str = sess.run(merged, feed_dict=feed)
             writer.add_summary(summary_str, batch_counter)
 
+    return total_cost / i
+
 def save_state(sess, saver):
     print("Saving model.")
     save_path = saver.save(sess, "/tmp/model.ckpt")
@@ -112,9 +119,13 @@ def save_state(sess, saver):
 
 def main():
     start_time = time.time()
-    reader = DataMan("titles.txt")
-    net = LSTM_Network(reader.vocab_size, 1 - dropout, reader.max_seq)
+    training_set = DataMan("train.txt")
+    training_net = LSTM_Network(training_set, 1 - dropout)
 
+    #validation_set = DataMan("valid.txt", training_set.get_dicts())
+    #validation_net = LSTM_Network(validation_set)
+
+    #validation_net = LSTM_Network(validation_set.vocab
     # We always need to run this operation before anything else
     init = tf.initialize_all_variables()
     # This operation will save our state at the end
@@ -131,8 +142,8 @@ def main():
         print("Training.")
         for i in range(max_epoch):
             print("\r{}% done".format(int(i/max_epoch * 100)))
-            net.lr_decay_and_set(sess, i)
-            run_epoch(sess, reader, net, merged, writer)
+            training_net.lr_decay_and_set(sess, i)
+            cost = run_epoch(sess, training_set, training_net, merged, writer)
         print("Finished training.")
 
         save_state(sess, saver)

@@ -18,6 +18,8 @@ class DataMan(object):
         else:
             self._word_to_id = dicts[0]
             self._id_to_words = dicts[1]
+            self._unk_id = self._word_to_id['<unk>']
+            self._vocab_size = len(self._word_to_id)
         self._prepare_data(raw_data)
 
     def _tokenize(self, text):
@@ -69,11 +71,12 @@ class DataMan(object):
 
         # Generate batches (not foolproof but should work if the data is sane)
         fill = np.zeros([batch_size,1], dtype=np.int)
-        for i in range(0, epoch_size, batch_size):
-            x = self._data[i : i+batch_size]
+        for i in range(0, epoch_size):
+            start = i*batch_size
+            x = self._data[start : start+batch_size]
             # Shift by one and pad with zeros to get targets
-            y = np.column_stack((self._data[i : i+batch_size, 1:], fill))
-            z = self._seq_lens[i : i+batch_size]
+            y = np.column_stack((self._data[start : start+batch_size, 1:], fill))
+            z = self._seq_lens[start : start+batch_size]
             yield (x, y, z)
 
     def get_dicts(self):

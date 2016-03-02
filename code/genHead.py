@@ -56,7 +56,7 @@ def format_sentence(s):
     return s.split("<eos>", 1)[0].capitalize()
 
 def main():
-    reader = DataMan("titles.txt")
+    reader = DataMan("train.txt")
     net = LSTM_Network(reader.vocab_size)
     init = tf.initialize_all_variables()
 
