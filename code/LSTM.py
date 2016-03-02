@@ -112,14 +112,15 @@ def run_epoch(sess, reader, net, merged, writer):
 
     return total_cost / (i+1)
 
-def save_state(sess, saver):
+def save_state(sess, saver, path):
     print("Saving model.")
-    save_path = saver.save(sess, "/tmp/model.ckpt")
+    save_path = saver.save(sess, path)
     print("Model saved in file: {}".format(save_path))
 
-def main():
+
+def run(parameters):
     start_time = time.time()
-    training_set = DataMan("train.txt")
+    training_set = DataMan(parameters["training_set"])
     training_net = LSTM_Network(training_set, 1 - dropout)
 
     #validation_set = DataMan("valid.txt", training_set.get_dicts())
@@ -137,7 +138,7 @@ def main():
 
         # Some initial stuff for TensorBoard
         merged = tf.merge_all_summaries()
-        writer = tf.train.SummaryWriter("/tmp/tensorFlow_logs", sess.graph_def)
+        writer = tf.train.SummaryWriter(parameters["session_tf_logs"], sess.graph_def)
 
         print("Training.")
         for i in range(max_epoch):
@@ -146,8 +147,13 @@ def main():
             cost = run_epoch(sess, training_set, training_net, merged, writer)
         print("Finished training.")
 
-        save_state(sess, saver)
+        save_state(sess, saver, parameters["session_model"])
         print("--- {} seconds ---".format(round(time.time() - start_time, 2)))
+
+
+def main():
+    run()
+
 
 if __name__ == "__main__":
     main()
