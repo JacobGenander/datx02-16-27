@@ -91,7 +91,7 @@ class LSTM_Network(object):
             decay = learning_decay ** (epoch - decay_start)
             self.set_learning_rate(sess, learning_rate * decay)
 
-def run_epoch(sess, reader, net, info_op, writer):
+def run_epoch(sess, reader, net, merged, writer):
     for x, y, z in reader.batch_iterator(batch_size):
         # Input
         feed = { net._input : x, net._target : y, net._seq_lens : z}
@@ -102,8 +102,7 @@ def run_epoch(sess, reader, net, info_op, writer):
         batch_counter += 1
         # Write information to TensorBoard log file
         if batch_counter % 10 == 0:
-            info = sess.run(info_op, feed_dict=feed)
-            summary_str = info
+            summary_str = sess.run(merged, feed_dict=feed)
             writer.add_summary(summary_str, batch_counter)
 
 def save_state(sess, saver):
