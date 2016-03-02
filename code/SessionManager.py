@@ -31,6 +31,17 @@ class Parameters:
 #        self.training_file
 #        self.validation_file
 
+    # This is not a very elegant way of determining type, but it works...
+    def _string_to_type(self, string):
+        try:
+            value = int(string)
+        except ValueError:
+            try:
+                value = float(string)
+            except ValueError:
+                value = string
+        return value
+
     def read_parameters(self, filename):
         self.parameters = dict()
         self.parameters["session_store"] = os.path.dirname(os.path.abspath(filename))
@@ -53,10 +64,21 @@ class Parameters:
                       .format(name, self.parameters[name]))
 
         hyperparameters = params.items("hyperparameters")
-        self.parameters.update(dict(hyperparameters))
-        print("----- The following parameters have been set -----")
-        pprint.pprint(self.parameters)
+        for (name, param) in hyperparameters:
+            self.parameters[name] = self._string_to_type(param)
+            #print("{}: {} is a {}".format(name, self.parameters[name], type(self.parameters[name])))
         return self.parameters
+
+    def get(self, key):
+        return self.parameters.get(key)
+
+    # These functions are not used anymore
+    def get_int(self, key):
+        return int(self.parameters.get(key))
+
+    def get_float(self, key):
+        return float(self.parameters.get(key))
+
 
 def main():
     parser = argparse.ArgumentParser("Run session")
@@ -66,9 +88,10 @@ def main():
                         metavar="/path/to/parameters.ini")
     args = parser.parse_args()
     params = Parameters()
-    params_dict = params.read_parameters(args.filename)
-
+    parameters = params.read_parameters(args.filename)
+    print("----- The following parameters have been set -----")
+    pprint.pprint(parameters)
     raw_input("Press enter to start script with the configuration above\n")
 
-    run(params_dict)
+    run(parameters)
 main()
