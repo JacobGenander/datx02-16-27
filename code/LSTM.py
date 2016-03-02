@@ -86,10 +86,10 @@ class LSTM_Network(object):
     def set_learning_rate(self, sess, value):
         sess.run(tf.assign(self._learning_rate, value))
 
-def lr_decay_and_set(sess, net, counter):
-    if counter > decay_start:
-       decay = learning_decay ** (counter - decay_start)
-       net.set_learning_rate(sess, learning_rate * decay)
+    def lr_decay_and_set(self, sess, epoch):
+        if epoch > decay_start:
+            decay = learning_decay ** (epoch - decay_start)
+            self.set_learning_rate(sess, learning_rate * decay)
 
 def run_epoch(sess, reader, net, info_op, writer):
     for x, y, z in reader.batch_iterator(batch_size):
@@ -132,7 +132,7 @@ def main():
         print("Training.")
         for i in range(max_epoch):
             print("\r{}% done".format(int(i/max_epoch * 100)))
-            lr_decay_and_set(sess, net, i)
+            net.lr_decay_and_set(sess, i)
             run_epoch(sess, reader, net, merged, writer)
         print("Finished training.")
 
