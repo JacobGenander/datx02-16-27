@@ -1,7 +1,7 @@
 # Hyperparameters
 
 # Data processing
-batch_size = 20 # Number of sentences we will train on each training step
+batch_size = 50 # Number of sentences we will train on each training step
 max_epoch = 50 # This decides how many times we will run through the data
 
 # Network size
