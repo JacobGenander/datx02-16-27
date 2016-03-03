@@ -9,7 +9,8 @@ import numpy as np
 import time
 import sys
 from DataMan import DataMan
-from Logger import Logger
+from hyperParams import *
+
 # TensorFlow's API (if you want to know what arguments we pass to the different methods)
 # https://www.tensorflow.org/versions/r0.7/api_docs/python/index.html
 
@@ -17,18 +18,7 @@ batch_counter = 0 # Keeps track of number of batches processed
 
 class LSTM_Network(object):
 
-    def __init__(self, data_set, parameters):
-        init_range = parameters["init_range"]
-        batch_size = parameters["batch_size"]
-        embedding_size = parameters["embedding_size"]
-        keep_prob = 1.0 #parameters["keep_prob"]
-        hidden_layer_size = parameters["hidden_layer_size"]
-        number_of_layers = parameters["number_of_layers"]
-        learning_rate = parameters["learning_rate"]
-        self.learning_decay = parameters["learning_decay"]
-        self.learning_rate = learning_rate
-        self.decay_start = parameters["decay_start"]
-
+    def __init__(self, data_set, keep_prob=1.0):
         initializer = tf.random_uniform_initializer(-init_range, init_range)
         max_word_seq = data_set.max_seq
         vocab_size = data_set.vocab_size
@@ -99,11 +89,11 @@ class LSTM_Network(object):
         sess.run(tf.assign(self._learning_rate, value))
 
     def lr_decay_and_set(self, sess, epoch):
-        if epoch > self.decay_start:
-            decay = self.learning_decay ** (epoch - self.decay_start)
-            self.set_learning_rate(sess, self.learning_rate * decay)
+        if epoch > decay_start:
+            decay = learning_decay ** (epoch - decay_start)
+            self.set_learning_rate(sess, learning_rate * decay)
 
-def run_epoch(sess, reader, net, merged, writer, batch_size):
+def run_epoch(sess, reader, net, merged, writer):
     total_cost = 0
     i = 0
     for i, (x, y, z) in enumerate(reader.batch_iterator(batch_size)):
@@ -122,19 +112,15 @@ def run_epoch(sess, reader, net, merged, writer, batch_size):
 
     return total_cost / (i+1)
 
-def save_state(sess, saver, path):
+def save_state(sess, saver):
     print("Saving model.")
-    save_path = saver.save(sess, path)
+    save_path = saver.save(sess, "/tmp/model.ckpt")
     print("Model saved in file: {}".format(save_path))
 
-
-def run(par):
+def main():
     start_time = time.time()
-    log = Logger(par["session_csv_logs"])
-    training_set = DataMan(par["training_set"])
-    batch_size = par["batch_size"]
-    max_epoch = par["max_epoch"]
-    training_net = LSTM_Network(training_set, par)
+    training_set = DataMan("train.txt")
+    training_net = LSTM_Network(training_set, 1 - dropout)
 
     #validation_set = DataMan("valid.txt", training_set.get_dicts())
     #validation_net = LSTM_Network(validation_set)
@@ -151,30 +137,17 @@ def run(par):
 
         # Some initial stuff for TensorBoard
         merged = tf.merge_all_summaries()
-        writer = tf.train.SummaryWriter(par["session_tf_logs"], sess.graph_def)
+        writer = tf.train.SummaryWriter("/tmp/tensorFlow_logs", sess.graph_def)
 
         print("Training.")
-        log.create_progress(max_epoch)
         for i in range(max_epoch):
-            log.update_progress(i)
-            print(log.get_progress_with_est_time())
+            print("\r{}% done".format(int(i/max_epoch * 100)))
             training_net.lr_decay_and_set(sess, i)
-            cost = run_epoch(sess,
-                             training_set,
-                             training_net,
-                             merged,
-                             writer,
-                             batch_size
-            )
+            cost = run_epoch(sess, training_set, training_net, merged, writer)
         print("Finished training.")
 
-        save_state(sess, saver, par["session_model"])
+        save_state(sess, saver)
         print("--- {} seconds ---".format(round(time.time() - start_time, 2)))
-
-
-def main():
-    run()
-
 
 if __name__ == "__main__":
     main()
