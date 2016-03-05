@@ -15,6 +15,6 @@ learning_decay = 1.0 # Exponential decay of the learning rate (1.0 = No learning
 decay_start = 10 # Learning decay starts after this epoch
 
 # Misc
-dropout = 0.0 # Probability that an input/output is kept, needs to be in range [0, 1) (0 = No dropout)
+keep_prob = 1.0 # Probability that an input/output is kept, needs to be in range (0, 1] (1 = No dropout)
 init_range = 1 # Initiate weights an biases within this range (-/+ init_range)
 
