@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 import numpy as np
+import matplotlib.pyplot as plt
 import time
 import sys
 from DataMan import DataMan
@@ -117,6 +118,14 @@ def save_state(sess, saver):
     save_path = saver.save(sess, "/tmp/model.ckpt")
     print("Model saved in file: {}".format(save_path))
 
+def create_plot(xs, ys):
+    plt.plot(xs, ys)
+    plt.ylabel('cost')
+    plt.xlabel('epochs')
+    plt.title('Cost of training and evaluation')
+    plt.grid(True)
+    plt.savefig("foo")
+
 def main():
     start_time = time.time()
     training_set = DataMan("train.txt")
@@ -132,7 +141,7 @@ def main():
     saver = tf.train.Saver()
 
     with tf.Session() as sess:
-        # Initialize everything else
+        # Initialize variables
         sess.run(init)
 
         # Some initial stuff for TensorBoard
@@ -140,11 +149,15 @@ def main():
         writer = tf.train.SummaryWriter("/tmp/tensorFlow_logs", sess.graph_def)
 
         print("Training.")
+        costs = []
         for i in range(max_epoch):
             print("\r{}% done".format(int(i/max_epoch * 100)))
             training_net.lr_decay_and_set(sess, i)
             cost = run_epoch(sess, training_set, training_net, merged, writer)
+            costs.append(cost)
         print("Finished training.")
+
+        create_plot(range(max_epoch), costs)
 
         save_state(sess, saver)
         print("--- {} seconds ---".format(round(time.time() - start_time, 2)))
