@@ -57,7 +57,8 @@ def format_sentence(s):
 
 def main():
     reader = DataMan("train.txt")
-    net = LSTM_Network(reader.vocab_size)
+    with tf.variable_scope("model", reuse=False):
+        net = LSTM_Network(reader.vocab_size)
     init = tf.initialize_all_variables()
 
     with tf.Session() as sess:
