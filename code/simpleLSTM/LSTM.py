@@ -108,12 +108,12 @@ def main():
     start_time = time.time()
 
     training_set = DataMan("train.txt", max_seq)
-    with tf.variable_scope("model", reuse=None):
-        training_net = LSTM_Network(True)
-
     validation_set = DataMan("valid.txt", max_seq, rebuild_vocab=False)
+
+    with tf.variable_scope("model", reuse=None):
+        train_net = LSTM_Network(True)
     with tf.variable_scope("model", reuse=True):
-        validation_net = LSTM_Network(False)
+        eval_net = LSTM_Network(False)
 
     # We always need to run this operation before anything else
     init = tf.initialize_all_variables()
@@ -129,10 +129,10 @@ def main():
         cost_valid = []
         for i in range(max_epoch):
             print("\r{}% done".format(int(i/max_epoch * 100)))
-            training_net.lr_decay_and_set(sess, i)
-            cost = run_epoch(sess, training_set, training_net)
+            train_net.lr_decay_and_set(sess, i)
+            cost = run_epoch(sess, training_set, train_net)
             cost_train.append(cost)
-            cost = run_epoch(sess, validation_set, validation_net)
+            cost = run_epoch(sess, validation_set, eval_net)
             cost_valid.append(cost)
         print("100% done")
 
