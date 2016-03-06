@@ -56,7 +56,7 @@ def format_sentence(s):
     return s.split("<eos>", 1)[0].capitalize()
 
 def main():
-    reader = DataMan("train.txt")
+    reader = DataMan("train.txt", max_seq)
     with tf.variable_scope("model", reuse=False):
         net = LSTM_Network(reader.vocab_size)
     init = tf.initialize_all_variables()
@@ -67,7 +67,7 @@ def main():
         saver = tf.train.Saver() # Is this correct? Will it overwrite eariler inits?
         saver.restore(sess, "/tmp/model.ckpt") # Should cell state be restored from training?
 
-        sentences = gen_sentences(net, sess, reader.vocab_size, reader.max_seq)
+        sentences = gen_sentences(net, sess, DataMan.vocab_size, max_seq)
 
         for i, s in enumerate(sentences):
             if i >= 20: # Decides how many titles we should display
