@@ -10,6 +10,7 @@ import tensorflow as tf
 
 class DataMan(object):
     # Static variables
+    max_seq = 30
     vocab_size = 0
     word_to_id = None
     id_to_word = None
@@ -44,13 +45,15 @@ class DataMan(object):
     def _prepare_data(self, raw_data):
         sentences = raw_data.splitlines(True)
         self._data_len = data_len = len(sentences)
+        max_seq = DataMan.max_seq
 
         s_split = [ self._sentence_to_ids(s) for s in sentences]
-        self._max_seq = max_seq = max([ len(s) for s in s_split])
 
         self._data = np.zeros([data_len, max_seq], dtype=np.int)
         self._seq_lens = np.zeros([data_len], dtype=np.int)
         for i, s  in enumerate(s_split):
+            if len(s) > max_seq:
+                s = s[:max_seq]
             self._seq_lens[i] = len(s)
             fill = [0]*(max_seq - len(s))
             self._data[i] = s + fill
@@ -79,10 +82,6 @@ class DataMan(object):
             y = np.column_stack((self._data[start : start+batch_size, 1:], fill))
             z = self._seq_lens[start : start+batch_size]
             yield (x, y, z)
-
-    @property
-    def max_seq(self):
-        return self._max_seq
 
     @property
     # This is the number of sentences in the data set

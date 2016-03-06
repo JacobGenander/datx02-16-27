@@ -17,13 +17,12 @@ from hyperParams import *
 
 class LSTM_Network(object):
 
-    def __init__(self, data_set, training):
+    def __init__(self, training):
         initializer = tf.random_uniform_initializer(-init_range, init_range)
-        max_seq = data_set.max_seq
 
         # 2-dimensional tensors for input data and targets
-        self._input = tf.placeholder(tf.int32, [batch_size, None], name="input_data")
-        self._target = tf.placeholder(tf.int64, [batch_size, None], name="target_data")
+        self._input = tf.placeholder(tf.int32, [batch_size, DataMan.max_seq], name="input_data")
+        self._target = tf.placeholder(tf.int64, [batch_size, DataMan.max_seq], name="target_data")
         # This is the length of each sentence
         self._seq_lens = tf.placeholder(tf.int32, [batch_size], name="sequence_lengths")
 
@@ -46,7 +45,7 @@ class LSTM_Network(object):
         self._initial_state = state = stacked_cells.zero_state(batch_size, tf.float32)
 
         # Give input the right shape
-        inputs = [ tf.squeeze(input_, [1]) for input_ in tf.split(1, max_seq, inputs)]
+        inputs = [ tf.squeeze(input_, [1]) for input_ in tf.split(1, DataMan.max_seq, inputs)]
 
         # Run through the whole batch and update state
         outputs, _ = tf.nn.rnn(stacked_cells, inputs, initial_state=self._initial_state, sequence_length=self._seq_lens)
@@ -110,11 +109,11 @@ def main():
 
     training_set = DataMan("train.txt")
     with tf.variable_scope("model", reuse=None):
-        training_net = LSTM_Network(training_set, True)
+        training_net = LSTM_Network(True)
 
     validation_set = DataMan("valid.txt", rebuild_vocab=False)
     with tf.variable_scope("model", reuse=True):
-        validation_net = LSTM_Network(validation_set, False)
+        validation_net = LSTM_Network(False)
 
     # We always need to run this operation before anything else
     init = tf.initialize_all_variables()
