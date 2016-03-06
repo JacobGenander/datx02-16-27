@@ -19,19 +19,18 @@ class LSTM_Network(object):
 
     def __init__(self, data_set, training):
         initializer = tf.random_uniform_initializer(-init_range, init_range)
-        max_word_seq = data_set.max_seq
-        vocab_size = data_set.vocab_size
+        max_seq = data_set.max_seq
 
         # 2-dimensional tensors for input data and targets
-        self._input = tf.placeholder(tf.int32, [batch_size, max_word_seq], name="input_data")
-        self._target = tf.placeholder(tf.int64, [batch_size, max_word_seq], name="target_data")
+        self._input = tf.placeholder(tf.int32, [batch_size, None], name="input_data")
+        self._target = tf.placeholder(tf.int64, [batch_size, None], name="target_data")
         # This is the length of each sentence
         self._seq_lens = tf.placeholder(tf.int32, [batch_size], name="sequence_lengths")
 
         # Fetch word vectors
         with tf.device("/cpu:0"):
             embedding = tf.get_variable("embedding",
-                    [vocab_size, embedding_size],
+                    [DataMan.vocab_size, embedding_size],
                     initializer=initializer)
             inputs = tf.nn.embedding_lookup(embedding, self._input)
 
@@ -47,7 +46,7 @@ class LSTM_Network(object):
         self._initial_state = state = stacked_cells.zero_state(batch_size, tf.float32)
 
         # Give input the right shape
-        inputs = [ tf.squeeze(input_, [1]) for input_ in tf.split(1, max_word_seq, inputs)]
+        inputs = [ tf.squeeze(input_, [1]) for input_ in tf.split(1, max_seq, inputs)]
 
         # Run through the whole batch and update state
         outputs, _ = tf.nn.rnn(stacked_cells, inputs, initial_state=self._initial_state, sequence_length=self._seq_lens)
@@ -55,15 +54,13 @@ class LSTM_Network(object):
         # The output also needs some massaging
         output = tf.reshape(tf.concat(1, outputs), [-1, hidden_layer_size])
 
-        w = tf.get_variable("out_w", [hidden_layer_size, vocab_size], initializer=initializer)
-        b = tf.get_variable("out_b", [vocab_size], initializer=initializer)
+        w = tf.get_variable("out_w", [hidden_layer_size, DataMan.vocab_size], initializer=initializer)
+        b = tf.get_variable("out_b", [DataMan.vocab_size], initializer=initializer)
         z = tf.matmul(output, w) + b # Add supports broadcasting over each row
 
         # Average negative log probability
         loss = tf.nn.sparse_softmax_cross_entropy_with_logits(z, tf.reshape(self._target, [-1]))
-
         self._cost = cost = tf.reduce_sum(loss) / batch_size
-        ce_summ = tf.scalar_summary("cost", cost)
 
         if not training:
             self._train_op = tf.no_op()
@@ -115,7 +112,7 @@ def main():
     with tf.variable_scope("model", reuse=None):
         training_net = LSTM_Network(training_set, True)
 
-    validation_set = DataMan("valid.txt", training_set.get_dicts())
+    validation_set = DataMan("valid.txt", rebuild_vocab=False)
     with tf.variable_scope("model", reuse=True):
         validation_net = LSTM_Network(validation_set, False)
 

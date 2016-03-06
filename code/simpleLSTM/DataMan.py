@@ -9,17 +9,18 @@ import numpy as np
 import tensorflow as tf
 
 class DataMan(object):
-    def __init__(self, filename, dicts=None):
+    # Static variables
+    vocab_size = 0
+    word_to_id = None
+    id_to_word = None
+    unk_id = None
+
+    def __init__(self, filename, rebuild_vocab=True):
         raw_data = None
         with open(filename, 'r') as f:
             raw_data = f.read()
-        if dicts == None:
+        if rebuild_vocab:
             self._build_vocab(raw_data)
-        else:
-            self._word_to_id = dicts[0]
-            self._id_to_words = dicts[1]
-            self._unk_id = self._word_to_id['<unk>']
-            self._vocab_size = len(self._word_to_id)
         self._prepare_data(raw_data)
 
     def _tokenize(self, text):
@@ -31,14 +32,14 @@ class DataMan(object):
         # Give the words ids based on the number of occurrences in the data set
         counter = collections.Counter(self._data)
         count_pairs = counter.most_common()
-        self._id_to_word = sort_words = [ word for word, _ in count_pairs ]
-        self._word_to_id = dict(zip(sort_words, range(len(sort_words))))
-        self._unk_id = self._word_to_id['<unk>']
-        self._vocab_size = len(self._word_to_id)
+        DataMan.id_to_word = sort_words = [ word for word, _ in count_pairs ]
+        DataMan.word_to_id = dict(zip(sort_words, range(len(sort_words))))
+        DataMan.unk_id = DataMan.word_to_id['<unk>']
+        DataMan.vocab_size = len(DataMan.word_to_id)
 
     def _sentence_to_ids(self, sentence):
         split_sent = self._tokenize(sentence)
-        return [ self._word_to_id.get(word, self._unk_id) for word in split_sent]
+        return [ DataMan.word_to_id.get(word, DataMan.unk_id) for word in split_sent]
 
     def _prepare_data(self, raw_data):
         sentences = raw_data.splitlines(True)
@@ -78,21 +79,6 @@ class DataMan(object):
             y = np.column_stack((self._data[start : start+batch_size, 1:], fill))
             z = self._seq_lens[start : start+batch_size]
             yield (x, y, z)
-
-    def get_dicts(self):
-        return (self._word_to_id, self._id_to_word)
-
-    @property
-    def word_to_id(self):
-        return self._word_to_id
-
-    @property
-    def id_to_word(self):
-        return self._id_to_word
-
-    @property
-    def vocab_size(self):
-        return self._vocab_size
 
     @property
     def max_seq(self):
