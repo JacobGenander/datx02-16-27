@@ -58,7 +58,7 @@ class DataMan(object):
             if len(s) > max_seq:
                 s = s[:max_seq]
             self._seq_lens[i] = len(s)
-            fill = [0]*(max_seq - len(s))
+            fill = [DataMan.pad_id]*(max_seq - len(s))
             self._data[i] = s + fill
 
     def batch_iterator(self, batch_size):

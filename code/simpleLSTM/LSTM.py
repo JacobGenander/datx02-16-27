@@ -80,14 +80,12 @@ class LSTM_Network(object):
 
 def run_epoch(sess, data_set, net):
     total_cost = 0
-    i = 0
     for i, (x, y, z) in enumerate(data_set.batch_iterator(batch_size)):
         # Input
         feed = { net._input : x, net._target : y, net._seq_lens : z}
         # Run the computational graph
         cost, _ = sess.run([net._cost, net._train_op], feed_dict=feed)
         total_cost += cost
-
     return total_cost / (i+1)
 
 def save_state(sess, saver):
