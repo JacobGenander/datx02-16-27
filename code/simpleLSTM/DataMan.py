@@ -16,6 +16,12 @@ class DataMan(object):
     unk_id = None
     pad_id = None
 
+    @staticmethod
+    def translate_id_sent(s):
+        if DataMan.id_to_word == None:
+            raise TypeError('Need to create dictionary before translation')
+        return [ DataMan.id_to_word[w] for w in s]
+
     def __init__(self, filename, max_seq, rebuild_vocab=True):
         self._max_seq = max_seq
         raw_data = None
