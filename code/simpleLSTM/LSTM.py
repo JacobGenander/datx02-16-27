@@ -36,12 +36,12 @@ class LSTM_Network(object):
                     initializer=initializer)
             inputs = tf.nn.embedding_lookup(embedding, self._input)
 
-        if keep_prob < 1 and not training:
+        if keep_prob < 1 and training:
             inputs = tf.nn.dropout(inputs, keep_prob)
 
         # Create the network
         cell = tf.nn.rnn_cell.BasicLSTMCell(hidden_layer_size)
-        if keep_prob < 1 and not training:
+        if keep_prob < 1 and training:
             cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob)
         stacked_cells = tf.nn.rnn_cell.MultiRNNCell([cell] * number_of_layers)
 
