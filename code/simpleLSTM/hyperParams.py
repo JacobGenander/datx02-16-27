@@ -3,7 +3,7 @@
 # Data processing
 batch_size = 50 # Number of sentences we will train on each training step
 max_epoch = 50 # This decides how many times we will run through the data
-max_seq = 15 # This is the maxium length for a headline
+max_seq = 50 # This is the maxium length for a headline
 
 # Network size
 hidden_layer_size = 800 # Number of neurons in each layer

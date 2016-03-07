@@ -21,10 +21,13 @@ class LSTM_Network(object):
         initializer = tf.random_uniform_initializer(-init_range, init_range)
 
         # 2-dimensional tensors for input data and targets
-        self._input = tf.placeholder(tf.int32, [batch_size, max_seq], name="input_data")
-        self._target = tf.placeholder(tf.int64, [batch_size, max_seq], name="target_data")
+        self._input = tf.placeholder(tf.int32, [batch_size, max_seq])
+        self._target = tf.placeholder(tf.int64, [batch_size, max_seq])
         # This is the length of each sentence
-        self._seq_lens = tf.placeholder(tf.int32, [batch_size], name="sequence_lengths")
+        self._seq_lens = tf.placeholder(tf.int32, [batch_size])
+        # We need these to crop output and targets so we do not train on more time sequences than needed
+        self._out_dim = tf.placeholder(tf.int32, [2])
+        self._target_dim = tf.placeholder(tf.int32, [2])
 
         # Fetch word vectors
         with tf.device("/cpu:0"):
@@ -49,16 +52,22 @@ class LSTM_Network(object):
 
         # Run through the whole batch and update state
         outputs, _ = tf.nn.rnn(stacked_cells, inputs, initial_state=self._initial_state, sequence_length=self._seq_lens)
+        # Turn output into tensor instead of list
+        outputs = tf.concat(1, outputs)
 
-        # The output also needs some massaging
-        output = tf.reshape(tf.concat(1, outputs), [-1, hidden_layer_size])
+        # Crop output and targets to the length of the longest sentence
+        outputs = tf.slice(outputs, [0, 0], self._out_dim)
+        target = tf.slice(self._target, [0, 0], self._target_dim)
+
+        # Flatten output into a tensor where each row is the output from one word
+        output = tf.reshape(outputs, [-1, hidden_layer_size])
 
         w = tf.get_variable("out_w", [hidden_layer_size, DataMan.vocab_size], initializer=initializer)
         b = tf.get_variable("out_b", [DataMan.vocab_size], initializer=initializer)
         z = tf.matmul(output, w) + b # Add supports broadcasting over each row
 
         # Average negative log probability
-        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(z, tf.reshape(self._target, [-1]))
+        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(z, tf.reshape(target, [-1]))
         self._cost = cost = tf.reduce_sum(loss) / batch_size
 
         if not training:
@@ -78,11 +87,18 @@ class LSTM_Network(object):
             decay = learning_decay ** (epoch - decay_start)
             self.set_learning_rate(sess, learning_rate * decay)
 
+def calc_output_dims(seq_lens):
+    max_batch_seq = max(seq_lens)
+    dim_output = np.array([batch_size, max_batch_seq * hidden_layer_size])
+    dim_target = np.array([batch_size, max_batch_seq])
+    return dim_output, dim_target
+
 def run_epoch(sess, data_set, net):
     total_cost = 0
     for i, (x, y, z) in enumerate(data_set.batch_iterator(batch_size)):
+        d_out, d_target = calc_output_dims(z)
         # Input
-        feed = { net._input : x, net._target : y, net._seq_lens : z}
+        feed = { net._input : x, net._target : y, net._seq_lens : z, net._out_dim : d_out, net._target_dim : d_target}
         # Run the computational graph
         cost, _ = sess.run([net._cost, net._train_op], feed_dict=feed)
         total_cost += cost
