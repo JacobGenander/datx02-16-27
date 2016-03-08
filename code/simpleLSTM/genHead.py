@@ -12,32 +12,32 @@ from hyperParams import *
 class LSTM_Network(object):
 
     def __init__(self, vocab_size):
-        self._inputs = tf.placeholder(tf.int32, [batch_size, 1])
+        self._inputs = tf.placeholder(tf.int32, [BATCH_SIZE, 1])
 
-        cell = tf.nn.rnn_cell.BasicLSTMCell(hidden_layer_size)
-        stacked_cell = tf.nn.rnn_cell.MultiRNNCell([cell] * number_of_layers)
-        self._initial_state = state = stacked_cell.zero_state(batch_size, tf.float32)
+        cell = tf.nn.rnn_cell.BasicLSTMCell(HIDDEN_LAYER_SIZE)
+        stacked_cell = tf.nn.rnn_cell.MultiRNNCell([cell] * NUMBER_OF_LAYERS)
+        self._initial_state = state = stacked_cell.zero_state(BATCH_SIZE, tf.float32)
 
         with tf.device("/cpu:0"):
-            embedding = tf.get_variable("embedding", [vocab_size, embedding_size])
+            embedding = tf.get_variable("embedding", [vocab_size, EMBEDDING_SIZE])
             inputs = tf.nn.embedding_lookup(embedding, self._inputs)
 
         inputs = [tf.squeeze(input_, [1]) for input_ in tf.split(1, 1, inputs)] # Probably unnecessary split
         outputs, state = tf.nn.rnn(stacked_cell, inputs, initial_state=self._initial_state)
 
-        output = tf.reshape(tf.concat(1, outputs), [-1, hidden_layer_size])
-        w = tf.get_variable("out_w", [hidden_layer_size, vocab_size])
+        output = tf.reshape(tf.concat(1, outputs), [-1, HIDDEN_LAYER_SIZE])
+        w = tf.get_variable("out_w", [HIDDEN_LAYER_SIZE, vocab_size])
         b = tf.get_variable("out_b", [vocab_size])
         z = tf.matmul(output, w) + b
         softmax = tf.nn.softmax(z)
 
         words = tf.argmax(softmax, 1)
 
-        self._next_words = tf.reshape(words, [batch_size, 1])
+        self._next_words = tf.reshape(words, [BATCH_SIZE, 1])
         self._final_state = state
 
 def generate_input(vocab_size):
-    return np.random.randint(0, vocab_size, [batch_size, 1])
+    return np.random.randint(0, vocab_size, [BATCH_SIZE, 1])
 
 def gen_sentences(net, sess, vocab_size, max_word_seq):
     inputs = generate_input(vocab_size)
@@ -56,7 +56,7 @@ def format_sentence(s):
     return s.split("<eos>", 1)[0].capitalize()
 
 def main():
-    reader = DataMan("train.txt", max_seq)
+    reader = DataMan("train.txt", MAX_SEQ)
     with tf.variable_scope("model", reuse=False):
         net = LSTM_Network(reader.vocab_size)
     init = tf.initialize_all_variables()
@@ -67,7 +67,7 @@ def main():
         saver = tf.train.Saver() # Is this correct? Will it overwrite eariler inits?
         saver.restore(sess, "/tmp/model.ckpt") # Should cell state be restored from training?
 
-        sentences = gen_sentences(net, sess, DataMan.vocab_size, max_seq)
+        sentences = gen_sentences(net, sess, DataMan.vocab_size, MAX_SEQ)
 
         for i, s in enumerate(sentences):
             if i >= 20: # Decides how many titles we should display
