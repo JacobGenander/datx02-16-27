@@ -91,16 +91,22 @@ class LSTM_Network(object):
         dim_target = np.array([self.batch_size, max_batch_seq])
         return dim_output, dim_target
 
-def run_epoch(sess, data_set, net):
-    total_cost = 0
+def run_epoch(sess, data_set, net, perplexity):
+    total_cost = 0.0
+    steps = 0
     for i, (x, y, z) in enumerate(data_set.batch_iterator(net.batch_size)):
         d_out, d_target = net.calc_output_dims(z)
+        steps += max(z)
         # Input
         feed = { net._input : x, net._target : y, net._seq_lens : z, net._out_dim : d_out, net._target_dim : d_target}
         # Run the computational graph
         cost, _ = sess.run([net._cost, net._train_op], feed_dict=feed)
         total_cost += cost
-    return total_cost / (i+1)
+
+    if perplexity:
+        return np.exp(total_cost / steps)
+    else:
+        return total_cost / (i+1)
 
 def save_state(sess, saver):
     print("Saving model.")
@@ -112,14 +118,14 @@ def main():
 
     training_set = DataMan("train.txt", MAX_SEQ)
     validation_set = DataMan("valid.txt", MAX_SEQ, rebuild_vocab=False)
-    #test_set = DataMan("test.txt", MAX_SEQ, rebuild_vocab=False)
+    test_set = DataMan("test.txt", MAX_SEQ, rebuild_vocab=False)
 
     initializer = tf.random_uniform_initializer(-INIT_RANGE, INIT_RANGE)
     with tf.variable_scope("model", reuse=None, initializer=initializer):
         train_net = LSTM_Network(True, BATCH_SIZE)
     with tf.variable_scope("model", reuse=True, initializer=initializer):
         val_net = LSTM_Network(False, BATCH_SIZE)
-        #test_net = LSTM_Network(False, 1)
+        test_net = LSTM_Network(False, 1)
 
     # We always need to run this operation before anything else
     init = tf.initialize_all_variables()
@@ -136,11 +142,15 @@ def main():
         for i in range(MAX_EPOCH):
             print("\r{}% done".format(int(i/MAX_EPOCH * 100)))
             train_net.lr_decay_and_set(sess, i)
-            cost = run_epoch(sess, training_set, train_net)
+            cost = run_epoch(sess, training_set, train_net, False)
             cost_train.append(cost)
-            cost = run_epoch(sess, validation_set, eval_net)
+            cost = run_epoch(sess, validation_set, val_net, False)
             cost_valid.append(cost)
         print("100% done")
+
+        print("Calculating perplexity.")
+        perplexity = run_epoch(sess, test_set, test_net, True)
+        print("Perplexity: {}".format(perplexity))
 
         print("Creating plot.")
         plot.create_plots(range(MAX_EPOCH), cost_train, cost_valid)
