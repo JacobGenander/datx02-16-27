@@ -112,12 +112,14 @@ def main():
 
     training_set = DataMan("train.txt", MAX_SEQ)
     validation_set = DataMan("valid.txt", MAX_SEQ, rebuild_vocab=False)
+    #test_set = DataMan("test.txt", MAX_SEQ, rebuild_vocab=False)
 
     initializer = tf.random_uniform_initializer(-INIT_RANGE, INIT_RANGE)
     with tf.variable_scope("model", reuse=None, initializer=initializer):
         train_net = LSTM_Network(True, BATCH_SIZE)
     with tf.variable_scope("model", reuse=True, initializer=initializer):
-        eval_net = LSTM_Network(False, BATCH_SIZE)
+        val_net = LSTM_Network(False, BATCH_SIZE)
+        #test_net = LSTM_Network(False, 1)
 
     # We always need to run this operation before anything else
     init = tf.initialize_all_variables()
