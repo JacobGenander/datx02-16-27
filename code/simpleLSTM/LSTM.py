@@ -18,7 +18,6 @@ from hyperParams import *
 class LSTM_Network(object):
 
     def __init__(self, training):
-        initializer = tf.random_uniform_initializer(-init_range, init_range)
 
         # 2-dimensional tensors for input data and targets
         self._input = tf.placeholder(tf.int32, [batch_size, max_seq])
@@ -32,8 +31,7 @@ class LSTM_Network(object):
         # Fetch word vectors
         with tf.device("/cpu:0"):
             embedding = tf.get_variable("embedding",
-                    [DataMan.vocab_size, embedding_size],
-                    initializer=initializer)
+                    [DataMan.vocab_size, embedding_size])
             inputs = tf.nn.embedding_lookup(embedding, self._input)
 
         if keep_prob < 1 and training:
@@ -62,8 +60,8 @@ class LSTM_Network(object):
         # Flatten output into a tensor where each row is the output from one word
         output = tf.reshape(outputs, [-1, hidden_layer_size])
 
-        w = tf.get_variable("out_w", [hidden_layer_size, DataMan.vocab_size], initializer=initializer)
-        b = tf.get_variable("out_b", [DataMan.vocab_size], initializer=initializer)
+        w = tf.get_variable("out_w", [hidden_layer_size, DataMan.vocab_size])
+        b = tf.get_variable("out_b", [DataMan.vocab_size])
         z = tf.matmul(output, w) + b # Add supports broadcasting over each row
 
         # Average negative log probability
@@ -115,9 +113,10 @@ def main():
     training_set = DataMan("train.txt", max_seq)
     validation_set = DataMan("valid.txt", max_seq, rebuild_vocab=False)
 
-    with tf.variable_scope("model", reuse=None):
+    initializer = tf.random_uniform_initializer(-init_range, init_range)
+    with tf.variable_scope("model", reuse=None, initializer=initializer):
         train_net = LSTM_Network(True)
-    with tf.variable_scope("model", reuse=True):
+    with tf.variable_scope("model", reuse=True, initializer=initializer):
         eval_net = LSTM_Network(False)
 
     # We always need to run this operation before anything else
