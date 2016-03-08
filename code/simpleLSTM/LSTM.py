@@ -6,7 +6,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 import numpy as np
-import matplotlib.pyplot as plt
+import plot
 import time
 import sys
 from DataMan import DataMan
@@ -109,15 +109,6 @@ def save_state(sess, saver):
     save_path = saver.save(sess, "/tmp/model.ckpt")
     print("Model saved in file: {}".format(save_path))
 
-def create_plots(xs, t_ys, v_ys):
-    plt.plot(xs, t_ys)
-    plt.plot(xs, v_ys)
-    plt.ylabel('cost')
-    plt.xlabel('epochs')
-    plt.title('Cost of training and evaluation')
-    plt.grid(True)
-    plt.savefig("foo")
-
 def main():
     start_time = time.time()
 
@@ -151,7 +142,7 @@ def main():
         print("100% done")
 
         print("Creating plot.")
-        create_plots(range(max_epoch), cost_train, cost_valid)
+        plot.create_plots(range(max_epoch), cost_train, cost_valid)
 
         save_state(sess, saver)
         print("--- {} seconds ---".format(round(time.time() - start_time, 2)))
