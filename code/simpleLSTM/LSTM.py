@@ -17,11 +17,11 @@ from hyperParams import *
 
 class LSTM_Network(object):
 
-    def __init__(self, training):
-
+    def __init__(self, training, batch_size):
+        self.batch_size = batch_size
         # 2-dimensional tensors for input data and targets
-        self._input = tf.placeholder(tf.int32, [batch_size, max_seq])
-        self._target = tf.placeholder(tf.int64, [batch_size, max_seq])
+        self._input = tf.placeholder(tf.int32, [batch_size, MAX_SEQ])
+        self._target = tf.placeholder(tf.int64, [batch_size, MAX_SEQ])
         # This is the length of each sentence
         self._seq_lens = tf.placeholder(tf.int32, [batch_size])
         # We need these to crop output and targets so we do not train on more time sequences than needed
@@ -31,22 +31,22 @@ class LSTM_Network(object):
         # Fetch word vectors
         with tf.device("/cpu:0"):
             embedding = tf.get_variable("embedding",
-                    [DataMan.vocab_size, embedding_size])
+                    [DataMan.vocab_size, EMBEDDING_SIZE])
             inputs = tf.nn.embedding_lookup(embedding, self._input)
 
-        if keep_prob < 1 and training:
-            inputs = tf.nn.dropout(inputs, keep_prob)
+        if KEEP_PROB < 1 and training:
+            inputs = tf.nn.dropout(inputs, KEEP_PROB)
 
         # Create the network
-        cell = tf.nn.rnn_cell.BasicLSTMCell(hidden_layer_size)
-        if keep_prob < 1 and training:
-            cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob)
-        stacked_cells = tf.nn.rnn_cell.MultiRNNCell([cell] * number_of_layers)
+        cell = tf.nn.rnn_cell.BasicLSTMCell(HIDDEN_LAYER_SIZE)
+        if KEEP_PROB < 1 and training:
+            cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=KEEP_PROB)
+        stacked_cells = tf.nn.rnn_cell.MultiRNNCell([cell] * NUMBER_OF_LAYERS)
 
         self._initial_state = state = stacked_cells.zero_state(batch_size, tf.float32)
 
         # Give input the right shape
-        inputs = [ tf.squeeze(input_, [1]) for input_ in tf.split(1, max_seq, inputs)]
+        inputs = [ tf.squeeze(input_, [1]) for input_ in tf.split(1, MAX_SEQ, inputs)]
 
         # Run through the whole batch and update state
         outputs, _ = tf.nn.rnn(stacked_cells, inputs, initial_state=self._initial_state, sequence_length=self._seq_lens)
@@ -58,9 +58,9 @@ class LSTM_Network(object):
         target = tf.slice(self._target, [0, 0], self._target_dim)
 
         # Flatten output into a tensor where each row is the output from one word
-        output = tf.reshape(outputs, [-1, hidden_layer_size])
+        output = tf.reshape(outputs, [-1, HIDDEN_LAYER_SIZE])
 
-        w = tf.get_variable("out_w", [hidden_layer_size, DataMan.vocab_size])
+        w = tf.get_variable("out_w", [HIDDEN_LAYER_SIZE, DataMan.vocab_size])
         b = tf.get_variable("out_b", [DataMan.vocab_size])
         z = tf.matmul(output, w) + b # Add supports broadcasting over each row
 
@@ -72,7 +72,7 @@ class LSTM_Network(object):
             self._train_op = tf.no_op()
             return
 
-        self._learning_rate = tf.Variable(learning_rate, trainable=False)
+        self._learning_rate = tf.Variable(LEARNING_RATE, trainable=False)
         # Gradient descent training op
         optimizer = tf.train.GradientDescentOptimizer(self._learning_rate)
         self._train_op = optimizer.minimize(self._cost)
@@ -81,20 +81,20 @@ class LSTM_Network(object):
         sess.run(tf.assign(self._learning_rate, value))
 
     def lr_decay_and_set(self, sess, epoch):
-        if epoch > decay_start:
-            decay = learning_decay ** (epoch - decay_start)
-            self.set_learning_rate(sess, learning_rate * decay)
+        if epoch > DECAY_START:
+            decay = LEARNING_DECAY ** (epoch - DECAY_START)
+            self.set_learning_rate(sess, LEARNING_RATE * decay)
 
-def calc_output_dims(seq_lens):
-    max_batch_seq = max(seq_lens)
-    dim_output = np.array([batch_size, max_batch_seq * hidden_layer_size])
-    dim_target = np.array([batch_size, max_batch_seq])
-    return dim_output, dim_target
+    def calc_output_dims(self, seq_lens):
+        max_batch_seq = max(seq_lens)
+        dim_output = np.array([self.batch_size, max_batch_seq * HIDDEN_LAYER_SIZE])
+        dim_target = np.array([self.batch_size, max_batch_seq])
+        return dim_output, dim_target
 
 def run_epoch(sess, data_set, net):
     total_cost = 0
-    for i, (x, y, z) in enumerate(data_set.batch_iterator(batch_size)):
-        d_out, d_target = calc_output_dims(z)
+    for i, (x, y, z) in enumerate(data_set.batch_iterator(net.batch_size)):
+        d_out, d_target = net.calc_output_dims(z)
         # Input
         feed = { net._input : x, net._target : y, net._seq_lens : z, net._out_dim : d_out, net._target_dim : d_target}
         # Run the computational graph
@@ -110,14 +110,14 @@ def save_state(sess, saver):
 def main():
     start_time = time.time()
 
-    training_set = DataMan("train.txt", max_seq)
-    validation_set = DataMan("valid.txt", max_seq, rebuild_vocab=False)
+    training_set = DataMan("train.txt", MAX_SEQ)
+    validation_set = DataMan("valid.txt", MAX_SEQ, rebuild_vocab=False)
 
-    initializer = tf.random_uniform_initializer(-init_range, init_range)
+    initializer = tf.random_uniform_initializer(-INIT_RANGE, INIT_RANGE)
     with tf.variable_scope("model", reuse=None, initializer=initializer):
-        train_net = LSTM_Network(True)
+        train_net = LSTM_Network(True, BATCH_SIZE)
     with tf.variable_scope("model", reuse=True, initializer=initializer):
-        eval_net = LSTM_Network(False)
+        eval_net = LSTM_Network(False, BATCH_SIZE)
 
     # We always need to run this operation before anything else
     init = tf.initialize_all_variables()
@@ -131,8 +131,8 @@ def main():
         print("Training.")
         cost_train, cost_valid = [], []
         cost_valid = []
-        for i in range(max_epoch):
-            print("\r{}% done".format(int(i/max_epoch * 100)))
+        for i in range(MAX_EPOCH):
+            print("\r{}% done".format(int(i/MAX_EPOCH * 100)))
             train_net.lr_decay_and_set(sess, i)
             cost = run_epoch(sess, training_set, train_net)
             cost_train.append(cost)
@@ -141,7 +141,7 @@ def main():
         print("100% done")
 
         print("Creating plot.")
-        plot.create_plots(range(max_epoch), cost_train, cost_valid)
+        plot.create_plots(range(MAX_EPOCH), cost_train, cost_valid)
 
         save_state(sess, saver)
         print("--- {} seconds ---".format(round(time.time() - start_time, 2)))
