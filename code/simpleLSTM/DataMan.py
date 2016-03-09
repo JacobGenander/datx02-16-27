@@ -7,6 +7,7 @@ from __future__ import print_function
 import collections
 import numpy as np
 import tensorflow as tf
+import re
 
 class DataMan(object):
     # Static variables
@@ -26,7 +27,12 @@ class DataMan(object):
         self._prepare_data(raw_data)
 
     def _tokenize(self, text):
-        return text.replace('\n', ' <eos> ').split()
+        regex = re.compile("([\d.,!?\"':;)(\\/])")
+        no_space_text = text.replace("\n", " <eos> ").split()
+        words = []
+        for frag in no_space_text:
+            words.extend(filter(None, re.split(regex, frag)))
+        return words
 
     def _build_vocab(self, raw_data):
         self._data = self._tokenize(raw_data) + ['<unk>'] + ['<pad>']
