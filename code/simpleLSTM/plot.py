@@ -3,8 +3,9 @@ from __future__ import division
 from __future__ import print_function
 
 import matplotlib.pyplot as plt
+import os
 
-def create_plots(xs, *args):
+def create_plots(path, xs, *args):
     for ys in args:
         plt.plot(xs, ys)
 
@@ -12,6 +13,7 @@ def create_plots(xs, *args):
     plt.xlabel('epochs')
     plt.title('Cost of training and evaluation')
     plt.grid(True)
-    plt.savefig("foo")
+    save_path = os.path.join(path, "plot")
+    plt.savefig(save_path)
 
 

@@ -7,8 +7,10 @@ from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 import plot
+import argumentParser
 import time
 import sys
+import os
 from DataMan import DataMan
 from hyperParams import *
 
@@ -113,12 +115,30 @@ def save_state(sess, saver):
     save_path = saver.save(sess, "/tmp/model.ckpt")
     print("Model saved in file: {}".format(save_path))
 
+def create_data_sets(data_path):
+    try:
+        train_path = os.path.join(data_path, "train.txt")
+        training_set = DataMan(train_path, MAX_SEQ)
+        valid_path = os.path.join(data_path, "valid.txt")
+        validation_set = DataMan(valid_path, MAX_SEQ, rebuild_vocab=False)
+        test_path = os.path.join(data_path, "test.txt")
+        test_set = DataMan(test_path, MAX_SEQ, rebuild_vocab=False)
+    except IOError:
+        print("File not found. Data path needs to contain three files: train.txt, valid.txt and test.txt")
+        sys.exit(1)
+
+    return training_set, validation_set, test_set
+
 def main():
     start_time = time.time()
 
-    training_set = DataMan("train.txt", MAX_SEQ)
-    validation_set = DataMan("valid.txt", MAX_SEQ, rebuild_vocab=False)
-    test_set = DataMan("test.txt", MAX_SEQ, rebuild_vocab=False)
+    args = argumentParser.parser.parse_args()
+    training_set, validation_set, test_set = create_data_sets(args.data_path)
+
+    save_path = args.save_path
+    if not os.path.isdir(save_path):
+        raise IOError("Couldn't find save directory")
+        sys.exit(1)
 
     initializer = tf.random_uniform_initializer(-INIT_RANGE, INIT_RANGE)
     with tf.variable_scope("model", reuse=None, initializer=initializer):
@@ -153,7 +173,7 @@ def main():
         print("Perplexity: {}".format(perplexity))
 
         print("Creating plot.")
-        plot.create_plots(range(MAX_EPOCH), cost_train, cost_valid)
+        plot.create_plots(save_path, range(MAX_EPOCH), cost_train, cost_valid)
 
         save_state(sess, saver)
         print("--- {} seconds ---".format(round(time.time() - start_time, 2)))
