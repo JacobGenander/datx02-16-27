@@ -137,7 +137,7 @@ def main():
 
     save_path = args.save_path
     if not os.path.isdir(save_path):
-        raise IOError("Couldn't find save directory")
+        print("Couldn't find save directory")
         sys.exit(1)
 
     initializer = tf.random_uniform_initializer(-INIT_RANGE, INIT_RANGE)
