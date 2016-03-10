@@ -23,8 +23,8 @@ class LSTM_Network(object):
         with tf.device("/cpu:0"):
             embedding = tf.get_variable("embedding", [vocab_size, EMBEDDING_SIZE])
             inputs = tf.nn.embedding_lookup(embedding, self._inputs)
+        inputs = [tf.squeeze(inputs, [1])]
 
-        inputs = [tf.squeeze(input_, [1]) for input_ in tf.split(1, 1, inputs)] # Probably unnecessary split
         outputs, state = tf.nn.rnn(stacked_cell, inputs, initial_state=self._initial_state)
 
         output = tf.reshape(tf.concat(1, outputs), [-1, HIDDEN_LAYER_SIZE])
@@ -43,14 +43,16 @@ def choose_words(word_probs, most_prob):
     res = np.zeros([BATCH_SIZE, 1], dtype=np.int32)
     if most_prob:
         for i, probs in enumerate(word_probs):
+            # Choose the most probable words
             res[i,0] = np.argmax(probs, axis=0)
+    # This case weights its prediction based on all probabilities
     else:
         rand = random.uniform(0,1)
         for i, probs in enumerate(word_probs):
             s = 0
             index_picked = False
             for j in range(len(probs)):
-                s += probs[j]
+                s += probs[j] # The added probabilty that makes us exceed the rand value will be the word we choose
                 if s >= rand:
                     index_picked = True
                     res[i,0] = j
@@ -78,7 +80,7 @@ def format_sentence(s):
 
 def main():
     args = interfaceGenHead.parser.parse_args()
-    model_path = args.model_path
+    print(args.n)
 
     data_set = DataMan("train.txt", MAX_SEQ)
     with tf.variable_scope("model", reuse=False):
@@ -89,12 +91,16 @@ def main():
         sess.run(init)
 
         saver = tf.train.Saver()
-        saver.restore(sess, model_path)
+        saver.restore(sess, args.model_path)
 
         sentences = gen_sentences(net, sess, DataMan.vocab_size, MAX_SEQ)
 
+        if args.n == None:
+            max_n = BATCH_SIZE
+        else:
+            max_n = args.n
         for i, s in enumerate(sentences):
-            if i >= 20: # Decides how many titles we should display
+            if i >= max_n: # Decides how many titles we should display
                 break
             print("Sentence {}:".format(i+1))
             s = [ data_set.id_to_word[w] for w in s]
