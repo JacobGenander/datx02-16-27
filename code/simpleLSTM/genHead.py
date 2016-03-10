@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 import numpy as np
+import interfaceGenHead
 import random
 from DataMan import DataMan
 from hyperParams import *
@@ -55,7 +56,7 @@ def choose_words(word_probs, most_prob):
                     res[i,0] = j
                     break
             if not index_picked:
-                res[i,0] = j#np.argmax(probs, axis=0)
+                res[i,0] = j
     return res
 
 def gen_sentences(net, sess, vocab_size, max_word_seq):
@@ -75,17 +76,27 @@ def gen_sentences(net, sess, vocab_size, max_word_seq):
 def format_sentence(s):
     return s.split("<eos>", 1)[0].capitalize()
 
+def create_interface():
+    parser = argparse.ArgumentParser(description='Generates sentences from a pretrained LSTM-model')
+    parser.add_argument('--model_path', nargs=1,
+        help='full path name to the model')
+    args = parser.parse_args()
+    return args.model_path
+
 def main():
-    reader = DataMan("train.txt", MAX_SEQ)
+    args = interfaceGenHead.parser.parse_args()
+    model_path = args.model_path
+
+    data_set = DataMan("train.txt", MAX_SEQ)
     with tf.variable_scope("model", reuse=False):
-        net = LSTM_Network(reader.vocab_size)
+        net = LSTM_Network(data_set.vocab_size)
     init = tf.initialize_all_variables()
 
     with tf.Session() as sess:
         sess.run(init)
 
         saver = tf.train.Saver()
-        saver.restore(sess, "/tmp/model.ckpt")
+        saver.restore(sess, model_path)
 
         sentences = gen_sentences(net, sess, DataMan.vocab_size, MAX_SEQ)
 
@@ -93,7 +104,7 @@ def main():
             if i >= 20: # Decides how many titles we should display
                 break
             print("Sentence {}:".format(i+1))
-            s = [ reader.id_to_word[w] for w in s]
+            s = [ data_set.id_to_word[w] for w in s]
             s = " ".join(s)
             print(format_sentence(s))
 

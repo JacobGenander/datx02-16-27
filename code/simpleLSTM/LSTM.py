@@ -6,8 +6,8 @@ from __future__ import print_function
 
 import tensorflow as tf
 import numpy as np
+import interfaceLSTM
 import plot
-import argumentParser
 import time
 import sys
 import os
@@ -132,7 +132,7 @@ def create_data_sets(data_path):
 def main():
     start_time = time.time()
 
-    args = argumentParser.parser.parse_args()
+    args = interfaceLSTM.parser.parse_args()
     training_set, validation_set, test_set = create_data_sets(args.data_path)
 
     save_path = args.save_path
