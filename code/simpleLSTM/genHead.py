@@ -76,13 +76,6 @@ def gen_sentences(net, sess, vocab_size, max_word_seq):
 def format_sentence(s):
     return s.split("<eos>", 1)[0].capitalize()
 
-def create_interface():
-    parser = argparse.ArgumentParser(description='Generates sentences from a pretrained LSTM-model')
-    parser.add_argument('--model_path', nargs=1,
-        help='full path name to the model')
-    args = parser.parse_args()
-    return args.model_path
-
 def main():
     args = interfaceGenHead.parser.parse_args()
     model_path = args.model_path
