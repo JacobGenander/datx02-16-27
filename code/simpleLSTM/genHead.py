@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 import numpy as np
+import random
 from DataMan import DataMan
 from hyperParams import *
 
@@ -31,13 +32,31 @@ class LSTM_Network(object):
         z = tf.matmul(output, w) + b
         softmax = tf.nn.softmax(z)
 
-        words = tf.argmax(softmax, 1)
-
-        self._next_words = tf.reshape(words, [BATCH_SIZE, 1])
+        self._word_predictions = softmax
         self._final_state = state
 
 def generate_input(vocab_size):
     return np.random.randint(0, vocab_size, [BATCH_SIZE, 1])
+
+def choose_words(word_probs, most_prob):
+    res = np.zeros([BATCH_SIZE, 1], dtype=np.int32)
+    if most_prob:
+        for i, probs in enumerate(word_probs):
+            res[i,0] = np.argmax(probs, axis=0)
+    else:
+        rand = random.uniform(0,1)
+        for i, probs in enumerate(word_probs):
+            s = 0
+            index_picked = False
+            for j in range(len(probs)):
+                s += probs[j]
+                if s >= rand:
+                    index_picked = True
+                    res[i,0] = j
+                    break
+            if not index_picked:
+                res[i,0] = j#np.argmax(probs, axis=0)
+    return res
 
 def gen_sentences(net, sess, vocab_size, max_word_seq):
     inputs = generate_input(vocab_size)
@@ -46,11 +65,12 @@ def gen_sentences(net, sess, vocab_size, max_word_seq):
     sentences = [inputs]
     for i in range(max_word_seq):
         feed = {net._inputs : inputs, net._initial_state : current_state}
-        output, current_state = sess.run([net._next_words, net._final_state], feed_dict=feed)
-        sentences.append(output)
-        inputs = output
+        output, current_state = sess.run([net._word_predictions, net._final_state], feed_dict=feed)
+        next_words = choose_words(output, False)
+        sentences.append(next_words)
+        inputs = next_words
 
-    return np.concatenate(sentences, 1) # Check if done on right dimension
+    return np.concatenate(sentences, 1)
 
 def format_sentence(s):
     return s.split("<eos>", 1)[0].capitalize()
@@ -64,8 +84,8 @@ def main():
     with tf.Session() as sess:
         sess.run(init)
 
-        saver = tf.train.Saver() # Is this correct? Will it overwrite eariler inits?
-        saver.restore(sess, "/tmp/model.ckpt") # Should cell state be restored from training?
+        saver = tf.train.Saver()
+        saver.restore(sess, "/tmp/model.ckpt")
 
         sentences = gen_sentences(net, sess, DataMan.vocab_size, MAX_SEQ)
 
