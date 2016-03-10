@@ -10,6 +10,8 @@ parser = argparse.ArgumentParser(description=
 
 parser.add_argument('model_path',
         help='full pathname to the model')
-parser.add_argument('-n', metavar='N', type=int,
+parser.add_argument('-n', metavar='N', type=int, default=10,
         help='number of sentences to generate (might be capped by batch size)')
+parser.add_argument('--most_prob', action='store_true', default=False,
+        help='generate headlines with the most probable words')
 

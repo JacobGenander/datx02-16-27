@@ -39,8 +39,9 @@ class LSTM_Network(object):
 def generate_input(vocab_size):
     return np.random.randint(0, vocab_size, [BATCH_SIZE, 1])
 
-def choose_words(word_probs, most_prob):
+def choose_words(word_probs):
     res = np.zeros([BATCH_SIZE, 1], dtype=np.int32)
+    most_prob = interfaceGenHead.parser.parse_args().most_prob
     if most_prob:
         for i, probs in enumerate(word_probs):
             # Choose the most probable words
@@ -62,14 +63,15 @@ def choose_words(word_probs, most_prob):
     return res
 
 def gen_sentences(net, sess, vocab_size, max_word_seq):
-    inputs = generate_input(vocab_size)
     current_state = net._initial_state.eval()
-
+    inputs = generate_input(vocab_size)
     sentences = [inputs]
     for i in range(max_word_seq):
         feed = {net._inputs : inputs, net._initial_state : current_state}
         output, current_state = sess.run([net._word_predictions, net._final_state], feed_dict=feed)
-        next_words = choose_words(output, False)
+
+        next_words = choose_words(output)
+
         sentences.append(next_words)
         inputs = next_words
 
@@ -80,27 +82,21 @@ def format_sentence(s):
 
 def main():
     args = interfaceGenHead.parser.parse_args()
-    print(args.n)
+    init = tf.initialize_all_variables()
 
     data_set = DataMan("train.txt", MAX_SEQ)
     with tf.variable_scope("model", reuse=False):
         net = LSTM_Network(data_set.vocab_size)
-    init = tf.initialize_all_variables()
 
     with tf.Session() as sess:
         sess.run(init)
-
         saver = tf.train.Saver()
         saver.restore(sess, args.model_path)
 
         sentences = gen_sentences(net, sess, DataMan.vocab_size, MAX_SEQ)
 
-        if args.n == None:
-            max_n = BATCH_SIZE
-        else:
-            max_n = args.n
         for i, s in enumerate(sentences):
-            if i >= max_n: # Decides how many titles we should display
+            if i >= args.n: # Decides the number of displayed headlines
                 break
             print("Sentence {}:".format(i+1))
             s = [ data_set.id_to_word[w] for w in s]
