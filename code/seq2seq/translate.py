@@ -57,6 +57,10 @@ tf.app.flags.DEFINE_integer("num_layers", 3, "Number of layers in the model.")
 tf.app.flags.DEFINE_integer("article_vocab_size", 40000, "Article vocabulary size.")
 tf.app.flags.DEFINE_integer("title_vocab_size", 40000, "Title vocabulary size.")
 tf.app.flags.DEFINE_string("data_dir", "/tmp", "Data directory")
+tf.app.flags.DEFINE_string("article_file", "articles.txt",
+                           "file containing the articles (relative to data_dir)")
+tf.app.flags.DEFINE_string("title_file", "titles.txt",
+                           "file containing the titles (relative to data_dir)")
 tf.app.flags.DEFINE_string("train_dir", "/tmp", "Training directory.")
 tf.app.flags.DEFINE_integer("max_train_data_size", 0,
                             "Limit on the size of training data (0: no limit).")
@@ -65,15 +69,16 @@ tf.app.flags.DEFINE_integer("steps_per_checkpoint", 200,
 tf.app.flags.DEFINE_boolean("decode", False,
                             "Set to True for sample decoding.")
 
+
 FLAGS = tf.app.flags.FLAGS
 
 # We use a number of buckets and pad to the closest one for efficiency.
 # See seq2seq_model.Seq2SeqModel for details of how they work.
-# 
+#
 # Buckets are from the 100000 headline articles pairs in our small data set,
 # they are very preliminary and we also opted to pad all titles since
 # there's no apperent correlation between title and article lengths.
-_buckets = [(250, 36), (1000,36), (8000, 46), (44266, 36)]
+_buckets = [(250, 36)]
 
 
 def read_data(source_path, target_path, max_size=None):
@@ -136,7 +141,11 @@ def train():
   # Prepare news data.
   print("Preparing news data in %s" % FLAGS.data_dir)
   articles_train, titles_train, _, _ = data_utils.prepare_news_data(
-      FLAGS.data_dir, FLAGS.article_vocab_size, FLAGS.title_vocab_size)
+      FLAGS.data_dir,
+      FLAGS.article_file,
+      FLAGS.title_file,
+      FLAGS.article_vocab_size,
+      FLAGS.title_vocab_size)
 
   with tf.Session() as sess:
     # Create model.
@@ -164,8 +173,10 @@ def train():
       # Choose a bucket according to data distribution. We pick a random number
       # in [0, 1] and use the corresponding interval in train_buckets_scale.
       random_number_01 = np.random.random_sample()
+
       bucket_id = min([i for i in xrange(len(train_buckets_scale))
                        if train_buckets_scale[i] > random_number_01])
+      #print("Selected bucket %d" % bucket_id)
 
       # Get a batch and make a step.
       start_time = time.time()
@@ -203,22 +214,22 @@ def decode():
 
     # Load vocabularies.
     article_vocab_path = os.path.join(FLAGS.data_dir,
-                                 "vocab%d.articles" % FLAGS.en_vocab_size)
+                                 "vocab%d.article" % FLAGS.article_vocab_size)
     title_vocab_path = os.path.join(FLAGS.data_dir,
-                                 "vocab%d.titles" % FLAGS.fr_vocab_size)
+                                 "vocab%d.title" % FLAGS.title_vocab_size)
     article_vocab, _ = data_utils.initialize_vocabulary(article_vocab_path)
     _, rev_title_vocab = data_utils.initialize_vocabulary(title_vocab_path)
 
     # Decode from three random article.
     sys.stdout.write("Decide headline for three articles:")
     sys.stdout.flush()
-    articles = random.sample(list(open('articles.txt')),3)
+    articles = random.sample(list(open(os.path.join(FLAGS.data_dir, FLAGS.article_file))),3)
     for article in articles:
       # Get token-ids for the input sentence.
       token_ids = data_utils.sentence_to_token_ids(article, article_vocab)
       # Which bucket does it belong to?
-      bucket_id = min([b for b in xrange(len(_buckets))
-                       if _buckets[b][0] > len(token_ids)])
+      bucket_id = 0#min([b for b in xrange(len(_buckets))
+                    #   if _buckets[b][0] > len(token_ids)])
       # Get a 1-element batch to feed the sentence to the model.
       encoder_inputs, decoder_inputs, target_weights = model.get_batch(
           {bucket_id: [(token_ids, [])]}, bucket_id)
