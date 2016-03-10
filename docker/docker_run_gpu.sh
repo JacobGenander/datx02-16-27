@@ -18,14 +18,29 @@
 set -e
 
 export CUDA_HOME=${CUDA_HOME:-/usr/local/cuda}
+export CUDA_HOME=${CUDA_HOME:-/opt/cuda}
 
 if [ ! -d ${CUDA_HOME}/lib64 ]; then
   echo "Failed to locate CUDA libs at ${CUDA_HOME}/lib64."
   exit 1
 fi
 
-export CUDA_SO=$(\ls /usr/lib/x86_64-linux-gnu/libcuda.* | \
-                    xargs -I{} echo '-v {}:{}')
+CUDA_LIB_LOCAL=/opt/cuda/lib
+CUDA_LIB_DOCKER=/usr/lib/x86_64-linux-gnu
+CUDA_SO=()
+
+for lib in "$CUDA_LIB_LOCAL/"libcuda*;
+do
+	FILENAME=$(basename "$lib")
+	PAIR="-v $lib:$CUDA_LIB_DOCKER/$FILENAME"
+	#echo "$PAIR"
+	CUDA_SO=("${CUDA_SO[@]}" "$PAIR")
+	#echo "${CUDA_SO[@]}"
+done
+CUDA_SO="${CUDA_SO[@]}"
+
+#export CUDA_SO=$(\ls /opt/cuda/lib/libcuda* | \
+#                    xargs -I{} echo '-v {}:{}')
 export DEVICES=$(\ls /dev/nvidia* | \
                     xargs -I{} echo '--device {}:{}')
 
@@ -33,6 +48,9 @@ if [[ "${DEVICES}" = "" ]]; then
   echo "Failed to locate NVidia device(s). Did you want the non-GPU container?"
   exit 1
 fi
-
+echo "----MAPPED LIBS-----"
+echo $CUDA_SO
+echo "----MAPPED GPUS-----"
+echo $DEVICES
 docker run -it $CUDA_SO $DEVICES "$@"
 
