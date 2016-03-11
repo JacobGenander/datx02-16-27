@@ -19,7 +19,6 @@ from DataMan import DataMan
 # https://www.tensorflow.org/versions/r0.7/api_docs/python/index.html
 
 class LSTM_Network(object):
-
     def __init__(self, training, config):
         self.batch_size = batch_size = config["batch_size"]
         self.size = size = config["hidden_layer_size"]

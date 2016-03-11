@@ -13,9 +13,11 @@ class DataMan(object):
     # Static variables
     vocab_size = 0
     word_to_id = None
-    id_to_word = None
-    unk_id = None
-    pad_id = None
+    id_to_word = ["<eos>", "<pad>", "<unk>"]
+
+    eos_id = 0
+    pad_id = 1
+    unk_id = 2
 
     def __init__(self, filename, max_seq, rebuild_vocab=True):
         self._max_seq = max_seq
@@ -35,15 +37,14 @@ class DataMan(object):
         return words
 
     def _build_vocab(self, raw_data):
-        self._data = self._tokenize(raw_data) + ['<unk>'] + ['<pad>']
+        self._data = self._tokenize(raw_data)
 
         # Give the words ids based on the number of occurrences in the data set
         counter = collections.Counter(self._data)
         count_pairs = counter.most_common()
-        DataMan.id_to_word = sort_words = [ word for word, _ in count_pairs ]
+        DataMan.id_to_word.extend([ word for word, _ in count_pairs if word != "<eos>" ])
+        sort_words = DataMan.id_to_word
         DataMan.word_to_id = dict(zip(sort_words, range(len(sort_words))))
-        DataMan.unk_id = DataMan.word_to_id['<unk>']
-        DataMan.pad_id = DataMan.word_to_id['<pad>']
         DataMan.vocab_size = len(DataMan.word_to_id)
 
     def _sentence_to_ids(self, sentence):
