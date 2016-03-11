@@ -7,23 +7,29 @@ from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 import interfaceLSTM
+import hyperParams
+import cPickle as pickle
 import plot
 import time
 import sys
 import os
 from DataMan import DataMan
-from hyperParams import *
 
 # TensorFlow's API (if you want to know what arguments we pass to the different methods)
 # https://www.tensorflow.org/versions/r0.7/api_docs/python/index.html
 
 class LSTM_Network(object):
 
-    def __init__(self, training, batch_size):
-        self.batch_size = batch_size
+    def __init__(self, training, config):
+        self.batch_size = batch_size = config["batch_size"]
+        self.size = size = config["hidden_layer_size"]
+        max_seq = config["max_seq"]
+        keep_prob = config["keep_prob"]
+        vocab_size = config["vocab_size"]
+
         # 2-dimensional tensors for input data and targets
-        self._input = tf.placeholder(tf.int32, [batch_size, MAX_SEQ])
-        self._target = tf.placeholder(tf.int64, [batch_size, MAX_SEQ])
+        self._input = tf.placeholder(tf.int32, [batch_size, max_seq])
+        self._target = tf.placeholder(tf.int64, [batch_size, max_seq])
         # This is the length of each sentence
         self._seq_lens = tf.placeholder(tf.int32, [batch_size])
         # We need these to crop output and targets so we do not train on more time sequences than needed
@@ -33,22 +39,22 @@ class LSTM_Network(object):
         # Fetch word vectors
         with tf.device("/cpu:0"):
             embedding = tf.get_variable("embedding",
-                    [DataMan.vocab_size, EMBEDDING_SIZE])
+                    [vocab_size, config["embedding_size"]])
             inputs = tf.nn.embedding_lookup(embedding, self._input)
 
-        if KEEP_PROB < 1 and training:
-            inputs = tf.nn.dropout(inputs, KEEP_PROB)
+        if keep_prob < 1 and training:
+            inputs = tf.nn.dropout(inputs, keep_prob)
 
         # Create the network
-        cell = tf.nn.rnn_cell.BasicLSTMCell(HIDDEN_LAYER_SIZE)
-        if KEEP_PROB < 1 and training:
-            cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=KEEP_PROB)
-        stacked_cells = tf.nn.rnn_cell.MultiRNNCell([cell] * NUMBER_OF_LAYERS)
+        cell = tf.nn.rnn_cell.BasicLSTMCell(size)
+        if keep_prob < 1 and training:
+            cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob)
+        stacked_cells = tf.nn.rnn_cell.MultiRNNCell([cell] * config["number_of_layers"])
 
         self._initial_state = state = stacked_cells.zero_state(batch_size, tf.float32)
 
         # Give input the right shape
-        inputs = [ tf.squeeze(input_, [1]) for input_ in tf.split(1, MAX_SEQ, inputs)]
+        inputs = [ tf.squeeze(input_, [1]) for input_ in tf.split(1, max_seq, inputs)]
 
         # Run through the whole batch and update state
         outputs, _ = tf.nn.rnn(stacked_cells, inputs, initial_state=self._initial_state, sequence_length=self._seq_lens)
@@ -60,10 +66,10 @@ class LSTM_Network(object):
         target = tf.slice(self._target, [0, 0], self._target_dim)
 
         # Flatten output into a tensor where each row is the output from one word
-        output = tf.reshape(outputs, [-1, HIDDEN_LAYER_SIZE])
+        output = tf.reshape(outputs, [-1, size])
 
-        w = tf.get_variable("out_w", [HIDDEN_LAYER_SIZE, DataMan.vocab_size])
-        b = tf.get_variable("out_b", [DataMan.vocab_size])
+        w = tf.get_variable("out_w", [size, vocab_size])
+        b = tf.get_variable("out_b", [vocab_size])
         z = tf.matmul(output, w) + b # Add supports broadcasting over each row
 
         # Average negative log probability
@@ -74,7 +80,7 @@ class LSTM_Network(object):
             self._train_op = tf.no_op()
             return
 
-        self._learning_rate = tf.Variable(LEARNING_RATE, trainable=False)
+        self._learning_rate = tf.Variable(config["learning_rate"], trainable=False)
         # Gradient descent training op
         optimizer = tf.train.GradientDescentOptimizer(self._learning_rate)
         self._train_op = optimizer.minimize(self._cost)
@@ -82,14 +88,9 @@ class LSTM_Network(object):
     def set_learning_rate(self, sess, value):
         sess.run(tf.assign(self._learning_rate, value))
 
-    def lr_decay_and_set(self, sess, epoch):
-        if epoch > DECAY_START:
-            decay = LEARNING_DECAY ** (epoch - DECAY_START)
-            self.set_learning_rate(sess, LEARNING_RATE * decay)
-
     def calc_output_dims(self, seq_lens):
         max_batch_seq = max(seq_lens)
-        dim_output = np.array([self.batch_size, max_batch_seq * HIDDEN_LAYER_SIZE])
+        dim_output = np.array([self.batch_size, max_batch_seq * self.size])
         dim_target = np.array([self.batch_size, max_batch_seq])
         return dim_output, dim_target
 
@@ -110,19 +111,20 @@ def run_epoch(sess, data_set, net, perplexity):
     else:
         return total_cost / (i+1)
 
-def save_state(sess, saver):
+def save_state(sess, saver, save_path):
     print("Saving model.")
-    save_path = saver.save(sess, "/tmp/model.ckpt")
-    print("Model saved in file: {}".format(save_path))
+    file_path = os.path.join(save_path, "model.ckpt")
+    file_path = saver.save(sess, file_path)
+    print("Model saved in file: {}".format(file_path))
 
-def create_data_sets(data_path):
+def create_data_sets(data_path, max_seq):
     try:
         train_path = os.path.join(data_path, "train.txt")
-        training_set = DataMan(train_path, MAX_SEQ)
+        training_set = DataMan(train_path, max_seq)
         valid_path = os.path.join(data_path, "valid.txt")
-        validation_set = DataMan(valid_path, MAX_SEQ, rebuild_vocab=False)
+        validation_set = DataMan(valid_path, max_seq, rebuild_vocab=False)
         test_path = os.path.join(data_path, "test.txt")
-        test_set = DataMan(test_path, MAX_SEQ, rebuild_vocab=False)
+        test_set = DataMan(test_path, max_seq, rebuild_vocab=False)
     except IOError:
         print("File not found. Data path needs to contain three files: train.txt, valid.txt and test.txt")
         sys.exit(1)
@@ -133,19 +135,27 @@ def main():
     start_time = time.time()
 
     args = interfaceLSTM.parser.parse_args()
-    training_set, validation_set, test_set = create_data_sets(args.data_path)
+    config = hyperParams.config
+    training_set, validation_set, test_set = create_data_sets(args.data_path, config["max_seq"])
+    config["vocab_size"] = DataMan.vocab_size
 
     save_path = args.save_path
     if not os.path.isdir(save_path):
         print("Couldn't find save directory")
         sys.exit(1)
 
-    initializer = tf.random_uniform_initializer(-INIT_RANGE, INIT_RANGE)
+    file_path = os.path.join(save_path, "word_dict.p")
+    pickle.dump(DataMan.id_to_word, open(file_path, "wb"))
+    file_path = os.path.join(save_path, "params.p")
+    pickle.dump(config, open(file_path, "wb"))
+
+    initializer = tf.random_uniform_initializer(-config["init_range"], config["init_range"])
     with tf.variable_scope("model", reuse=None, initializer=initializer):
-        train_net = LSTM_Network(True, BATCH_SIZE)
+        train_net = LSTM_Network(True, config)
     with tf.variable_scope("model", reuse=True, initializer=initializer):
-        val_net = LSTM_Network(False, BATCH_SIZE)
-        test_net = LSTM_Network(False, 1)
+        val_net = LSTM_Network(False, config)
+        config["batch_size"] = 1
+        test_net = LSTM_Network(False, config)
 
     # We always need to run this operation before anything else
     init = tf.initialize_all_variables()
@@ -158,10 +168,14 @@ def main():
 
         print("Training.")
         cost_train, cost_valid = [], []
-        cost_valid = []
-        for i in range(MAX_EPOCH):
-            print("\r{}% done".format(int(i/MAX_EPOCH * 100)))
-            train_net.lr_decay_and_set(sess, i)
+        max_epoch = config["max_epoch"]
+        for i in range(max_epoch):
+            print("\r{}% done".format(int(i/max_epoch * 100)))
+
+            if i > config["decay_start"]:
+                decay = config["learning_decay"] ** (i - config["decay_start"])
+                train_net.set_learning_rate(sess, config["learning_rate"] * decay)
+
             cost = run_epoch(sess, training_set, train_net, False)
             cost_train.append(cost)
             cost = run_epoch(sess, validation_set, val_net, False)
@@ -173,9 +187,9 @@ def main():
         print("Perplexity: {}".format(perplexity))
 
         print("Creating plot.")
-        plot.create_plots(save_path, range(MAX_EPOCH), cost_train, cost_valid)
+        plot.create_plots(save_path, range(max_epoch), cost_train, cost_valid)
 
-        save_state(sess, saver)
+        save_state(sess, saver, save_path)
         print("--- {} seconds ---".format(round(time.time() - start_time, 2)))
 
 if __name__ == "__main__":
