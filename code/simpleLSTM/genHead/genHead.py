@@ -111,10 +111,9 @@ def main():
         for i, s in enumerate(sentences):
             if i >= args.n: # Decides the number of displayed headlines
                 break
-            print("Sentence {}:".format(i+1))
             s = [ id_to_word[w] for w in s]
             s = " ".join(s)
-            print(format_sentence(s))
+            print("Sentence {0}:\t{1}".format(i+1, format_sentence(s)))
 
 if __name__ == "__main__":
     main()

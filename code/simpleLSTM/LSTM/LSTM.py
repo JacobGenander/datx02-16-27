@@ -170,7 +170,8 @@ def main():
         cost_train, cost_valid = [], []
         max_epoch = config["max_epoch"]
         for i in range(max_epoch):
-            print("\r{}% done".format(int(i/max_epoch * 100)))
+            print("\r{}% done".format(int(i/max_epoch * 100)), end="")
+            sys.stdout.flush()
 
             if i > config["decay_start"]:
                 decay = config["learning_decay"] ** (i - config["decay_start"])
@@ -180,7 +181,7 @@ def main():
             cost_train.append(cost)
             cost = run_epoch(sess, validation_set, val_net, False)
             cost_valid.append(cost)
-        print("100% done")
+        print("\r100% done")
 
         print("Calculating perplexity.")
         perplexity = run_epoch(sess, test_set, test_net, True)
