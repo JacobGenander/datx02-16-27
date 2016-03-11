@@ -1,3 +1,7 @@
 TODO:
 * Initiate embedding matrix with GloVe or word2vec
 * Save progress as we train 
+* Cap vocab to the most common words
+* Modify regex to better suit our task
+* Condition headline generation on some initial sequence
+* Ability to give forget bias as hyperparameter?
