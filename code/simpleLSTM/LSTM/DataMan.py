@@ -19,13 +19,13 @@ class DataMan(object):
     pad_id = 1
     unk_id = 2
 
-    def __init__(self, filename, max_seq, rebuild_vocab=True):
+    def __init__(self, filename, max_seq, rebuild_vocab=True, max_vocab_size=10000):
         self._max_seq = max_seq
         raw_data = None
         with open(filename, 'r') as f:
             raw_data = f.read()
         if rebuild_vocab:
-            self._build_vocab(raw_data)
+            self._build_vocab(raw_data, max_vocab_size)
         self._prepare_data(raw_data)
 
     def _tokenize(self, text):
@@ -36,14 +36,14 @@ class DataMan(object):
             words.extend(filter(None, re.split(regex, frag)))
         return words
 
-    def _build_vocab(self, raw_data):
+    def _build_vocab(self, raw_data, max_vocab_size):
         self._data = self._tokenize(raw_data)
 
         # Give the words ids based on the number of occurrences in the data set
         counter = collections.Counter(self._data)
         count_pairs = counter.most_common()
         DataMan.id_to_word.extend([ word for word, _ in count_pairs if word != "<eos>" ])
-        sort_words = DataMan.id_to_word
+        DataMan.id_to_word = sort_words = DataMan.id_to_word[:max_vocab_size]
         DataMan.word_to_id = dict(zip(sort_words, range(len(sort_words))))
         DataMan.vocab_size = len(DataMan.word_to_id)
 

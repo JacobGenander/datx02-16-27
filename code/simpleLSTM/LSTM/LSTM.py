@@ -116,10 +116,10 @@ def save_state(sess, saver, save_path):
     file_path = saver.save(sess, file_path)
     print("Model saved in file: {}".format(file_path))
 
-def create_data_sets(data_path, max_seq):
+def create_data_sets(data_path, max_seq, max_vocab_size):
     try:
         train_path = os.path.join(data_path, "train.txt")
-        training_set = DataMan(train_path, max_seq)
+        training_set = DataMan(train_path, max_seq, max_vocab_size=max_vocab_size)
         valid_path = os.path.join(data_path, "valid.txt")
         validation_set = DataMan(valid_path, max_seq, rebuild_vocab=False)
         test_path = os.path.join(data_path, "test.txt")
@@ -135,7 +135,11 @@ def main():
 
     args = interfaceLSTM.parser.parse_args()
     config = hyperParams.config
-    training_set, validation_set, test_set = create_data_sets(args.data_path, config["max_seq"])
+    training_set, validation_set, test_set = create_data_sets(
+            args.data_path,
+            config["max_seq"],
+            config["max_vocab_size"])
+
     config["vocab_size"] = DataMan.vocab_size
     config["unk_id"] = DataMan.unk_id
 
