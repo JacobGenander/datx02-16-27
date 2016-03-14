@@ -50,13 +50,13 @@ def choose_words(word_probs, batch_size):
             res[i,0] = np.argmax(probs, axis=0)
     # This case weights its prediction based on all probabilities
     else:
-        rand = random.uniform(0,1)
+        rand = np.random.uniform(0, 1, [batch_size])
         for i, probs in enumerate(word_probs):
             s = 0
             index_picked = False
             for j in range(len(probs)):
                 s += probs[j] # The added probabilty that makes us exceed the rand value will be the word we choose
-                if s >= rand:
+                if s >= rand[i]:
                     index_picked = True
                     res[i,0] = j
                     break
@@ -64,15 +64,33 @@ def choose_words(word_probs, batch_size):
                 res[i,0] = j
     return res
 
-def gen_sentences(net, sess, vocab_size, config):
-    current_state = net._initial_state.eval()
-    inputs = generate_input(vocab_size, config["batch_size"])
+def gen_init_batch(seq, batch_size, word_to_id, unk_id):
+        ids = [[word_to_id.get(w, unk_id) for w in seq.split()]]
+        init_batch =  np.repeat(ids, batch_size, 0)
+        return init_batch
+
+def gen_sentences(net, sess, word_to_id, config):
+    batch_size = config["batch_size"]
+
+    init_seq = interfaceGenHead.parser.parse_args().init_seq
+    if init_seq:
+        init_batch = gen_init_batch(init_seq, batch_size, word_to_id, config["unk_id"])
+        inputs = np.reshape(init_batch[:, 0], [batch_size, 1])
+    else:
+        inputs = generate_input(len(word_to_id), batch_size)
+
     sentences = [inputs]
+
+    num_init_words = len(init_seq.split())
+    current_state = net._initial_state.eval()
     for i in range(config["max_seq"]):
         feed = {net._inputs : inputs, net._initial_state : current_state}
         output, current_state = sess.run([net._word_predictions, net._final_state], feed_dict=feed)
 
-        next_words = choose_words(output, config["batch_size"])
+        if i >= num_init_words - 1:
+            next_words = choose_words(output, batch_size)
+        else:
+            next_words = np.reshape(init_batch[:, i+1], [batch_size, 1])
 
         sentences.append(next_words)
         inputs = next_words
@@ -89,13 +107,13 @@ def main():
     config_path = os.path.join(model_folder, "params.p")
     with open(config_path, "rb") as f:
         config = pickle.load(f)
-    dict_path = os.path.join(model_folder, "word_dict.p")
+    dict_path = os.path.join(model_folder, "vocabs.p")
     with open(dict_path, "rb") as f:
-        id_to_word = pickle.load(f)
+        vocabs = pickle.load(f)
 
     init = tf.initialize_all_variables()
 
-    vocab_size = len(id_to_word)
+    vocab_size = len(vocabs["id_to_word"])
     with tf.variable_scope("model", reuse=False):
         net = LSTM_Network(vocab_size, config)
 
@@ -106,12 +124,12 @@ def main():
         model_path = os.path.join(model_folder, "model.ckpt")
         saver.restore(sess, model_path)
 
-        sentences = gen_sentences(net, sess, vocab_size, config)
+        sentences = gen_sentences(net, sess, vocabs["word_to_id"], config)
 
         for i, s in enumerate(sentences):
             if i >= args.n: # Decides the number of displayed headlines
                 break
-            s = [ id_to_word[w] for w in s]
+            s = [ vocabs["id_to_word"][w] for w in s]
             s = " ".join(s)
             print("Sentence {0}:\t{1}".format(i+1, format_sentence(s)))
 

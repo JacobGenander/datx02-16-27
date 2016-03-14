@@ -137,14 +137,16 @@ def main():
     config = hyperParams.config
     training_set, validation_set, test_set = create_data_sets(args.data_path, config["max_seq"])
     config["vocab_size"] = DataMan.vocab_size
+    config["unk_id"] = DataMan.unk_id
 
     save_path = args.save_path
     if not os.path.isdir(save_path):
         print("Couldn't find save directory")
         sys.exit(1)
 
-    file_path = os.path.join(save_path, "word_dict.p")
-    pickle.dump(DataMan.id_to_word, open(file_path, "wb"))
+    vocabs = { "word_to_id" : DataMan.word_to_id, "id_to_word" : DataMan.id_to_word}
+    file_path = os.path.join(save_path, "vocabs.p")
+    pickle.dump(vocabs, open(file_path, "wb"))
     file_path = os.path.join(save_path, "params.p")
     pickle.dump(config, open(file_path, "wb"))
 

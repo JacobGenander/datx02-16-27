@@ -14,4 +14,6 @@ parser.add_argument('-n', metavar='N', type=int, default=10,
         help='number of sentences to generate (might be capped by batch size)')
 parser.add_argument('--most_prob', action='store_true', default=False,
         help='generate headlines with the most probable words')
+parser.add_argument('--init_seq', type=str, default="",
+        help='condition model on some initial sequence')
 
