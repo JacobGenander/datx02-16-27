@@ -19,4 +19,5 @@ config["decay_start"] = 10 # Learning decay starts after this epoch
 # Misc
 config["keep_prob"] = 1.0 # Probability that an input/output is kept, needs to be in range (0, 1] (1 = No dropout)
 config["init_range"] = 0.3 # Initiate weights an biases within this range (-/+ init_range)
+config["forget_bias"] = 0.0 # Initial LSTM forget bias
 

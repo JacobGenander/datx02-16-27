@@ -45,7 +45,7 @@ class LSTM_Network(object):
             inputs = tf.nn.dropout(inputs, keep_prob)
 
         # Create the network
-        cell = tf.nn.rnn_cell.BasicLSTMCell(size)
+        cell = tf.nn.rnn_cell.BasicLSTMCell(size, forget_bias=config["forget_bias"])
         if keep_prob < 1 and training:
             cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob)
         stacked_cells = tf.nn.rnn_cell.MultiRNNCell([cell] * config["number_of_layers"])
