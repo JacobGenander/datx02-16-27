@@ -16,3 +16,5 @@ parser.add_argument('--data_path', nargs='?', default=default_data_dir,
         help='path where train.txt, valid.txt and test.txt can be found')
 parser.add_argument('--save_path', nargs='?', default=default_save_dir,
         help='directory where the results are saved')
+parser.add_argument('--embedding', nargs='?', default=None,
+        help='path to pretrained word vector matrix (must match current hyperparameters)')

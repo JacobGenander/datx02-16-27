@@ -1,4 +1,3 @@
 TODO:
-* Initiate embedding matrix with GloVe or word2vec
 * Save progress as we train 
 * Modify regex to better suit our task

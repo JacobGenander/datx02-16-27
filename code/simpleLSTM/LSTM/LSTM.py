@@ -19,7 +19,7 @@ from DataMan import DataMan
 # https://www.tensorflow.org/versions/r0.7/api_docs/python/index.html
 
 class LSTM_Network(object):
-    def __init__(self, training, config):
+    def __init__(self, training, config, emb_init):
         self.batch_size = batch_size = config["batch_size"]
         self.size = size = config["hidden_layer_size"]
         max_seq = config["max_seq"]
@@ -37,8 +37,11 @@ class LSTM_Network(object):
 
         # Fetch word vectors
         with tf.device("/cpu:0"):
-            embedding = tf.get_variable("embedding",
-                    [vocab_size, config["embedding_size"]])
+            try:
+                embedding = tf.get_variable("embedding",
+                        [vocab_size, config["embedding_size"]], initializer=emb_init)
+            except ValueError:
+                embedding = tf.get_variable("embedding", initializer=emb_init)
             inputs = tf.nn.embedding_lookup(embedding, self._input)
 
         if keep_prob < 1 and training:
@@ -133,8 +136,10 @@ def create_data_sets(data_path, max_seq, max_vocab_size):
 def main():
     start_time = time.time()
 
+    # Fetch args and parameters
     args = interfaceLSTM.parser.parse_args()
     config = hyperParams.config
+    # Load data
     training_set, validation_set, test_set = create_data_sets(
             args.data_path,
             config["max_seq"],
@@ -148,6 +153,7 @@ def main():
         print("Couldn't find save directory")
         sys.exit(1)
 
+    # Save vocabularies and params to enable headline generation later on
     vocabs = { "word_to_id" : DataMan.word_to_id, "id_to_word" : DataMan.id_to_word}
     file_path = os.path.join(save_path, "vocabs.p")
     pickle.dump(vocabs, open(file_path, "wb"))
@@ -155,12 +161,22 @@ def main():
     pickle.dump(config, open(file_path, "wb"))
 
     initializer = tf.random_uniform_initializer(-config["init_range"], config["init_range"])
+    # Choose initialization of embedding matrix
+    if args.embedding:
+        config["embedding_size"] = 300 # 300 is the dimensionality of word2vec
+        with  open(args.embedding, "rb") as f:
+            emb_matrix = pickle.load(f)
+        emb_init = tf.constant(emb_matrix, dtype=tf.float32)
+    else:
+        emb_init = initializer
+
+    # Create networks for training and evaluation
     with tf.variable_scope("model", reuse=None, initializer=initializer):
-        train_net = LSTM_Network(True, config)
+        train_net = LSTM_Network(True, config, emb_init)
     with tf.variable_scope("model", reuse=True, initializer=initializer):
-        val_net = LSTM_Network(False, config)
+        val_net = LSTM_Network(False, config, emb_init)
         config["batch_size"] = 1
-        test_net = LSTM_Network(False, config)
+        test_net = LSTM_Network(False, config, emb_init)
 
     # We always need to run this operation before anything else
     init = tf.initialize_all_variables()
