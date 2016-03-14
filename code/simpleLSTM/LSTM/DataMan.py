@@ -28,7 +28,9 @@ class DataMan(object):
         self._prepare_data(raw_data)
 
     def _tokenize(self, text):
-        regex = re.compile("([\d.\-,!?\"':;)(\\/])")
+        regex = re.compile("([\-,!?\"':;)(])")
+        text = re.sub('\d+', 'N', text)
+        text = re.sub('\comments', ' ', text)
         no_space_text = text.replace("\n", " <eos> ").split()
         words = []
         for frag in no_space_text:
