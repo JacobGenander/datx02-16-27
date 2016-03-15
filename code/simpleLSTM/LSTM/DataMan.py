@@ -29,7 +29,7 @@ class DataMan(object):
 
     def _tokenize(self, text):
         regex = re.compile("([\-,!?\"':;)(])")
-        text = re.sub('\d+', 'N', text)
+        text = re.sub('\d+', '<num>', text)
         text = re.sub('\comments', ' ', text)
         no_space_text = text.replace("\n", " <eos> ").split()
         words = []
@@ -83,9 +83,4 @@ class DataMan(object):
             y = np.column_stack((self._data[start : start+batch_size, 1:], fill))
             z = self._seq_lens[start : start+batch_size]
             yield (x, y, z)
-
-    # This is the number of sentences in the data set
-    @property
-    def data_len(self):
-        return self._data_len
 
