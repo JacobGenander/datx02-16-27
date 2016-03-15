@@ -37,11 +37,7 @@ class LSTM_Network(object):
 
         # Fetch word vectors
         with tf.device("/cpu:0"):
-            try:
-                embedding = tf.get_variable("embedding",
-                        [vocab_size, config["embedding_size"]], initializer=emb_init)
-            except ValueError:
-                embedding = tf.get_variable("embedding", initializer=emb_init)
+            embedding = tf.get_variable("embedding", emb_init[1], initializer=emb_init[0])
             inputs = tf.nn.embedding_lookup(embedding, self._input)
 
         if keep_prob < 1 and training:
@@ -162,9 +158,12 @@ def main():
         config["embedding_size"] = 300 # 300 is the dimensionality of word2vec
         with  open(args.embedding, "rb") as f:
             emb_matrix = pickle.load(f)
-        emb_init = tf.constant(emb_matrix, dtype=tf.float32)
+        emb_initzer = tf.constant(emb_matrix, dtype=tf.float32)
+        init_shape = None
     else:
-        emb_init = initializer
+        emb_initzer = initializer
+        init_shape = [config["vocab_size"], config["embedding_size"]]
+    emb_init = (emb_initzer, init_shape)
 
     # Create networks for training and evaluation
     with tf.variable_scope("model", reuse=None, initializer=initializer):
