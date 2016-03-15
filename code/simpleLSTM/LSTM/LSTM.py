@@ -96,7 +96,7 @@ class LSTM_Network(object):
         dim_target = np.array([self.batch_size, max_batch_seq])
         return dim_output, dim_target
 
-def run_epoch(sess, data_set, net, perplexity):
+def run_epoch(sess, data_set, net):
     total_cost = 0.0
     steps = 0
     for i, (x, y, z) in enumerate(data_set.batch_iterator(net.batch_size)):
@@ -108,10 +108,9 @@ def run_epoch(sess, data_set, net, perplexity):
         cost, _ = sess.run([net._cost, net._train_op], feed_dict=feed)
         total_cost += cost
 
-    if perplexity:
-        return np.exp(total_cost / steps)
-    else:
-        return total_cost / (i+1)
+    perplexity = np.exp(total_cost / steps)
+    average_cost = total_cost / (i+1)
+    return average_cost, perplexity
 
 def save_state(sess, saver, save_path):
     print("\nSaving model.")
@@ -210,9 +209,9 @@ def main():
                 decay = config["learning_decay"] ** (i - config["decay_start"])
                 train_net.set_learning_rate(sess, config["learning_rate"] * decay)
 
-            cost = run_epoch(sess, training_set, train_net, False)
+            cost, _ = run_epoch(sess, training_set, train_net)
             cost_train.append(cost)
-            cost = run_epoch(sess, validation_set, val_net, False)
+            cost, _ = run_epoch(sess, validation_set, val_net)
             cost_valid.append(cost)
 
             if i != start_epoch and i % config["save_epoch"] == 0:
@@ -225,7 +224,7 @@ def main():
         print("\r100% done")
 
         print("Calculating perplexity.")
-        perplexity = run_epoch(sess, test_set, test_net, True)
+        _, perplexity = run_epoch(sess, test_set, test_net)
         print("Perplexity: {}".format(perplexity))
 
         print("Creating plot.")
