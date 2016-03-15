@@ -1,3 +1,2 @@
 TODO:
-* Save progress as we train 
 * Modify regex to better suit our task
