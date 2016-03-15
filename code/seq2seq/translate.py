@@ -78,7 +78,8 @@ FLAGS = tf.app.flags.FLAGS
 # Buckets are from the 100000 headline articles pairs in our small data set,
 # they are very preliminary and we also opted to pad all titles since
 # there's no apperent correlation between title and article lengths.
-_buckets = [(250, 36)]
+_buckets = [(100, 48), (200, 48), (400, 48), (800, 48)]
+#_buckets = [(250, 36), (1000,36), (8000, 46), (44266, 36)]
 
 
 def read_data(source_path, target_path, max_size=None):
@@ -223,7 +224,7 @@ def decode():
     # Decode from three random article.
     sys.stdout.write("Decide headline for three articles:")
     sys.stdout.flush()
-    articles = random.sample(list(open(os.path.join(FLAGS.data_dir, FLAGS.article_file))),3)
+    articles = random.sample(list(open(os.path.join(FLAGS.data_dir, FLAGS.article_file))),50)
     for article in articles:
       # Get token-ids for the input sentence.
       token_ids = data_utils.sentence_to_token_ids(article, article_vocab)
@@ -242,7 +243,12 @@ def decode():
       if data_utils.EOS_ID in outputs:
         outputs = outputs[:outputs.index(data_utils.EOS_ID)]
       # Print out title corresponding to outputs.
+      print("-"*80)
       print(" ".join([rev_title_vocab[output] for output in outputs]))
+      print("-"*80)
+      print(article)
+      print("-"*80)
+
       sys.stdout.flush()
 
 def main(_):
