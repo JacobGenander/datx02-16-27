@@ -114,7 +114,7 @@ def run_epoch(sess, data_set, net, perplexity):
         return total_cost / (i+1)
 
 def save_state(sess, saver, save_path):
-    print("Saving model.")
+    print("\nSaving model.")
     file_path = os.path.join(save_path, "model.ckpt")
     file_path = saver.save(sess, file_path)
     print("Model saved in file: {}".format(file_path))
@@ -178,19 +178,31 @@ def main():
         config["batch_size"] = 1
         test_net = LSTM_Network(False, config, emb_init)
 
-    # We always need to run this operation before anything else
+        # Need to declare this before saver
+    with tf.variable_scope("counter", reuse=False):
+        tf.get_variable("epoch_counter", dtype=tf.int32, initializer=tf.constant(0))
+
+    # We always need to run this operation if not loading an old state
     init = tf.initialize_all_variables()
-    # This operation will save our state at the end
+
+    # This operation will save our state
     saver = tf.train.Saver()
 
     with tf.Session() as sess:
         # Initialize variables
-        sess.run(init)
+        if args.load_state:
+            saver.restore(sess, args.load_state)
+        else:
+            sess.run(init)
 
-        print("Training.")
+        # Some further initialization before the training loop
         cost_train, cost_valid = [], []
         max_epoch = config["max_epoch"]
-        for i in range(max_epoch):
+        with tf.variable_scope("counter", reuse=True):
+            start_epoch = sess.run(tf.get_variable("epoch_counter", dtype=tf.int32))
+
+        print("Training.")
+        for i in range(start_epoch, max_epoch, 1):
             print("\r{}% done".format(int(i/max_epoch * 100)), end="")
             sys.stdout.flush()
 
@@ -202,6 +214,14 @@ def main():
             cost_train.append(cost)
             cost = run_epoch(sess, validation_set, val_net, False)
             cost_valid.append(cost)
+
+            if i != start_epoch and i % config["save_epoch"] == 0:
+                save_state(sess, saver, save_path)
+
+            # Increment counter
+            with tf.variable_scope("counter", reuse=True):
+                new_val = tf.add(tf.get_variable("epoch_counter", dtype=tf.int32), tf.constant(1))
+                sess.run(tf.get_variable("epoch_counter", dtype=tf.int32).assign(new_val))
         print("\r100% done")
 
         print("Calculating perplexity.")
@@ -209,7 +229,7 @@ def main():
         print("Perplexity: {}".format(perplexity))
 
         print("Creating plot.")
-        plot.create_plots(save_path, range(max_epoch), cost_train, cost_valid)
+        plot.create_plots(save_path, range(max_epoch - start_epoch), cost_train, cost_valid)
 
         save_state(sess, saver, save_path)
         print("--- {} seconds ---".format(round(time.time() - start_time, 2)))

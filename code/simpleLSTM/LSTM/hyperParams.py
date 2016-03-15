@@ -22,3 +22,6 @@ config["keep_prob"] = 1.0 # Probability that an input/output is kept, needs to b
 config["init_range"] = 0.3 # Initiate weights an biases within this range (-/+ init_range)
 config["forget_bias"] = 0.0 # Initial LSTM forget bias
 
+# Misc
+config["save_epoch"] = 10 # This is just how often we want to save
+
