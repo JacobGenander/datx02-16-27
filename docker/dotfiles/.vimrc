@@ -29,6 +29,9 @@ set pastetoggle=<F9>	" Toggles paste mode
 set synmaxcol=1000		" Lines longer than # will not be syntax highlighted
 set splitright			" When splitting a window, new window goes on the right
 
+" Enable mouse
+set mouse=a
+
 " When using diff, start in vertical split mode, and fill lines to
 " sync lines
 set diffopt=filler,vertical
