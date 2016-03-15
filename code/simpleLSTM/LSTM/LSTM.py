@@ -140,23 +140,20 @@ def main():
     config = hyperParams.config
     # Load data
     training_set, validation_set, test_set = create_data_sets(
-            args.data_path,
-            config["max_seq"],
-            config["max_vocab_size"])
-
-    config["vocab_size"] = DataMan.vocab_size
-    config["unk_id"] = DataMan.unk_id
+            args.data_path, config["max_seq"], config["max_vocab_size"])
 
     save_path = args.save_path
     if not os.path.isdir(save_path):
         print("Couldn't find save directory")
         sys.exit(1)
 
-    # Save vocabularies and params to enable headline generation later on
-    vocabs = { "word_to_id" : DataMan.word_to_id, "id_to_word" : DataMan.id_to_word}
-    file_path = os.path.join(save_path, "vocabs.p")
-    pickle.dump(vocabs, open(file_path, "wb"))
-    file_path = os.path.join(save_path, "params.p")
+    # Update config with information from DataMan
+    data_params = { "word_to_id" : DataMan.word_to_id, "id_to_word" : DataMan.id_to_word,
+            "vocab_size" : DataMan.vocab_size, "unk_id" : DataMan.unk_id}
+    config.update(data_params)
+
+    # Save config to enable headline generation later on
+    file_path = os.path.join(save_path, "config.p")
     pickle.dump(config, open(file_path, "wb"))
 
     initializer = tf.random_uniform_initializer(-config["init_range"], config["init_range"])
@@ -177,7 +174,7 @@ def main():
         config["batch_size"] = 1
         test_net = LSTM_Network(False, config, emb_init)
 
-        # Need to declare this before saver
+    # Need to declare this before saver
     with tf.variable_scope("counter", reuse=False):
         tf.get_variable("epoch_counter", dtype=tf.int32, initializer=tf.constant(0))
 

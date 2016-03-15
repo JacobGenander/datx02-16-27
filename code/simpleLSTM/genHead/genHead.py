@@ -104,16 +104,13 @@ def main():
     args = interfaceGenHead.parser.parse_args()
     model_folder = args.model_folder
 
-    config_path = os.path.join(model_folder, "params.p")
+    config_path = os.path.join(model_folder, "config.p")
     with open(config_path, "rb") as f:
         config = pickle.load(f)
-    dict_path = os.path.join(model_folder, "vocabs.p")
-    with open(dict_path, "rb") as f:
-        vocabs = pickle.load(f)
 
     init = tf.initialize_all_variables()
 
-    vocab_size = len(vocabs["id_to_word"])
+    vocab_size = len(config["id_to_word"])
     with tf.variable_scope("model", reuse=False):
         net = LSTM_Network(vocab_size, config)
 
@@ -124,12 +121,12 @@ def main():
         model_path = os.path.join(model_folder, "model.ckpt")
         saver.restore(sess, model_path)
 
-        sentences = gen_sentences(net, sess, vocabs["word_to_id"], config)
+        sentences = gen_sentences(net, sess, config["word_to_id"], config)
 
         for i, s in enumerate(sentences):
             if i >= args.n: # Decides the number of displayed headlines
                 break
-            s = [ vocabs["id_to_word"][w] for w in s]
+            s = [ config["id_to_word"][w] for w in s]
             s = " ".join(s)
             print("Sentence {0}:\t{1}".format(i+1, format_sentence(s)))
 
