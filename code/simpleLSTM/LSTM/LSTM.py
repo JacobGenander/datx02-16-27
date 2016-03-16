@@ -162,6 +162,7 @@ def main():
     else:
         config = hyperParams.config
         config["start_epoch"] = 0
+        config["cost_train"], config["cost_valid"] = [], []
 
     # Load data
     training_set, validation_set, test_set = create_data_sets(
@@ -207,7 +208,6 @@ def main():
             sess.run(init)
 
         # Some further initialization before the training loop
-        cost_train, cost_valid = [], []
         max_epoch = config["max_epoch"]
         start_epoch = config["start_epoch"]
 
@@ -221,11 +221,11 @@ def main():
                 train_net.set_learning_rate(sess, config["learning_rate"] * decay)
 
             cost, _ = run_epoch(sess, training_set, train_net)
-            cost_train.append(cost)
+            config["cost_train"].append(cost)
             cost, _ = run_epoch(sess, validation_set, val_net)
-            cost_valid.append(cost)
+            config["cost_valid"].append(cost)
 
-            if i != start_epoch and i % config["save_epoch"] == 0:
+            if (i != 0 and i % config["save_epoch"] == 0) or (i == max_epoch - 1):
                 config["start_epoch"] = i+1
                 save_state(sess, saver, config, save_path)
         print("\r100% done")
@@ -235,9 +235,8 @@ def main():
         print("Perplexity: {}".format(perplexity))
 
         print("Creating plot.")
-        plot.create_plots(save_path, range(max_epoch - start_epoch), cost_train, cost_valid)
+        plot.create_plots(save_path, range(max_epoch), config["cost_train"], config["cost_valid"])
 
-        save_state(sess, saver, config, save_path)
         sess.close()
         print("--- {} seconds ---".format(round(time.time() - start_time, 2)))
 
