@@ -9,6 +9,7 @@ import numpy as np
 import interfaceLSTM
 import hyperParams
 import cPickle as pickle
+import zipfile
 import plot
 import time
 import sys
@@ -110,9 +111,21 @@ def run_epoch(sess, data_set, net):
 
 def save_state(sess, saver, save_path):
     print("\nSaving model.")
-    file_path = os.path.join(save_path, "model.ckpt")
-    file_path = saver.save(sess, file_path)
-    print("Model saved in file: {}".format(file_path))
+    model_path = os.path.join(save_path, "model.ckpt")
+    config_path = os.path.join(save_path, "config.p")
+    zip_path = os.path.join(save_path, "model.zip")
+
+    saver.save(sess, model_path)
+
+    zf = zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED)
+    zf.write(model_path, os.path.relpath("model.ckpt", save_path))
+    zf.write(config_path, os.path.relpath("config.p", save_path))
+    zf.close()
+
+def extract_state(restore_path):
+    zf = zipfile.ZipFile(restore_path, "r")
+    zf.extractall()
+    zf.close()
 
 def create_data_sets(data_path, max_seq, max_vocab_size):
     try:
@@ -133,7 +146,13 @@ def main():
 
     # Fetch args and parameters
     args = interfaceLSTM.parser.parse_args()
-    config = hyperParams.config
+    if args.load_state:
+        extract_state(args.load_state)
+        with open("config.p", "rb") as f:
+            config = pickle.load(f)
+    else:
+        config = hyperParams.config
+
     # Load data
     training_set, validation_set, test_set = create_data_sets(
             args.data_path, config["max_seq"], config["max_vocab_size"])
@@ -186,7 +205,7 @@ def main():
     with tf.Session() as sess:
         # Initialize variables
         if args.load_state:
-            saver.restore(sess, args.load_state)
+            saver.restore(sess, "model.ckpt")
         else:
             sess.run(init)
 

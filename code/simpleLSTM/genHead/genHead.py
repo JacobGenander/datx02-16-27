@@ -8,6 +8,7 @@ import tensorflow as tf
 import numpy as np
 import interfaceGenHead
 import cPickle as pickle
+import zipfile
 import random
 import os
 
@@ -102,10 +103,13 @@ def format_sentence(s):
 
 def main():
     args = interfaceGenHead.parser.parse_args()
-    model_folder = args.model_folder
 
-    config_path = os.path.join(model_folder, "config.p")
-    with open(config_path, "rb") as f:
+    # Extract state information
+    zf = zipfile.ZipFile(args.model_path, "r")
+    zf.extractall()
+    zf.close()
+
+    with open("config.p", "rb") as f:
         config = pickle.load(f)
 
     init = tf.initialize_all_variables()
@@ -117,9 +121,7 @@ def main():
     with tf.Session() as sess:
         sess.run(init)
         saver = tf.train.Saver()
-
-        model_path = os.path.join(model_folder, "model.ckpt")
-        saver.restore(sess, model_path)
+        saver.restore(sess, "model.ckpt")
 
         sentences = gen_sentences(net, sess, config["word_to_id"], config)
 
