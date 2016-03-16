@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import collections
 import nltk
+import re
 import numpy as np
 
 nltk.download('punkt')
@@ -30,6 +31,7 @@ class DataMan(object):
         self._prepare_data(raw_data)
 
     def _tokenize(self, text):
+        text = re.sub('\d', '0', text) # Replace all digits with 0
         text = text.replace("\n", " _EOS ")
         return nltk.word_tokenize(text)
 
