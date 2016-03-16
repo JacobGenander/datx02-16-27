@@ -117,6 +117,7 @@ def read_data(source_path, target_path, max_size=None):
             data_set[bucket_id].append([source_ids, target_ids])
             break
         source, target = source_file.readline(), target_file.readline()
+      print("Data set read.")
   return data_set
 
 
