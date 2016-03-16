@@ -123,9 +123,10 @@ def save_state(sess, saver, config, save_path):
     zf.write(config_path, os.path.relpath("config.p", save_path))
     zf.close()
 
-def extract_state(restore_path):
+def extract_state(root_path, restore_path):
     zf = zipfile.ZipFile(restore_path, "r")
-    zf.extractall()
+    extract_path = os.path.join(root_path, "tmp")
+    zf.extractall(extract_path)
     zf.close()
 
 def create_data_sets(data_path, max_seq, max_vocab_size):
@@ -144,6 +145,7 @@ def create_data_sets(data_path, max_seq, max_vocab_size):
 
 def main():
     start_time = time.time()
+    root_path = os.path.dirname(os.path.realpath(__file__))
     args = interfaceLSTM.parser.parse_args()
 
     save_path = args.save_path
@@ -153,8 +155,9 @@ def main():
 
     # Fetch parameters
     if args.load_state:
-        extract_state(args.load_state)
-        with open("config.p", "rb") as f:
+        extract_state(root_path, args.load_state)
+        file_path = os.path.join(root_path, "tmp", "config.p")
+        with open(file_path, "rb") as f:
             config = pickle.load(f)
     else:
         config = hyperParams.config
@@ -198,7 +201,8 @@ def main():
     with tf.Session() as sess:
         # Initialize variables
         if args.load_state:
-            saver.restore(sess, "model.ckpt")
+            file_path = os.path.join(root_path, "tmp", "model.ckpt")
+            saver.restore(sess, file_path)
         else:
             sess.run(init)
 

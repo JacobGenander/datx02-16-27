@@ -106,10 +106,13 @@ def main():
 
     # Extract state information
     zf = zipfile.ZipFile(args.model_path, "r")
-    zf.extractall()
+    root_path = os.path.dirname(os.path.realpath(__file__))
+    extract_path = os.path.join(root_path, "tmp")
+    zf.extractall(extract_path)
     zf.close()
 
-    with open("config.p", "rb") as f:
+    config_path = os.path.join(extract_path, "config.p")
+    with open(config_path, "rb") as f:
         config = pickle.load(f)
 
     init = tf.initialize_all_variables()
@@ -121,7 +124,8 @@ def main():
     with tf.Session() as sess:
         sess.run(init)
         saver = tf.train.Saver()
-        saver.restore(sess, "model.ckpt")
+        model_path = os.path.join(extract_path, "model.ckpt")
+        saver.restore(sess, model_path)
 
         sentences = gen_sentences(net, sess, config["word_to_id"], config)
 
