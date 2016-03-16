@@ -227,6 +227,8 @@ def main():
 
             if (i != 0 and i % config["save_epoch"] == 0) or (i == max_epoch - 1):
                 config["start_epoch"] = i+1
+                plot.create_plots(save_path, range(i+1),
+                        config["cost_train"], config["cost_valid"])
                 name = "epoch{0}cost{1}.zip".format(i, round(cost_t, 4))
                 save_state(sess, name, saver, config, save_path)
         print("\r100% done")
@@ -236,7 +238,6 @@ def main():
         print("Perplexity: {}".format(perplexity))
 
         print("Creating plot.")
-        plot.create_plots(save_path, range(max_epoch), config["cost_train"], config["cost_valid"])
 
         sess.close()
         print("--- {} seconds ---".format(round(time.time() - start_time, 2)))

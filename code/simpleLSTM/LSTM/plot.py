@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import os
 
 def create_plots(path, xs, *args):
+    plt.clf()
+
     for ys in args:
         plt.plot(xs, ys)
 
