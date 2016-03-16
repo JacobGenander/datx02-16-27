@@ -109,11 +109,11 @@ def run_epoch(sess, data_set, net):
     average_cost = total_cost / (i+1)
     return average_cost, perplexity
 
-def save_state(sess, saver, config, save_path):
+def save_state(sess, name, saver, config, save_path):
     print("\nSaving model.")
     model_path = os.path.join(save_path, "model.ckpt")
     config_path = os.path.join(save_path, "config.p")
-    zip_path = os.path.join(save_path, "model.zip")
+    zip_path = os.path.join(save_path, name)
 
     saver.save(sess, model_path)
     pickle.dump(config, open(config_path, "wb"))
@@ -220,14 +220,15 @@ def main():
                 decay = config["learning_decay"] ** (i - config["decay_start"])
                 train_net.set_learning_rate(sess, config["learning_rate"] * decay)
 
-            cost, _ = run_epoch(sess, training_set, train_net)
-            config["cost_train"].append(cost)
-            cost, _ = run_epoch(sess, validation_set, val_net)
-            config["cost_valid"].append(cost)
+            cost_t, _ = run_epoch(sess, training_set, train_net)
+            config["cost_train"].append(cost_t)
+            cost_v, _ = run_epoch(sess, validation_set, val_net)
+            config["cost_valid"].append(cost_v)
 
             if (i != 0 and i % config["save_epoch"] == 0) or (i == max_epoch - 1):
                 config["start_epoch"] = i+1
-                save_state(sess, saver, config, save_path)
+                name = "epoch{0}cost{1}.zip".format(i, round(cost_t, 4))
+                save_state(sess, name, saver, config, save_path)
         print("\r100% done")
 
         print("Calculating perplexity.")
