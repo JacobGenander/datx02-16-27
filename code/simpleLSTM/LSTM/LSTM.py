@@ -20,8 +20,8 @@ from DataMan import DataMan
 # https://www.tensorflow.org/versions/r0.7/api_docs/python/index.html
 
 class LSTM_Network(object):
-    def __init__(self, training, config, emb_init):
-        self.batch_size = batch_size = config["batch_size"]
+    def __init__(self, training, batch_size, config, emb_init):
+        self.batch_size = batch_size
         self.size = size = config["hidden_layer_size"]
         max_seq = config["max_seq"]
         keep_prob = config["keep_prob"]
@@ -109,13 +109,14 @@ def run_epoch(sess, data_set, net):
     average_cost = total_cost / (i+1)
     return average_cost, perplexity
 
-def save_state(sess, saver, save_path):
+def save_state(sess, saver, config, save_path):
     print("\nSaving model.")
     model_path = os.path.join(save_path, "model.ckpt")
     config_path = os.path.join(save_path, "config.p")
     zip_path = os.path.join(save_path, "model.zip")
 
     saver.save(sess, model_path)
+    pickle.dump(config, open(config_path, "wb"))
 
     zf = zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED)
     zf.write(model_path, os.path.relpath("model.ckpt", save_path))
@@ -143,33 +144,30 @@ def create_data_sets(data_path, max_seq, max_vocab_size):
 
 def main():
     start_time = time.time()
-
-    # Fetch args and parameters
     args = interfaceLSTM.parser.parse_args()
-    if args.load_state:
-        extract_state(args.load_state)
-        with open("config.p", "rb") as f:
-            config = pickle.load(f)
-    else:
-        config = hyperParams.config
-
-    # Load data
-    training_set, validation_set, test_set = create_data_sets(
-            args.data_path, config["max_seq"], config["max_vocab_size"])
 
     save_path = args.save_path
     if not os.path.isdir(save_path):
         print("Couldn't find save directory")
         sys.exit(1)
 
-    # Update config with information from DataMan
+    # Fetch parameters
+    if args.load_state:
+        extract_state(args.load_state)
+        with open("config.p", "rb") as f:
+            config = pickle.load(f)
+    else:
+        config = hyperParams.config
+        config["start_epoch"] = 0
+
+    # Load data
+    training_set, validation_set, test_set = create_data_sets(
+            args.data_path, config["max_seq"], config["max_vocab_size"])
+
+        # Update config with information from DataMan
     data_params = { "word_to_id" : DataMan.word_to_id, "id_to_word" : DataMan.id_to_word,
             "vocab_size" : DataMan.vocab_size, "unk_id" : DataMan.unk_id}
     config.update(data_params)
-
-    # Save config to enable headline generation later on
-    file_path = os.path.join(save_path, "config.p")
-    pickle.dump(config, open(file_path, "wb"))
 
     initializer = tf.random_uniform_initializer(-config["init_range"], config["init_range"])
     # Choose initialization of embedding matrix
@@ -186,15 +184,10 @@ def main():
 
     # Create networks for training and evaluation
     with tf.variable_scope("model", reuse=None, initializer=initializer):
-        train_net = LSTM_Network(True, config, emb_init)
+        train_net = LSTM_Network(True, config["batch_size"], config, emb_init)
     with tf.variable_scope("model", reuse=True, initializer=initializer):
-        val_net = LSTM_Network(False, config, emb_init)
-        config["batch_size"] = 1
-        test_net = LSTM_Network(False, config, emb_init)
-
-    # Need to declare this before saver
-    with tf.variable_scope("counter", reuse=False):
-        tf.get_variable("epoch_counter", dtype=tf.int32, initializer=tf.constant(0))
+        val_net = LSTM_Network(False, config["batch_size"], config, emb_init)
+        test_net = LSTM_Network(False, 1, config, emb_init)
 
     # We always need to run this operation if not loading an old state
     init = tf.initialize_all_variables()
@@ -212,8 +205,7 @@ def main():
         # Some further initialization before the training loop
         cost_train, cost_valid = [], []
         max_epoch = config["max_epoch"]
-        with tf.variable_scope("counter", reuse=True):
-            start_epoch = sess.run(tf.get_variable("epoch_counter", dtype=tf.int32))
+        start_epoch = config["start_epoch"]
 
         print("Training.")
         for i in range(start_epoch, max_epoch, 1):
@@ -230,12 +222,8 @@ def main():
             cost_valid.append(cost)
 
             if i != start_epoch and i % config["save_epoch"] == 0:
-                save_state(sess, saver, save_path)
-
-            # Increment counter
-            with tf.variable_scope("counter", reuse=True):
-                new_val = tf.add(tf.get_variable("epoch_counter", dtype=tf.int32), tf.constant(1))
-                sess.run(tf.get_variable("epoch_counter", dtype=tf.int32).assign(new_val))
+                config["start_epoch"] = i+1
+                save_state(sess, saver, config, save_path)
         print("\r100% done")
 
         print("Calculating perplexity.")
@@ -245,7 +233,8 @@ def main():
         print("Creating plot.")
         plot.create_plots(save_path, range(max_epoch - start_epoch), cost_train, cost_valid)
 
-        save_state(sess, saver, save_path)
+        save_state(sess, saver, config, save_path)
+        sess.close()
         print("--- {} seconds ---".format(round(time.time() - start_time, 2)))
 
 if __name__ == "__main__":

@@ -132,6 +132,8 @@ def main():
             s = " ".join(s)
             print("Sentence {0}:\t{1}".format(i+1, format_sentence(s)))
 
+        sess.close()
+
 if __name__ == "__main__":
     main()
 
