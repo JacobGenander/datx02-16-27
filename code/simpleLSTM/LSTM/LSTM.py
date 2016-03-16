@@ -237,8 +237,6 @@ def main():
         _, perplexity = run_epoch(sess, test_set, test_net)
         print("Perplexity: {}".format(perplexity))
 
-        print("Creating plot.")
-
         sess.close()
         print("--- {} seconds ---".format(round(time.time() - start_time, 2)))
 
