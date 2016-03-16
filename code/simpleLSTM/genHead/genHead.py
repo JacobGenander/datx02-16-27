@@ -99,7 +99,7 @@ def gen_sentences(net, sess, word_to_id, config):
     return np.concatenate(sentences, 1)
 
 def format_sentence(s):
-    return s.split("<eos>", 1)[0].capitalize()
+    return s.split("_EOS", 1)[0].capitalize()
 
 def main():
     args = interfaceGenHead.parser.parse_args()

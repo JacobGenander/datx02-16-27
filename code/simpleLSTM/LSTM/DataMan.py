@@ -5,14 +5,16 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
+import nltk
 import numpy as np
-import re
+
+nltk.download('punkt')
 
 class DataMan(object):
     # Static variables
     vocab_size = 0
     word_to_id = None
-    id_to_word = ["<eos>", "<pad>", "<unk>"]
+    id_to_word = ["_EOS", "_PAD", "_UNK"]
 
     eos_id = 0
     pad_id = 1
@@ -28,14 +30,8 @@ class DataMan(object):
         self._prepare_data(raw_data)
 
     def _tokenize(self, text):
-        regex = re.compile("([\-,!?\"':;)(])")
-        text = re.sub('\d+', '<num>', text)
-        text = re.sub('\comments', ' ', text)
-        no_space_text = text.replace("\n", " <eos> ").split()
-        words = []
-        for frag in no_space_text:
-            words.extend(filter(None, re.split(regex, frag)))
-        return words
+        text = text.replace("\n", " _EOS ")
+        return nltk.word_tokenize(text)
 
     def _build_vocab(self, raw_data, max_vocab_size):
         self._data = self._tokenize(raw_data)
@@ -43,7 +39,7 @@ class DataMan(object):
         # Give the words ids based on the number of occurrences in the data set
         counter = collections.Counter(self._data)
         count_pairs = counter.most_common()
-        DataMan.id_to_word.extend([ word for word, _ in count_pairs if word != "<eos>" ])
+        DataMan.id_to_word.extend([ word for word, _ in count_pairs if word != "_EOS" ])
         DataMan.id_to_word = sort_words = DataMan.id_to_word[:max_vocab_size]
         DataMan.word_to_id = dict(zip(sort_words, range(len(sort_words))))
         DataMan.vocab_size = len(DataMan.word_to_id)
