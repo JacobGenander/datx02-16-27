@@ -24,7 +24,7 @@ import random
 import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
-
+from  tf.control_flow_ops import map_fn
 fromtensorflow.models.rnn.translate import data_utils
 
 
@@ -84,16 +84,28 @@ class Seq3SeqModel(object):
       cell = tf.nn.rnn_cell.MultiRNNCell([single_cell] * num_layers)
 
 
+#TODO:  Fix data dimensions and massaging!
+#TODO:  Fix attention encoding!
+#TODO:  Think about output projection! 
 
     # The seq3seq function: we use embedding for the input and attention.
     def seq3seq_f(encoder_inputs, decoder_inputs, do_decode):
 
       # Encode the input sentences into vectors
-      sentence_seq = map_fn(lambda x : tf.rnn.rnn(cell,x),encoder_inputs)   
+      sentence_ten = map_fn(lambda x : tf.rnn.rnn(cell,x),encoder_inputs)
+      sentence_seq = tf.split(0, ????? , sentence_ten)  
       
-      return tf.nn.seq2seq.embedding_attention_seq2seq(
-          sentence_seq, decoder_inputs, cell, source_vocab_size,
-          target_vocab_size, output_projection=None,
+      # Encode the sentece vectors into an initial decoder state and attention
+      # states
+      encoder_outputs, encoder_states = tf.rnn.rnn(cell,sentence_seq)
+      top_states = [tf.array_ops.reshape(e, [-1,1,cell.output_size]) 
+                    for e in encoder_outputs]
+      attention_states = tf.array_ops.concat(1,top_states)
+
+      # Decode the attention states into a headline
+      return tf.nn.seq2seq.embedding_attention_decoder(
+          decoder_inputs, encoder_state, attention_states, 
+          cell,target_vocab_size, output_projection=None,
           feed_previous=do_decode)
 
     # Feeds for inputs.
