@@ -80,9 +80,12 @@ class LSTM_Network(object):
             return
 
         self._learning_rate = tf.Variable(config["learning_rate"], trainable=False)
+
         # Gradient descent training op
+        tvars = tf.trainable_variables()
+        grads, _ = tf.clip_by_global_norm(tf.gradients(cost, tvars), config["gradient_clip"])
         optimizer = tf.train.GradientDescentOptimizer(self._learning_rate)
-        self._train_op = optimizer.minimize(self._cost)
+        self._train_op = optimizer.apply_gradients(zip(grads,tvars))
 
     def set_learning_rate(self, sess, value):
         sess.run(tf.assign(self._learning_rate, value))
