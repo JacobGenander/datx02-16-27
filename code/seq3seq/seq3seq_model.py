@@ -24,7 +24,7 @@ import random
 import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
-from  tf.control_flow_ops import map_fn
+import  tf.control_flow_ops.map as tfmap 
 fromtensorflow.models.rnn.translate import data_utils
 
 
@@ -83,7 +83,7 @@ class Seq3SeqModel(object):
     if num_layers > 1:
       cell = tf.nn.rnn_cell.MultiRNNCell([single_cell] * num_layers)
 
-
+    
 #TODO:  Fix data dimensions and massaging!
 #TODO:  Fix attention encoding!
 #TODO:  Think about output projection! 
@@ -92,7 +92,7 @@ class Seq3SeqModel(object):
     def seq3seq_f(encoder_inputs, decoder_inputs, do_decode):
 
       # Encode the input sentences into vectors
-      sentence_ten = map_fn(lambda x : tf.rnn.rnn(cell,x),encoder_inputs)
+      sentence_ten = tfmap(lambda x : tf.rnn.rnn(cell,x),encoder_inputs)
       sentence_seq = tf.split(0, ????? , sentence_ten)  
       
       # Encode the sentece vectors into an initial decoder state and attention
