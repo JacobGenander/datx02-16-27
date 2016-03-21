@@ -22,6 +22,7 @@ import gzip
 import os
 import re
 import tarfile
+import nltk.data
 
 from six.moves import urllib
 
@@ -39,21 +40,11 @@ GO_ID = 1
 EOS_ID = 2
 UNK_ID = 3
 
-# Regular expressions used to tokenize.
-_WORD_SPLIT = re.compile("([.,!?\"':;)(])")
-_DIGIT_RE = re.compile(r"\d")
 
+nltk.download('punkt')
+tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
-def basic_tokenizer(sentence):
-  """Very basic tokenizer: split the sentence into a list of tokens."""
-  words = []
-  for space_separated_fragment in sentence.strip().split():
-    words.extend(re.split(_WORD_SPLIT, space_separated_fragment))
-  return [w for w in words if w]
-
-
-def create_vocabulary(vocabulary_path, data_path, max_vocabulary_size,
-                      tokenizer=None, normalize_digits=True):
+def create_vocabulary(vocabulary_path, data_path, max_vocabulary_size):
   """Create vocabulary file (if it does not exist yet) from data file.
 
   Data file is assumed to contain one sentence per line. Each sentence is
@@ -79,9 +70,10 @@ def create_vocabulary(vocabulary_path, data_path, max_vocabulary_size,
         counter += 1
         if counter % 100000 == 0:
           print("  processing line %d" % counter)
-        tokens = tokenizer(line) if tokenizer else basic_tokenizer(line)
-        for w in tokens:
-          word = re.sub(_DIGIT_RE, "0", w) if normalize_digits else w
+
+        text = tokenizer.tokenize(line)
+        tokens = [tok for sent in text for tok in sent]
+        for word in tokens:
           if word in vocab:
             vocab[word] += 1
           else:
@@ -123,37 +115,15 @@ def initialize_vocabulary(vocabulary_path):
   else:
     raise ValueError("Vocabulary file %s not found.", vocabulary_path)
 
+def text_to_token_ids(text, vocab):
+  tok_text = tokenizer(text)
+  id_text = []
+  for sent in tok_text:
+    id_text.append([vocab.get(w, UNK_ID) for w in sent])
+    id_text.append(EOS_ID)
+  return id_text
 
-def sentence_to_token_ids(sentence, vocabulary,
-                          tokenizer=None, normalize_digits=True):
-  """Convert a string to list of integers representing token-ids.
-
-  For example, a sentence "I have a dog" may become tokenized into
-  ["I", "have", "a", "dog"] and with vocabulary {"I": 1, "have": 2,
-  "a": 4, "dog": 7"} this function will return [1, 2, 4, 7].
-
-  Args:
-    sentence: a string, the sentence to convert to token-ids.
-    vocabulary: a dictionary mapping tokens to integers.
-    tokenizer: a function to use to tokenize each sentence;
-      if None, basic_tokenizer will be used.
-    normalize_digits: Boolean; if true, all digits are replaced by 0s.
-
-  Returns:
-    a list of integers, the token-ids for the sentence.
-  """
-  if tokenizer:
-    words = tokenizer(sentence)
-  else:
-    words = basic_tokenizer(sentence)
-  if not normalize_digits:
-    return [vocabulary.get(w, UNK_ID) for w in words]
-  # Normalize digits by 0 before looking words up in the vocabulary.
-  return [vocabulary.get(re.sub(_DIGIT_RE, "0", w), UNK_ID) for w in words]
-
-
-def data_to_token_ids(data_path, target_path, vocabulary_path,
-                      tokenizer=None, normalize_digits=True):
+def data_to_token_ids(data_path, target_path, vocabulary_path):
   """Tokenize data file and turn into token-ids using given vocabulary file.
 
   This function loads data line-by-line from data_path, calls the above
@@ -178,8 +148,7 @@ def data_to_token_ids(data_path, target_path, vocabulary_path,
           counter += 1
           if counter % 100000 == 0:
             print("  tokenizing line %d" % counter)
-          token_ids = sentence_to_token_ids(line, vocab, tokenizer,
-                                            normalize_digits)
+          token_ids = text_to_token_ids(line, vocab)
           tokens_file.write(" ".join([str(tok) for tok in token_ids]) + "\n")
 
 
