@@ -116,10 +116,10 @@ def initialize_vocabulary(vocabulary_path):
     raise ValueError("Vocabulary file %s not found.", vocabulary_path)
 
 def text_to_token_ids(text, vocab):
-  tok_text = tokenizer(text)
+  tok_text = tokenizer.tokenize(text)
   id_text = []
   for sent in tok_text:
-    id_text.append([vocab.get(w, UNK_ID) for w in sent])
+    id_text.extend([vocab.get(w, UNK_ID) for w in sent])
     id_text.append(EOS_ID)
   return id_text
 
