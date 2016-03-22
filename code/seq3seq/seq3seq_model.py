@@ -20,12 +20,13 @@ from __future__ import division
 from __future__ import print_function
     
 import random
+import pdb
 
 import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
-import  tf.control_flow_ops.map as tfmap 
-fromtensorflow.models.rnn.translate import data_utils
+from tensorflow.python.ops.control_flow_ops import map as tfmap
+import data_utils
 
 
 class Seq3SeqModel(object):
@@ -92,12 +93,17 @@ class Seq3SeqModel(object):
     def seq3seq_f(encoder_inputs, decoder_inputs, do_decode):
 
       # Encode the input sentences into vectors
-      sentence_ten = tfmap(lambda x : tf.rnn.rnn(cell,x),encoder_inputs)
-      sentence_seq = tf.split(0, ????? , sentence_ten)  
-      
+      # The packing and unpackings needs cleanup!
+      # TODO: remove magic constants 100 and 5! There meant as 5 sentences of length 100. 
+      state = tf.zeros([100, cell.state_size])
+      pdb.set_trace()
+      sentence_ten = tfmap(lambda x : tf.nn.rnn(cell, tf.split(0,100,x), initial_state = state),
+                           tf.pack(encoder_inputs))
+      sentence_seq = tf.split(0, 5 , sentence_ten)  
+
       # Encode the sentece vectors into an initial decoder state and attention
       # states
-      encoder_outputs, encoder_states = tf.rnn.rnn(cell,sentence_seq)
+      encoder_outputs, encoder_states = tf.nn.rnn(cell,sentence_ten)
       top_states = [tf.array_ops.reshape(e, [-1,1,cell.output_size]) 
                     for e in encoder_outputs]
       attention_states = tf.array_ops.concat(1,top_states)
