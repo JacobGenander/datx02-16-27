@@ -56,7 +56,7 @@ tf.app.flags.DEFINE_integer("size", 1024, "Size of each model layer.")
 tf.app.flags.DEFINE_integer("num_layers", 3, "Number of layers in the model.")
 tf.app.flags.DEFINE_integer("article_vocab_size", 40000, "Article vocabulary size.")
 tf.app.flags.DEFINE_integer("title_vocab_size", 40000, "Title vocabulary size.")
-tf.app.flags.DEFINE_string("data_dir", "/tmp", "Data directory")
+tf.app.flags.DEFINE_string("data_dir", ".", "Data directory")
 tf.app.flags.DEFINE_string("article_file", "articles.txt",
                            "file containing the articles (relative to data_dir)")
 tf.app.flags.DEFINE_string("title_file", "titles.txt",
@@ -78,7 +78,7 @@ FLAGS = tf.app.flags.FLAGS
 # Buckets are from the 100000 headline articles pairs in our small data set,
 # they are very preliminary and we also opted to pad all titles since
 # there's no apperent correlation between title and article lengths.
-_buckets = [(100, 48), (200, 48), (400, 48), (800, 48)]
+_buckets = [(5, 48),(10,48),(15,48),(20,48)]
 #_buckets = [(250, 36), (1000,36), (8000, 46), (44266, 36)]
 
 
@@ -106,10 +106,11 @@ def read_data(source_path, target_path, max_size=None):
       counter = 0
       while source and target and (not max_size or counter < max_size):
         counter += 1
-        if counter % 100000 == 0:
+        if counter % 50000 == 0:
           print("  reading data line %d" % counter)
           sys.stdout.flush()
-        source_ids = [int(x) for x in source.split()]
+        source_sents = source.split(" " + str(data_utils.EOS_ID) + " ")
+        source_ids = [[int(x) for x in sent.split()] for sent in source_sents]
         target_ids = [int(x) for x in target.split()]
         target_ids.append(data_utils.EOS_ID)
         for bucket_id, (source_size, target_size) in enumerate(_buckets):
