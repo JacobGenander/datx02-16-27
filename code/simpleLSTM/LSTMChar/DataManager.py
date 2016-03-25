@@ -14,7 +14,7 @@ class DataMan(object):
 
     def __init__(self, filename, eval_ratio):
         with open(filename, 'r') as f:
-            text = f.read()
+            text = f.read().lower()
         self._build_vocab(text)
         self._create_sets(text, eval_ratio)
 
