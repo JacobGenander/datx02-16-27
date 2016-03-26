@@ -59,7 +59,7 @@ class LSTM_Network(object):
 
         # Average negative log probability
         loss = tf.nn.sparse_softmax_cross_entropy_with_logits(z, tf.reshape(self._target, [-1]))
-        self._cost = cost = tf.reduce_sum(loss) / batch_size
+        self._cost = cost = tf.reduce_sum(loss) / (batch_size * num_steps)
         
         if not training:
             self._train_op = tf.no_op()
@@ -97,7 +97,7 @@ def main():
     start_time = time.time()
 
     config = hyperParams.config
-    data_man = DataManager.DataMan("data.txt", 0.1)
+    data_man = DataManager.DataMan("data.txt", 0.05)
     # Update config with information from DataMan
     data_params = { "word_to_id" : data_man.char_to_id, "id_to_word" : data_man.id_to_char,
             "vocab_size" : data_man.vocab_size}

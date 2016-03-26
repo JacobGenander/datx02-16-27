@@ -15,7 +15,9 @@ import os
 parser = argparse.ArgumentParser(description=
         'Generates sentences from a pretrained LSTM-model')
 parser.add_argument('-n', metavar='N', type=int, default=10,
-        help='number of sentences to generate (might be capped by batch size)')
+        help='number of sequences to generate (might be capped by batch size)')
+parser.add_argument('--length', metavar='L', type=int, default=1000,
+        help='length of each sequence')
 parser.add_argument('--init_seq', type=str, default="",
         help='condition model on some initial sequence')
 
@@ -57,8 +59,9 @@ def gen_init_batch(seq, batch_size, word_to_id):
 
 def gen_sentences(net, sess, word_to_id, config):
     batch_size = config["batch_size"]
+    args = parser.parse_args()
 
-    init_seq = parser.parse_args().init_seq
+    init_seq = args.init_seq
     if init_seq:
         init_batch = gen_init_batch(init_seq, batch_size, word_to_id)
         inputs = np.reshape(init_batch[:, 0], [batch_size, 1])
@@ -68,7 +71,7 @@ def gen_sentences(net, sess, word_to_id, config):
     sentences = [inputs]
     num_init_words = len(list(init_seq))
     current_state = net._initial_state.eval()
-    for i in range(config["num_steps"]):
+    for i in range(args.length):
         feed = {net._inputs : inputs, net._initial_state : current_state}
         output, current_state = sess.run([net._word_predictions, net._final_state], feed_dict=feed)
 
