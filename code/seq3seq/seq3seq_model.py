@@ -28,20 +28,10 @@ import tensorflow as tf
 from tensorflow.python.ops.control_flow_ops import map as tfmap
 import data_utils
 
+FLAGS = tf.app.flags.FLAGS
 
 class Seq3SeqModel(object):
   """Sequence-to-sequence model with attention and for multiple buckets.
-
-  This class implements a multi-layer recurrent neural network as encoder,
-  and an attention-based decoder. This is the same as the model described in
-  this paper: http://arxiv.org/abs/1412.7449 - please look there for details,
-  or into the seq2seq library for complete model implementation.
-  This class also allows to use GRU cells in addition to LSTM cells, and
-  sampled softmax to handle large output vocabulary size. A single-layer
-  version of this model, but with bi-directional encoder, was presented in
-    http://arxiv.org/abs/1409.0473
-  and sampled softmax is described in Section 3 of the following paper.
-    http://arxiv.org/abs/1412.2007
   """
 
   def __init__(self, source_vocab_size, target_vocab_size, buckets, size,
@@ -87,19 +77,17 @@ class Seq3SeqModel(object):
     
 #TODO:  Fix data dimensions and massaging!
 #TODO:  Fix attention encoding!
-#TODO:  Think about output projection! 
 
     # The seq3seq function: we use embedding for the input and attention.
     def seq3seq_f(encoder_inputs, decoder_inputs, do_decode):
 
       # Encode the input sentences into vectors
-      # The packing and unpackings needs cleanup!
-      # TODO: remove magic constants 100 and 5! There meant as 5 sentences of length 100. 
-      state = tf.zeros([100, cell.state_size])
+      state = tf.zeros([FLAGS.max_sent, cell.state_size])
+      packed_inputs = tf.pack(encoder_inputs)
+      lengths = tf.slice(packed_inputs, [0,0],[-1, 1])
+      sents   = tf.unpack(tf.slice(packed_inputs, [0,1],[-1,-1]))
       pdb.set_trace()
-      sentence_ten = tfmap(lambda x : tf.nn.rnn(cell, tf.split(0,100,x), initial_state = state),
-                           tf.pack(encoder_inputs))
-      sentence_seq = tf.split(0, 5 , sentence_ten)  
+      sentence_ten = tf.nn.rnn(cell, sents, sequence_length=lengths, initial_state = state)
 
       # Encode the sentece vectors into an initial decoder state and attention
       # states
@@ -119,7 +107,7 @@ class Seq3SeqModel(object):
     self.decoder_inputs = []
     self.target_weights = []
     for i in xrange(buckets[-1][0]):  # Last bucket is the biggest one.
-      self.encoder_inputs.append(tf.placeholder(tf.int32, shape=[None],
+      self.encoder_inputs.append(tf.placeholder(tf.int32, shape=[FLAGS.max_sent + 1],
                                                 name="encoder{0}".format(i)))
     for i in xrange(buckets[-1][1] + 1):
       self.decoder_inputs.append(tf.placeholder(tf.int32, shape=[None],
@@ -135,7 +123,7 @@ class Seq3SeqModel(object):
     if forward_only:
       self.outputs, self.losses = tf.nn.seq2seq.model_with_buckets(
           self.encoder_inputs, self.decoder_inputs, targets,
-          self.target_weights, buckets, lambda x, y: seq2seq_f(x, y, True),
+          self.target_weights, buckets, lambda x, y: seq3seq_f(x, y, True),
           softmax_loss_function=None)
     else:
       self.outputs, self.losses = tf.nn.seq2seq.model_with_buckets(
@@ -243,10 +231,6 @@ class Seq3SeqModel(object):
     # pad them if needed, reverse encoder inputs and add GO to decoder.
     for _ in xrange(self.batch_size):
       encoder_input, decoder_input = random.choice(data[bucket_id])
-
-      # Encoder inputs are padded and then reversed.
-      encoder_pad = [data_utils.PAD_ID] * (encoder_size - len(encoder_input))
-      encoder_inputs.append(list(reversed(encoder_input + encoder_pad)))
 
       # Decoder inputs get an extra "GO" symbol, and are padded then.
       decoder_pad_size = decoder_size - len(decoder_input) - 1
