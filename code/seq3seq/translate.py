@@ -68,6 +68,8 @@ tf.app.flags.DEFINE_integer("steps_per_checkpoint", 200,
                             "How many training steps to do per checkpoint.")
 tf.app.flags.DEFINE_boolean("decode", False,
                             "Set to True for sample decoding.")
+tf.app.flags.DEFINE_integer("max_sent", 250,
+                            "How long the maximum sentence in an articel may be.")
 
 
 FLAGS = tf.app.flags.FLAGS
@@ -78,8 +80,7 @@ FLAGS = tf.app.flags.FLAGS
 # Buckets are from the 100000 headline articles pairs in our small data set,
 # they are very preliminary and we also opted to pad all titles since
 # there's no apperent correlation between title and article lengths.
-_buckets = [(5, 48),(10,48),(15,48),(20,48)]
-#_buckets = [(250, 36), (1000,36), (8000, 46), (44266, 36)]
+_buckets = [(1,48),(5, 48),(7,48),(10,48),(15,48),(20,48)]
 
 
 def read_data(source_path, target_path, max_size=None):
@@ -107,15 +108,19 @@ def read_data(source_path, target_path, max_size=None):
       while source and target and (not max_size or counter < max_size):
         counter += 1
         if counter % 50000 == 0:
-          print("  reading data line %d" % counter)
+          print("  reading article %d" % counter)
           sys.stdout.flush()
         source_sents = source.split(" " + str(data_utils.EOS_ID) + " ")
-        source_ids = [[int(x) for x in sent.split()] for sent in source_sents]
+        
+        # Put sentence length first and pad with zeros, the sentence lenght will be passed to tf.nn.rnn as sequnce_length
+        source_ids = [[len(sent)] + [int(x) for x in sent.split()] + tf.zeros(FLAGS.max_sent + 1 - len(sent)) for sent in source_sents]
         target_ids = [int(x) for x in target.split()]
         target_ids.append(data_utils.EOS_ID)
-        for bucket_id, (source_size, target_size) in enumerate(_buckets):
-          if len(source_ids) < source_size and len(target_ids) < target_size:
-            data_set[bucket_id].append([source_ids, target_ids])
+        
+        # Trim article to fit largest bucket that it doesn't fit into
+        for bucket_id, (source_size, target_size) in sorted(enumerate(_buckets), key = lambda tup : tup[0], reverse=True):
+          if len(source_ids) > source_size and len(target_ids) < target_size:
+            data_set[bucket_id].append([source_ids[:source_size], target_ids])
             break
         source, target = source_file.readline(), target_file.readline()
       print("Data set read.")
