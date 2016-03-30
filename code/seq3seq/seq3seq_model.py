@@ -73,25 +73,32 @@ class Seq3SeqModel(object):
     cell = single_cell
     if num_layers > 1:
       cell = tf.nn.rnn_cell.MultiRNNCell([single_cell] * num_layers)
+    sentence_cell = tf.nn.rnn_cell.EmbeddingWrapper(cell, FLAGS.article_vocab_size)
 
-    
-#TODO:  Fix data dimensions and massaging!
-#TODO:  Fix attention encoding!
+    # Encode a sentence into a vector
+    def encode_sentence(sentence):
+      length = tf.slice(sentence, [0],[1])
+      sent = tf.split(0, FLAGS.max_sent,tf.slice(sentence,[1],[-1]))
+      pdb.set_trace()
+      (_ ,state) = tf.nn.rnn(sentence_cell, sent, sequence_length = length, dtype = tf.int32)
+      return state
+
+    # Encode a sequence of sentences into a sequence of vectors
+    def encode_article(article):
+      #lengths = tf.slice(article, [0,0],[1,-1])
+      #sents_tens   = tf.slice(article, [1,0],[-1,-1])
+      #return tf.nn.rnn(cell, sents, sequence_length=lengths, dtype = tf.float32)
+      return tfmap(encode_sentence, article)
 
     # The seq3seq function: we use embedding for the input and attention.
     def seq3seq_f(encoder_inputs, decoder_inputs, do_decode):
 
-      # Encode the input sentences into vectors
-      state = tf.zeros([FLAGS.max_sent, cell.state_size])
-      packed_inputs = tf.pack(encoder_inputs)
-      lengths = tf.slice(packed_inputs, [0,0],[-1, 1])
-      sents   = tf.unpack(tf.slice(packed_inputs, [0,1],[-1,-1]))
-      pdb.set_trace()
-      sentence_ten = tf.nn.rnn(cell, sents, sequence_length=lengths, initial_state = state)
+      # Encode all articles into vector sequnces
+      art_vecs = tfmap(encode_article, tf.pack(encoder_inputs))
 
       # Encode the sentece vectors into an initial decoder state and attention
       # states
-      encoder_outputs, encoder_states = tf.nn.rnn(cell,sentence_ten)
+      encoder_outputs, encoder_states = tf.nn.rnn(cell,art_vec)
       top_states = [tf.array_ops.reshape(e, [-1,1,cell.output_size]) 
                     for e in encoder_outputs]
       attention_states = tf.array_ops.concat(1,top_states)
@@ -107,8 +114,8 @@ class Seq3SeqModel(object):
     self.decoder_inputs = []
     self.target_weights = []
     for i in xrange(buckets[-1][0]):  # Last bucket is the biggest one.
-      self.encoder_inputs.append(tf.placeholder(tf.int32, shape=[FLAGS.max_sent + 1],
-                                                name="encoder{0}".format(i)))
+        self.encoder_inputs.append(tf.placeholder(tf.int32, shape=[None , None,FLAGS.max_sent + 1], 
+                                             name="encoder{0}".format(i)))
     for i in xrange(buckets[-1][1] + 1):
       self.decoder_inputs.append(tf.placeholder(tf.int32, shape=[None],
                                                 name="decoder{0}".format(i)))
@@ -232,6 +239,9 @@ class Seq3SeqModel(object):
     for _ in xrange(self.batch_size):
       encoder_input, decoder_input = random.choice(data[bucket_id])
 
+      # Encoder inputs simply appended
+      encoder_inputs.append(encoder_input)
+
       # Decoder inputs get an extra "GO" symbol, and are padded then.
       decoder_pad_size = decoder_size - len(decoder_input) - 1
       decoder_inputs.append([data_utils.GO_ID] + decoder_input +
@@ -251,7 +261,6 @@ class Seq3SeqModel(object):
       batch_decoder_inputs.append(
           np.array([decoder_inputs[batch_idx][length_idx]
                     for batch_idx in xrange(self.batch_size)], dtype=np.int32))
-
       # Create target_weights to be 0 for targets that are padding.
       batch_weight = np.ones(self.batch_size, dtype=np.float32)
       for batch_idx in xrange(self.batch_size):
