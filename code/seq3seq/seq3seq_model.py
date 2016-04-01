@@ -78,7 +78,7 @@ class Seq3SeqModel(object):
     # Encode a sentence into a vector
     def encode_sentence(sentence):
       length = tf.slice(sentence, [0],[1])
-      sent = tf.split(0, FLAGS.max_sent,tf.slice(sentence,[1],[-1]))
+      sent = tf.split(0, FLAGS.max_sent + 1,tf.slice(sentence,[1],[-1]))
       pdb.set_trace()
       (_ ,state) = tf.nn.rnn(sentence_cell, sent, sequence_length = length, dtype = tf.int32)
       return state
