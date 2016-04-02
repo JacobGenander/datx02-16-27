@@ -75,7 +75,7 @@ class LSTM_Network(object):
         tvars = tf.trainable_variables()
         grads, _ = tf.clip_by_global_norm(tf.gradients(cost, tvars), config["gradient_clip"])
         # RMSProp training op
-        optimizer = tf.train.RMSPropOptimizer(self._learning_rate)
+        optimizer = tf.train.RMSPropOptimizer(self._learning_rate, decay=0.95)
         self.train_op = optimizer.apply_gradients(zip(grads,tvars))
 
     def set_learning_rate(self, sess, value):
