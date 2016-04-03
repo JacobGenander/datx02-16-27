@@ -24,13 +24,17 @@ parser.add_argument('--init_seq', type=str, default="",
 class LSTM_Network(object):
 
     def __init__(self, size, layers, vocab_size, batch_size):
-        self._inputs = tf.placeholder(tf.float32, [batch_size, 1])
+        self._inputs = tf.placeholder(tf.int32, [batch_size, 1])
 
         cell = tf.nn.rnn_cell.BasicLSTMCell(size)
         stacked_cell = tf.nn.rnn_cell.MultiRNNCell([cell] * layers)
         self._initial_state = state = stacked_cell.zero_state(batch_size, tf.float32)
 
-        inputs = [self._inputs]
+        with tf.device("/cpu:0"):
+            embedding = tf.get_variable("embedding", [vocab_size, size])
+            inputs = tf.nn.embedding_lookup(embedding, self._inputs)
+        inputs = [tf.squeeze(inputs, [1])]
+
         outputs, state = tf.nn.rnn(stacked_cell, inputs, initial_state=self._initial_state)
         
         output = tf.reshape(tf.concat(1, outputs), [-1, size])

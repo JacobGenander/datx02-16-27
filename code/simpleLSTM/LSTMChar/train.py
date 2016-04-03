@@ -25,10 +25,14 @@ class LSTM_Network(object):
         vocab_size = config["vocab_size"]
 
         # 2-dimensional tensors for input data and targets
-        self._input = tf.placeholder(tf.float32, [batch_size, num_steps])
+        self._input = tf.placeholder(tf.int32, [batch_size, num_steps])
         self._target = tf.placeholder(tf.int64, [batch_size, num_steps])
+        
+        # Fetch embeddings 
+        with tf.device("/cpu:0"):
+            embedding = tf.get_variable("embedding", [vocab_size, size])
+            inputs = tf.nn.embedding_lookup(embedding, self._input)
 
-        inputs = self._input 
         if keep_prob < 1 and training:
             inputs = tf.nn.dropout(inputs, keep_prob)
 
@@ -41,7 +45,7 @@ class LSTM_Network(object):
         self.initial_state = stacked_cells.zero_state(batch_size, tf.float32)
 
         # Give input the right shape
-        inputs = tf.split(1, self.num_steps, inputs)
+        inputs =[tf.squeeze(input_, [1]) for input_ in tf.split(1, num_steps, inputs)]
 
         # Run through the whole batch and update state
         outputs, state = tf.nn.rnn(stacked_cells, inputs, initial_state=self.initial_state)
@@ -75,7 +79,7 @@ class LSTM_Network(object):
         tvars = tf.trainable_variables()
         grads, _ = tf.clip_by_global_norm(tf.gradients(cost, tvars), config["gradient_clip"])
         # RMSProp training op
-        optimizer = tf.train.RMSPropOptimizer(self._learning_rate, decay=0.95)
+        optimizer = tf.train.AdamOptimizer(self._learning_rate)
         self.train_op = optimizer.apply_gradients(zip(grads,tvars))
 
     def set_learning_rate(self, sess, value):
