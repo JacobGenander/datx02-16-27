@@ -1,0 +1,197 @@
+Title page
+Names
+
+Abstract
+Typ en halv sida, inte mer.
+
+Sammandrag
+“Samtliga rapporter ska ha ett abstract på engelska och ett sammandrag på svenska.”
+Typ en halv sida, inte mer.
+
+Acknowledgements
+Om vi vill tacka t.ex. handledaren för att vi fick låna hans datorresurser.
+
+Glossary
+Om vi nämner några ord som kräver förklaring och inte förklaras i texten, men även fökortningar (sortera i bokstavsordning)
+
+ANN - artificial neural network
+SMT - statistical machine translation
+LSTM - long-short term memory
+SGD - stochastic gradient descent
+RNN - recurrent neural network
+NNLM - Neural Network Language Model
+FFNN - feed forward neural network
+...
+
+Contents
+list
+
+Introduction
+Trying to create a computer program that generates syntactically and semantically correct text is a difficult task. recognizes speech or handwriting is a difficult task. A person’s voice is something highly individual and to find the common denominator between different people, a very sophisticated way of judgement is needed. In machine learning this has been tackled with artificial neural networks, taking inspiration from how the human brain works.
+
+The idea is to make a computer learn a specific task or function by observing data. It can be mathematically shown that any function (within a compact set) can be modeled with a sufficiently big neural network and enough data to train on [1]. The data is processed by interconnected “neurons” in different layers. We have an input layer, an output layer and layers in between these two. When the number of intermediate layers increase, we often refer to the network as a deep neural network. Generally deep nets are better at hierarchical abstraction needed in, for example, image recognition.
+
+By making it possible for the neurons to loop back information to earlier stages we get something similar to memory. These kinds of neural networks where information can persist is known as recurrent neural networks (RNNs). The ability to remember things makes these networks especially interesting in language modeling where we might try to generate sentences based on previous words the network has seen.
+
+Even though ordinary recurrent networks can remember their state, they are often bad at long term dependencies. In these kind of situations a special incarnation of RNN is used called Long Short Term Memory or simply LSTM. Basically an LSTM network contains read, write and reset operations that makes it possible for the network to learn when to discard, modify or keep information. This makes them excellent when information needs to 
+Aims
+Describe what we aim for and our goals.
+This project is about developing an artificial neural network of LSTM type that can learn to generate common news headlines. This has been divided into two goals:
+
+Create a program which generates random news headlines
+Create a program which generates news headlines, based on some input text (e.g. part of an article)
+
+Regarding the first goal, the headlines should be random in the sense that they are not based on some input text, but have the style of news headlines in general (e.g. not to long and formulated as statements or questions).
+
+We will also explore the possibilities to implement an attention model so that the network can choose, on its own, which parts of an article that are most relevant for its conditioning. Hopefully the project will shed some light over LSTM-networks use in language modelling and inspire to further studies in machine learning.
+Scope
+Describe the scope of the project.
+
+Background
+There are many concepts related to the field of machine learning. In the following sections we will attempt to describe the essential parts of the techniques used in this project. The explanations are not exhaustive, but should rather give the reader an understanding of how they work and what their purposes are.
+Artificial Neural Networks
+   
+Artificial neural networks model complex functions by learning from experience. No code is needed to tell the network explicitly what to do. Rather it is a process of tuning certain parameters and look at the result as we input some data.
+
+The fundamental building block of any neural network is the neuron. The neuron takes a number of inputs, process them and outputs a result that decides its activation. What the output will be depends on the neuron's state. In its simplest form the state consists only of a number of weights, one for each input. The weighted inputs are added together and put into an activation function. An activation function is a function that gives a smooth transition between two distinct values, like 0 and 1. The two extremes can be seen as two modes, on or off, for the neuron. In many cases a bias is also added together with the weighted inputs. The bias can be thought of as a number telling us how easy it is to activate a certain neuron. If a bias is included, it is also part of the state.
+
+To get a network, we order several neurons in interconnected layers where the activation from one layer is the input to the next. Layers have different names depending on where they are placed. The first layer is the input layer, then come the hidden layers and lastly the output layer. The input layer is just a series of input values fed to the network at the same time. In our case this will be a vector representation of a word where each element will be treated as a separate input.
+Word Embeddings 
+
+Unlike images and sounds words in a language do not carry any information but instead
+act merely as tokens. Thus a space of objects represented as a sequences of words have no natural metric and the dimensionality of the space will grow exponentially with the length of the sequences. Trying to approximate some probability mass function on such a space …. Course of dimensionality... . To remedy this problem Bengio et al [\cite(bengio03)] introduced the concept of distributed representations of words, or word embeddings, where words are mapped to elements in $\R^m$. Typically $m\in \N$ is significantly smaller than the vocabulary in the language, and the vectors are tuned to make some problem well-conditioned. In the contexts of ANN it is common to represent words as $w \in \{0,1\}^{|V|}$ with $|w| = 1$ and inserting a simple linear embedding layer that multiplies $w$ with $W\in\R^{|V|\times m}$. The weights $W$ are then trained together with the network. 
+
+$W$ can be initialized in many ways, either randomly using some sensible distribution or by
+first training an ANN to minimize some problem based on the 
+\emph{distributional hypothesis in lingustics} and using these weights in a more interesting
+problem. Notable such pretraining models have been constructed by Mikolov et al (2013a) and Collobert and Weston (2008).
+
+The Softmax Function 
+   
+The final layer in the network should output a probability distribution that shows what the possible next words might be. To get this we need to use a special activation function called the softmax function. It is a generalization of the simpler logistic function and very common for classification problems. In our case the output classes are the different words. The softmax function also has the neat property of being differentiable which is needed in the optimization step.
+
+Language Models
+The two main goals of the project is to create a program that generates random headlines and another that generates headlines based on the beginning of a news article. To this end, two different language models are used, namely an unconditioned language model for the first goal and a conditioned for the second goal. The following subsection will describe each model and their corresponding approach to solving the problems.
+The Unconditioned Language Model
+Describe the simple language model used for generating headlines, i.e. how to calculate
+the probabilities of sentences from a corpus.
+
+The starting point of language models is assigning probabilities to sequences of words. Once this is achieved one can use this distribution to either draw sentences or judge existing sentences. If $w$ is a sequence of words, $w_i$ the $i$:th element of that sequence and $w_i^j$ a sub-sequence from $i$ to $j$ this can be done by using the chain rule on the prefixes in the sequence, i.e.
+$$
+P(w) = \prod_{t}P(w_t|w_1^{t-1})
+$$
+To estimate the conditional probabilities $P(w_t | w_1^{t-})$ as a multinomial distribution over the vocabulary $\mathcal{V}$ an RNN is trained to minimize the cross entropy of a softmax output.  
+ 
+The standard model introduced by [Bengio 03?] used a feed forward neural network and is often referred to as NNLM. This model was later extended by [Mikolov 2010?] to use an RNN instead. It is given by the following equations
+\begin{align}
+  s(t) =&amp; f\left( \mathbf{U}w(t) +  \mathbf{W}s(t-1) \right)  \\
+  y(t) = &amp; g\left( \mathbf{V}s(t) \right)
+\end{align}
+Where $g$ is a softmax function and $f$ a sigmoid function. 
+
+The Conditioned Language Model
+Many tasks can not be solved by a simple language model and requires the generated sentence to be conditioned on some input sequence. Even though RNN:s are well suited for processing sequential data they have problems takings sequences as inputs since they require the input dimension to be known and fixed. In statistical machine translation, SMT, this problem have been successfully solved by different variations of \emph{encoder-decoder} networks [Cho et al][Sutskever et al]. 
+
+These models train two RNN:s together --  one that encodes an input sequence to a fixed sized vector and one that decodes that vector to a target sequence -- using standard SGD through the whole system. Later these models have been extended using an attention mechanism introduced by  [Bahdanau et al] were instead of trying to encode the original sequence in a single vector the encoder gives a list of vectors relevant to different parts of the original sequence and the decoder is trained to decide which vectors are relevant for the next word given the currently generated sequence.  
+
+Training
+   
+The parameters of the network has to be tuned to produce the desired output. This is done like a classical optimization problem. Since we know what the desired outputs are, we can compare these with the actual output. The difference is formulated as a cost function and we minimize this by changing the weights and biases. Training a network this way is known as supervised learning.
+Negative Log Cost
+To get a measure of how well our model made its predictions we are going to use the negative log probability for the target words.
+
+cost  = -1N targetNln ptarget
+
+Instead of just seeing how far of 100% we were for a specific word this more sophisticated function will improve the learning process when used together with the softmax function. One can get an intuitive feel for the function by understanding that all probabilities will be between 0 and 1 and the cost will decrease as we get closer to 1. Notice that we take the average of several predictions since the training is done in batches.
+Gradient Descent with Backpropagation
+So how do we then minimize the cost? From calculus we know that we can differentiate a function to look for its extreme points. There are several ways to do this, both numerical and exact. Since multivariate functions can get computationally heavy we are going to use a numerical method known as gradient descent.
+
+At each step of the optimization process one walks in the opposite direction of the gradient of the cost as a function of the weights. The gradient is just a generalization of the derivative to the multivariate case. It can be shown that the function increases most in the gradient's direction, hence we want to move against it. How long we keep going before calculating the gradient anew is decided by the learning rate. Increasing the learning rate might make the learning process faster, but there is also the risk of overstepping a local minima. After a fixed number of steps or when the results does not seem to improve, the learning process is over.
+
+To make the calculations of the derivatives manageable another algorithm called backpropagation is used in conjunction with gradient descent. We will not derive the exact formula for it but basically it calculates the gradients by using previous results to speed up the process. #Formulering av förklaring pågår offline /Jacob#
+Validation
+As previously mentioned, the output of the network is compared to the desired target output during training. This means that the network will learn to approximate the training data, but not necessarily any other data of the same type. For this reason, the validation of the network is done using another, disjoint, set of data - a validation set.
+Recurrent Neural Networks
+Recurrent neural networks (RNN) is a type of neural networks that are used for modelling time sequences, such as words in a sentence. By remembering their previous state they can make better predictions of what comes next. The problem with simply looping back information is that the network quickly forgets what it has just seen. Longer time sequences will thus be harder to model. A solution is to introduce a number of gates which control what the network should remember and forget. For this purpose, the LSTM cell was invented [Hochreiter 97]. 
+LSTM
+LSTM stands for Long Short Term Memory and is a special network architecture that has the ability to remember certain values for longer time, while discarding others immediately. This is thanks to a couple of gates which are smaller neural networks that gets trained together with the rest of the weights outside of the cell. The gates incorporate parts of the old state when calculating the new. Each iteration part of the state is either retrieved, overwritten or kept unchanged for the future.
+We can describe the LSTM cell and its state as  where t is the time step, and l is the layer that it resides in.
+From Input to Output
+The following sections describe how the input propagates through a single LSTM cell and how the output is determined. In order to do this, we define some variables.
+Let  be the output of a cell in layer l at time step t. Also, let C_t^{l} be the cell state of a cell in layer l at time step t.
+Input
+The cell takes two inputs.The first is its own cell state from the previous time step, and the second is the output from the previous layer at the current time step, concatenated with its own output from the previous time step. In the case where the cell is in the first layer, the input is the word vector itself.. It will then use these inputs to calculate the output as well as to update its own state for the next time step. In our case each time step will be used for calculating one word vector.
+Forget Gate Layer
+Put simply, this layer decides what to keep and what to forget in the state. To do this it makes use of two functions, the first being a Sigmoid layer. Its input is the output of the cell in the previous layer, h_t^{l-1}, concatenated with its previous output, h_{t-1}^{l}, and outputs values between one and zero. After the Sigmoid layer, a pointwise multiplication is applied on the output from the Sigmoid layer with the values of the cell state memory vector from the previous time step, . This can decrease the values of the memory vector.  Where the Sigmoid layer outputs a one we keep the entire value in the memory, and where it outputs a zero we forget something. Values in between makes something from the past state less impactful in future time steps.
+
+We will call the output from the Forget Gate .
+
+Input Gate Layer
+After having decided what to keep and what to forget of the old cell state we now input new values and therefore update the cell state. This is done in steps: first we have a Tanh layer that takes the concatenated input (h_{t-1}^l and h_t^{l-1}) and outputs a vector of values between -1 and 1, but since the input has a lot of dimensions and we don’t want to store all of them in the cell state we now take the output of the tanh and multiply it with the output from a parallel Sigmoid layer (similar to that in the Forget Gate) so that we get a new array of values that we want to put into the cell state. This way we only update some of the values, and we scale the update depending on how much we choose to update it. Next we take this new vector and we simply do a pointwise addition to add it to the cell state in the appropriate places. For example it can be that we in the Forget layer completely chose to forget something and set it to zero, and then now in the input layer we decide to overwrite it with some new information. So all in all this Input Gate Layer decides what values to update and by how much. A Tanh layer as well as a Sigmoid layer decides what to update with.
+The new cell state  has now been calculated, if we call the output from the Tanh layer  and the filtering output from the Sigmoid layer  we now get:
+
+Output
+The last thing we do is to decide on what to output from the cell. This will be calculated from the cell state by running it through a Tanh neural net layer, but we will not output the entire output of the cell state, we will filter it before. The filter that we will apply will be generated by running our input into a Sigmoid layer and then take that and pointwise multiply it with the output from the Tanh layer. This new vector will then be the output that we send both to the cell in the next layer in the network, as well as back into this cell for the next time step.
+
+The output  have now been calculated, if we call the filtering output from the Sigmoid layer o now get:
+ 
+This is a visual representation of our LSTM cells and the different gates. To the sides
+we have the same cell in different time steps and above or below it we have other layers
+in our deep neural network of cells.
+
+Deep Learning
+Explain that stacking many of these LSTM cells yields a deep neural network and explain why it is good.
+A minimal LSTM network would consist of only one cell. Multiple layers of LSTM cells stacked on top of each other is referred to as a deep neural network, hence the name deep learning. Having multiple layers, the network may gain performance. However, there seems to be no precise explanation of when this is true, i.e. no precise relationship between performance the number of layers. Testing multiple setups of networks is therefore common practice.
+Hyperparameters
+Some parameters cannot be learned, but has to be set manually. These so called hyperparameters are mainly related to the specific learning algorithm and structure of the network. Tuning these is done not only to improve training results, but also to generalize the model so it can make better predictions on cases it has not seen before. Learning the training set too closely is known as “overfitting” and choosing the right hyperparameters can prevent this. Following is a more detailed explanation of the different hyperparameters and their effect on the model.
+Layer Size
+As a neural network becomes larger the more details it can learn about the data. Bigger is usually better, but also increases the chances of overfitting. A compromise also has to be made between network performance and optimization time. Large networks might take an unreasonably long time to train.
+Training/Validation Data Ratio
+To acquire good results, it is essential that the network has high-quality and extensive data to learn from. We also need data which can be used to validate the network’s performance. One hyperparameter is then how we should distribute our data set between training and evaluation.
+Number of epochs
+One epoch is one run through the data set and we have to run several epochs to get good results. Still we do not want the model to learn the data set too closely. The number of epochs will also affect how long the training takes.
+Mini-Batch Size
+Choosing to train on one word pair each iteration would adjust the parameters towards better predicting the next word, given the first word in particular. On the other hand, training on the whole data set each iteration would adjust the parameters towards better predicting the next word for all words in the set at once. The first approach has the advantage of stochasticity, meaning that the parameters can escape local optima more easily, while the latter approach speeds up the process by enabling parallel calculations of several words. A commonly used technique is to train on a so called mini-batch each iteration, which contains a subset of the whole data set. Choosing the size of the mini-batch is a balance between efficiency and effectiveness.
+Momentum Coefficient
+When trying to minimize the cost function, the gradient of the parameters change as we move through the mathematical landscape. By introducing a so called momentum coefficient, we can make use of the current “velocity” in the next time step to escape local minima. This can be seen as gaining physical momentum. However, the momentum coefficient can also be seen as adding friction, where a value of 0 corresponds to maximal friction and 1 to minimal friction. Too small values will have little to no effect while too large values may give overly drastic effects. Therefore, choosing the value of the momentum coefficient is a matter of testing.
+Learning Rate
+As discussed earlier one can increase the learning rate to make more radical changes to the variables each optimization step. A low learning rate will not improve the cost as much as we want, but a too big step might never diverge to a minimum. To choose a fitting learning rate one often looks at the graph of the cost function and sees if it decreases satisfactorily each time step. It is also common to decrease the learning rate as one goes along. In that case, when to begin the decrease and by how much is also parameters to decide.
+Word Dimensionality
+Another hyperparameter is the input size of the network, i.e. the dimensionality of the word embeddings. It should seem natural that the performance of the network may become better as the number of dimensions describing each word increases, simply because there is more information to access. It should also seem natural that the training time increases.
+Regularization
+Explain overfitting (underfitting), early stopping, drop-out.
+The process of reducing overfitting while maintaining the size of the network is called regularization and the following paragraphs will explain the two main regularization techniques used in this project.
+Dropout
+Dropout is a technique that aims to prevent overfitting. By removing some neurons and its connections within the network during training (with a probability p), it can be seen as training random subsets of the whole network. When the training has ended, no dropout is applied, meaning that all neurons and connections are present. The weights may then be scaled by the probability p, which makes the output of a neuron equal to the expected output during training with dropout. The result is a network consisting of many sub-networks that have been trained differently from each other. This has been shown to increase performance on various machine learning tasks. While capable of increasing the effectiveness of the network, dropout also increases the training time, since only a fraction of the whole network is trained each iteration. The dropout probability p is a hyperparameter [Dropout: a simple way…2014, Hinton].
+Early Stopping
+One way to detect overfitting is to compare the performance of the network on the training set with that of the validation set. In the beginning of the training process, the network should improve on both sets. However, after some training, the performance on the validation set may become worse, while that of the training set keeps on becoming better. This could be an indication of that the network is learning the training set to specifically and cannot generalize to the validation set. To prevent this, we can simply stop training when the performance of the two sets begin to diverge. It is not trivial to know when the divergence happens. One way to circumvent this is to save the network at different checkpoints during training and then pick the one which has best performance on the validation set.
+
+Method
+Describe the software, hardware and data
+Implementation
+The models described in this section have been implemented using the machine learning framework TensorFlow[] by Google. Data processing and other book-keeping tasks have been implemented in python2. The python library nltk[] was used for tokenization of sentences.
+The models were trained on a Nvidia Titan X GPU
+
+Data
+When training the models, a set of over 540,000 articles with corresponding headlines were used. The data set was produced by Congle Zhang and Daniel S. Weld, by querying the Bing news search engine for news articles based on the titles in RSS news seeds. This was done using daily news seeds from multiple newspapers for approximately two months [D13-1183(Dataset)]. 
+Generating Random Headlines
+Describe the model used for generating random headlines. This should not need to be a very long section, as its parts have been described in the background.
+To create a neural network that was capable of generating random headlines using the methods and principles described in the background section, it would have to be implemented in code. This was done by using a Python library called TensorFlow [källa google fixa någon], which helped doing many of the things by already having them implemented. This way no additional code for LSTM cells (among other things) were needed, it was simply a matter of checking so that the implementation provided by TensorFlow was adequate for these purposes, which it was. Many things such as LSTM cells and gradient descent were included in the TensorFlow library, and as soon as it was clear what they did and why they would be useful we used them. Other things still had to be written by us though, TensorFlow was a helpful tool but didn’t solve the entire problem. Most of the code written deals with Matrix manipulation and data storage, but there was also the problem running it multiple times with different hyperparameters that required some administrative coding, as well as integrating glove for word embeddings. When the coding was done a deep neural network had been constructed that uses: LSTM cells, gradient decent, word embeddings, mini-batches, …
+
+After having constructed the network but before it could start to generate random headlines it had to be trained on a dataset as described above in Background - Training and Method - Article Data. But before the network could be trained some hyperparameters had to be decided upon. The best way to find the optimal hyperparameters for the network was through an iterative process where different hyperparameters were tested each time and the results evaluated before resetting and training again, more about this can be found later in Method - Adjusting Hyperparameters and Regularizing.
+
+Generating Headlines Using an Attention Model
+Describe the model used for generating headlines using an attention model.
+As described in [], the conditional language model is strongly based on the extended RNN-encoder-decoder model proposed in [Bahdanau et al.]. This sequence to sequence model is originally developed for machine translation, where the source and target sentences are of similar lengths, but its attention model is flexible enough to handle even the length dissimilarities between articles and titles.Our implementation is strongly based on the model found in TensorFlows seq2seq-tutorial[], where modifications have been made to accommodate the larger differences between the input and output texts.
+Adjusting Hyperparameters and Regularizing
+Describe how the hyperparameters were adjusted, what we tested basically. Also, what regularization techniques were used?
+
+Evaluation
+Describe how the models are evaluated.
+
+Discussion
+
+Conclusion
+Describe the the results of the project. 
+
+References
