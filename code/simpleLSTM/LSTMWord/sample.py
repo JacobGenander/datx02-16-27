@@ -14,11 +14,13 @@ import os
 
 parser = argparse.ArgumentParser(description=
         'Generates sentences from a pretrained LSTM-model')
-parser.add_argument('-n', metavar='N', type=int, default=5,
+parser.add_argument('--model_dir', metavar='PATH', type=str, default='results',
+        help='directory where the model is saved')
+parser.add_argument('-n', metavar='N', type=int, default=1,
         help='number of sequences to generate (might be capped by batch size)')
 parser.add_argument('--length', metavar='L', type=int, default=200,
         help='length of each sequence')
-parser.add_argument('--init_seq', type=str, default="",
+parser.add_argument('--init_seq', type=str, default='',
         help='condition model on some initial sequence')
 
 class LSTM_Network(object):
@@ -30,16 +32,16 @@ class LSTM_Network(object):
         stacked_cell = tf.nn.rnn_cell.MultiRNNCell([cell] * layers)
         self._initial_state = state = stacked_cell.zero_state(batch_size, tf.float32)
 
-        with tf.device("/cpu:0"):
-            embedding = tf.get_variable("embedding", [vocab_size, size])
+        with tf.device('/cpu:0'):
+            embedding = tf.get_variable('embedding', [vocab_size, size])
             inputs = tf.nn.embedding_lookup(embedding, self._inputs)
         inputs = [tf.squeeze(inputs, [1])]
 
         outputs, state = tf.nn.rnn(stacked_cell, inputs, initial_state=self._initial_state)
 
         output = tf.reshape(tf.concat(1, outputs), [-1, size])
-        w = tf.get_variable("out_w", [size, vocab_size])
-        b = tf.get_variable("out_b", [vocab_size])
+        w = tf.get_variable('out_w', [size, vocab_size])
+        b = tf.get_variable('out_b', [vocab_size])
         z = tf.matmul(output, w) + b
 
         self._word_predictions = tf.nn.softmax(z)
@@ -56,7 +58,7 @@ def gen_init_batch(seq, batch_size, word_to_id):
     try:
         ids = [[word_to_id[w] for w in list(seq)]]
     except KeyError:
-        print("Character not found in vocabulary")
+        print('Could not find word in vocabulary')
         sys.exit(1)
     init_batch =  np.repeat(ids, batch_size, 0)
     return init_batch
@@ -91,15 +93,16 @@ def gen_sentences(net, sess, word_to_id, conf):
 
 def format_sentences(s):
     s = ' '.join(s)
-    return s.replace("_EOS", "\n")
+    return s.replace('_EOS', '\n')
 
 def main():
     args = parser.parse_args()
 
-    with open("config.p", "rb") as f:
+    config_path = os.path.join(args.model_dir, 'config.p')
+    with open(config_path, 'rb') as f:
         conf = pickle.load(f)
 
-    with tf.variable_scope("model", reuse=False):
+    with tf.variable_scope('model', reuse=False):
         net = LSTM_Network( conf.layer_size,
                             conf.num_layers,
                             conf.vocab_size,
@@ -107,16 +110,18 @@ def main():
 
     with tf.Session() as sess:
         saver = tf.train.Saver()
-        saver.restore(sess, "model.ckpt")
+        model_path = os.path.join(args.model_dir, 'model.ckpt')
+        saver.restore(sess, model_path)
 
         sentences = gen_sentences(net, sess, conf.word_to_id, conf)
         for i, s in enumerate(sentences):
             if i >= args.n: # Decides the number of displayed headlines
                 break
             s = [ conf.id_to_word[w] for w in s]
-            print("-" * 50)
-            print(" " + format_sentences(s))
+            if i != 0:
+                print('-' * 50)
+            print(' ' + format_sentences(s))
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
 

@@ -8,23 +8,27 @@ import tensorflow as tf
 import numpy as np
 import cPickle as pickle
 import DataManager
-import eval_plot
 import argparse
 import time
 import sys
+import os
 
 # TensorFlow's API (if you want to know what arguments we pass to the different methods)
 # https://www.tensorflow.org/versions/r0.7/api_docs/python/index.html
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_path', type=str, default='data/input.txt',
+parser.add_argument('--data_path', type=str, default='data/data.txt',
         help='path to data set')
 parser.add_argument('--save_dir', type=str, default='results',
         help='directory to store model and graphs')
+parser.add_argument('--checkpoint_dir', type=str, default='',
+        help='resume training from checkpoint found at given directory') 
 parser.add_argument('--batch_size', type=int, default=20,
         help='number of sequences to train on in prallell')
 parser.add_argument('--max_epoch', type=int, default=13,
         help='number of passes through the data set')
+parser.add_argument('--save_epoch', type=int, default=1,
+        help='decides how often we will save our progress')
 parser.add_argument('--num_steps', type=int, default=20,
         help='number of timesteps to unroll for')
 parser.add_argument('--num_layers', type=int, default=2,
@@ -57,8 +61,8 @@ class LSTM_Network(object):
         self._target = tf.placeholder(tf.int64, [batch_size, num_steps])
 
         # Fetch embeddings
-        with tf.device("/cpu:0"):
-            embedding = tf.get_variable("embedding", [vocab_size, size])
+        with tf.device('/cpu:0'):
+            embedding = tf.get_variable('embedding', [vocab_size, size])
             inputs = tf.nn.embedding_lookup(embedding, self._input)
 
         if keep_prob < 1 and training:
@@ -85,8 +89,8 @@ class LSTM_Network(object):
         # Flatten output into a tensor where each row is the output from one word
         output = tf.reshape(outputs, [-1, size])
 
-        w = tf.get_variable("out_w", [size, vocab_size])
-        b = tf.get_variable("out_b", [vocab_size])
+        w = tf.get_variable('out_w', [size, vocab_size])
+        b = tf.get_variable('out_b', [vocab_size])
         z = tf.matmul(output, w) + b # Add supports broadcasting over each row
 
         # Average negative log probability
@@ -117,7 +121,7 @@ def run_epoch(sess, net, data_man, data_set):
     total_cost, total_acc = 0.0, 0.0
     state = sess.run(net.initial_state)
     for i, (x, y) in enumerate(data_man.batch_iterator(net.batch_size, net.num_steps, data_set)):
-        # Input
+        # Input to network
         feed = { net._input : x, net._target : y , net.initial_state : state}
         # Calculate cost and train the network
         cost, state, acc,  _ = sess.run([net.cost, net.final_state, net.accuracy, net.train_op], feed_dict=feed)
@@ -126,44 +130,59 @@ def run_epoch(sess, net, data_man, data_set):
     return total_cost / (i+1), total_acc / (i+1)
 
 def save_state(sess, saver, conf):
-    print("Saving model.")
-    saver.save(sess, "model.ckpt")
-    pickle.dump(conf, open("config.p", "wb"))
+    print('Saving model.')
+    save_path_model = os.path.join(conf.save_dir, 'model.ckpt')
+    saver.save(sess, save_path_model)
+    save_path_config = os.path.join(conf.save_dir, 'config.p')
+    pickle.dump(conf, open(save_path_config, 'wb'))
 
 def main():
     start_time = time.time()
+    conf = parser.parse_args() 
 
-    data_man = DataManager.DataMan("data.txt", 0.05) # 5% of data for evaluation
+    data_man = DataManager.DataMan(conf.data_path, 0.05) # 5% of data for evaluation
 
-    parser.add_argument('--start_epoch', default=0)
-    parser.add_argument('--vocab_size', default=data_man.vocab_size)
-    parser.add_argument('--word_to_id', default=data_man.word_to_id)
-    parser.add_argument('--id_to_word', default=data_man.id_to_word)
-    conf = parser.parse_args()
+    # We don not want to run anything without knowing that we can save our results
+    if not os.path.isdir(conf.save_dir):
+        print('Could not find save directory')
+        sys.exit(1)
+
+    # Load previous model if a checkpoint path is provided
+    if not conf.checkpoint_dir:
+        parser.add_argument('--start_epoch', default=0)
+        parser.add_argument('--vocab_size', default=data_man.vocab_size)
+        parser.add_argument('--word_to_id', default=data_man.word_to_id)
+        parser.add_argument('--id_to_word', default=data_man.id_to_word)
+        conf = parser.parse_args()
+    else:
+        config_path = os.path.join(conf.checkpoint_dir, 'config.p')
+        with open(config_path, 'rb') as f:
+            conf = pickle.load(f)
 
     # Create networks for training and evaluation
     initializer = tf.random_uniform_initializer(-conf.init_range, conf.init_range)
-    with tf.variable_scope("model", reuse=None, initializer=initializer):
+    with tf.variable_scope('model', reuse=None, initializer=initializer):
         train_net = LSTM_Network(True, conf)
-    with tf.variable_scope("model", reuse=True, initializer=initializer):
+    with tf.variable_scope('model', reuse=True, initializer=initializer):
         val_net = LSTM_Network(False, conf)
 
     # We always need to run this operation if not loading an old state
     init = tf.initialize_all_variables()
-    # This operation will save our state at the end
+    # This object will save our state at certain intervals 
     saver = tf.train.Saver()
 
     with tf.Session() as sess:
         # Initialize variables
-        sess.run(init)
+        if not conf.checkpoint_dir:
+            sess.run(init)
+        else:
+            model_path = os.path.join(conf.checkpoint_dir, 'model.ckpt')
+            saver.restore(sess, model_path)
 
         max_epoch = conf.max_epoch
         cost_train, cost_valid, accuracy = [], [], []
-        print("Training.")
-        for i in range(0, max_epoch):
-            print("\r{}% done".format(int(i/max_epoch * 100)), end="")
-            sys.stdout.flush()
-
+        print('Training.')
+        for i in range(conf.start_epoch, max_epoch):
             # Code needed for learning rate decay
             if i > conf.decay_start:
                 decay = conf.learning_decay ** (i - conf.decay_start)
@@ -176,16 +195,17 @@ def main():
             cost_valid.append(cost_v)
             accuracy.append(acc)
 
-            # Plot results
-            eval_plot.plot_costs(range(i+1), cost_train, cost_valid)
-            eval_plot.plot_accuracy(range(i+1), accuracy)
-        print("\r100% done")
+            format_string = 'epoch {0}/{1}: , training cost: {2}, validation cost: {3}, accuracy: {4}'
+            print(format_string.format(i+1, max_epoch, cost_t, cost_v, acc))
 
-        # Save and exit
-        save_state(sess, saver, conf)
+            if (i % conf.save_epoch == 0) or (i == max_epoch - 1):
+                conf.start_epoch = i+1
+                save_state(sess, saver, conf)
+
         sess.close()
-        print("--- {} seconds ---".format(round(time.time() - start_time, 2)))
+        print('Training finished.')
+        print('--- {} seconds ---'.format(round(time.time() - start_time, 2)))
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
 
