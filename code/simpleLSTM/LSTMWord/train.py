@@ -46,7 +46,7 @@ parser.add_argument('--init_range', type=float, default = 0.1,
 
 class LSTM_Network(object):
     def __init__(self, training, conf):
-        self.batch_size = batch_size = conf.batch_size 
+        self.batch_size = batch_size = conf.batch_size
         self.num_steps = num_steps = conf.num_steps
         self.size = size = conf.layer_size
         keep_prob = conf.keep_prob
@@ -55,8 +55,8 @@ class LSTM_Network(object):
         # 2-dimensional tensors for input data and targets
         self._input = tf.placeholder(tf.int32, [batch_size, num_steps])
         self._target = tf.placeholder(tf.int64, [batch_size, num_steps])
-        
-        # Fetch embeddings 
+
+        # Fetch embeddings
         with tf.device("/cpu:0"):
             embedding = tf.get_variable("embedding", [vocab_size, size])
             inputs = tf.nn.embedding_lookup(embedding, self._input)
@@ -94,9 +94,9 @@ class LSTM_Network(object):
         loss = tf.nn.sparse_softmax_cross_entropy_with_logits(z, targets)
         self.cost = cost = tf.reduce_sum(loss) / (batch_size * num_steps)
         # Accuracy is calculated by looking for each target in the top 5 most predicted
-        correct_preds = tf.nn.in_top_k(tf.nn.softmax(z), targets, 5) 
+        correct_preds = tf.nn.in_top_k(tf.nn.softmax(z), targets, 5)
         self.accuracy = tf.reduce_mean(tf.cast(correct_preds, tf.float32))
-        
+
         if not training:
             self.train_op = tf.no_op()
             return
@@ -119,7 +119,7 @@ def run_epoch(sess, net, data_man, data_set):
     for i, (x, y) in enumerate(data_man.batch_iterator(net.batch_size, net.num_steps, data_set)):
         # Input
         feed = { net._input : x, net._target : y , net.initial_state : state}
-        # Calculate cost and train the network 
+        # Calculate cost and train the network
         cost, state, acc,  _ = sess.run([net.cost, net.final_state, net.accuracy, net.train_op], feed_dict=feed)
         total_acc += acc
         total_cost += cost
@@ -138,7 +138,7 @@ def main():
     parser.add_argument('--start_epoch', default=0)
     parser.add_argument('--vocab_size', default=data_man.vocab_size)
     parser.add_argument('--word_to_id', default=data_man.word_to_id)
-    parser.add_argument('--id_to_word', default=data_man.id_to_word) 
+    parser.add_argument('--id_to_word', default=data_man.id_to_word)
     conf = parser.parse_args()
 
     # Create networks for training and evaluation
@@ -175,7 +175,7 @@ def main():
             cost_v, acc = run_epoch(sess, val_net, data_man, DataManager.VALID_SET)
             cost_valid.append(cost_v)
             accuracy.append(acc)
-            
+
             # Plot results
             eval_plot.plot_costs(range(i+1), cost_train, cost_valid)
             eval_plot.plot_accuracy(range(i+1), accuracy)

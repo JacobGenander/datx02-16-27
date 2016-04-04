@@ -36,7 +36,7 @@ class LSTM_Network(object):
         inputs = [tf.squeeze(inputs, [1])]
 
         outputs, state = tf.nn.rnn(stacked_cell, inputs, initial_state=self._initial_state)
-        
+
         output = tf.reshape(tf.concat(1, outputs), [-1, size])
         w = tf.get_variable("out_w", [size, vocab_size])
         b = tf.get_variable("out_b", [vocab_size])
@@ -100,9 +100,9 @@ def main():
         conf = pickle.load(f)
 
     with tf.variable_scope("model", reuse=False):
-        net = LSTM_Network( conf.layer_size, 
-                            conf.num_layers, 
-                            conf.vocab_size, 
+        net = LSTM_Network( conf.layer_size,
+                            conf.num_layers,
+                            conf.vocab_size,
                             conf.batch_size)
 
     with tf.Session() as sess:
