@@ -16,19 +16,19 @@ import sys
 
 # TensorFlow's API (if you want to know what arguments we pass to the different methods)
 # https://www.tensorflow.org/versions/r0.7/api_docs/python/index.html
-'''
-parser = argparse.ArgumentParse()
+
+parser = argparse.ArgumentParser()
 parser.add_argument('--data_path', type=str, default='data/timyshakespeare',
         help='path to data set')
 parser.add_argument('--save_dir', type=str, default='results',
         help='directory to store model and graphs')
 parser.add_argument('--batch_size', type=int, default=50,
         help='number of sequences to train on in prallell')
-parser.add_argument('--max_epoc', type=int, default=50,
+parser.add_argument('--max_epoch', type=int, default=50,
         help='number of passes through the data set')
 parser.add_argument('--num_steps', type=int, default=50,
         help='number of timesteps to unroll for')
-parser.add_argument('num_layers', type=int, default=2,
+parser.add_argument('--num_layers', type=int, default=2,
         help='number of neuron layers')
 parser.add_argument('--layer_size', type=int, default=128,
         help='number of neurons in each layer')
@@ -42,17 +42,17 @@ parser.add_argument('--gradient_clip', type=int, default=5,
         help='clip gradients at this value')
 parser.add_argument('--keep_prob', type=float, default=1.0,
         help='probability that input/output is kept. 1 = No dropout')
-parser.add_argument('init_range', type=float, default = 0.08,
+parser.add_argument('--init_range', type=float, default = 0.08,
         help='initiate parameters withing this range. -/+ init_range')
-'''
+
 
 class LSTM_Network(object):
-    def __init__(self, training, config):
-        self.batch_size = batch_size = config["batch_size"] 
-        self.num_steps = num_steps = config["num_steps"]
-        self.size = size = config["hidden_layer_size"]
-        keep_prob = config["keep_prob"]
-        vocab_size = config["vocab_size"]
+    def __init__(self, training, conf):
+        self.batch_size = batch_size = conf.batch_size 
+        self.num_steps = num_steps = conf.num_steps
+        self.size = size = conf.layer_size
+        keep_prob = conf.keep_prob
+        vocab_size = conf.vocab_size
 
         # 2-dimensional tensors for input data and targets
         self._input = tf.placeholder(tf.int32, [batch_size, num_steps])
@@ -70,7 +70,7 @@ class LSTM_Network(object):
         cell = tf.nn.rnn_cell.BasicLSTMCell(size)
         if keep_prob < 1 and training:
             cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob)
-        stacked_cells = tf.nn.rnn_cell.MultiRNNCell([cell] * config["number_of_layers"])
+        stacked_cells = tf.nn.rnn_cell.MultiRNNCell([cell] * conf.num_layers)
 
         self.initial_state = stacked_cells.zero_state(batch_size, tf.float32)
 
@@ -103,11 +103,11 @@ class LSTM_Network(object):
             self.train_op = tf.no_op()
             return
 
-        self._learning_rate = tf.Variable(config["learning_rate"], trainable=False)
+        self._learning_rate = tf.Variable(conf.learning_rate, trainable=False)
 
         # Clip the gradients
         tvars = tf.trainable_variables()
-        grads, _ = tf.clip_by_global_norm(tf.gradients(cost, tvars), config["gradient_clip"])
+        grads, _ = tf.clip_by_global_norm(tf.gradients(cost, tvars), conf.gradient_clip)
         # RMSProp training op
         optimizer = tf.train.AdamOptimizer(self._learning_rate)
         self.train_op = optimizer.apply_gradients(zip(grads,tvars))
@@ -127,27 +127,28 @@ def run_epoch(sess, net, data_man, data_set):
         total_cost += cost
     return total_cost / (i+1), total_acc / (i+1)
 
-def save_state(sess, saver, config):
+def save_state(sess, saver, conf):
     print("Saving model.")
     saver.save(sess, "model.ckpt")
-    pickle.dump(config, open("config.p", "wb"))
+    pickle.dump(conf, open("config.p", "wb"))
 
 def main():
     start_time = time.time()
 
-    config = hyperParams.config
-    data_man = DataManager.DataMan("data.txt", 0.05)
-    # Update config with information from data manager 
-    data_params = { "word_to_id" : data_man.word_to_id, "id_to_word" : data_man.id_to_word,
-            "vocab_size" : data_man.vocab_size}
-    config.update(data_params)
+    data_man = DataManager.DataMan("data.txt", 0.05) # 5% of data for evaluation
+
+    parser.add_argument('--start_epoch', default=0)
+    parser.add_argument('--vocab_size', default=data_man.vocab_size)
+    parser.add_argument('--word_to_id', default=data_man.word_to_id)
+    parser.add_argument('--id_to_word', default=data_man.id_to_word) 
+    conf = parser.parse_args()
 
     # Create networks for training and evaluation
-    initializer = tf.random_uniform_initializer(-config["init_range"], config["init_range"])
+    initializer = tf.random_uniform_initializer(-conf.init_range, conf.init_range)
     with tf.variable_scope("model", reuse=None, initializer=initializer):
-        train_net = LSTM_Network(True, config)
+        train_net = LSTM_Network(True, conf)
     with tf.variable_scope("model", reuse=True, initializer=initializer):
-        val_net = LSTM_Network(False, config)
+        val_net = LSTM_Network(False, conf)
 
     # We always need to run this operation if not loading an old state
     init = tf.initialize_all_variables()
@@ -158,7 +159,7 @@ def main():
         # Initialize variables
         sess.run(init)
 
-        max_epoch = config["max_epoch"]
+        max_epoch = conf.max_epoch
         cost_train, cost_valid, accuracy = [], [], []
         print("Training.")
         for i in range(0, max_epoch):
@@ -166,9 +167,9 @@ def main():
             sys.stdout.flush()
 
             # Code needed for learning rate decay
-            if i > config["decay_start"]:
-                decay = config["learning_decay"] ** (i - config["decay_start"])
-                train_net.set_learning_rate(sess, config["learning_rate"] * decay)
+            if i > conf.decay_start:
+                decay = conf.learning_decay ** (i - conf.decay_start)
+                train_net.set_learning_rate(sess, conf.learning_rate * decay)
 
             # Train the network and evaluate it
             cost_t, _ = run_epoch(sess, train_net, data_man, DataManager.TRAIN_SET)
@@ -183,7 +184,7 @@ def main():
         print("\r100% done")
 
         # Save and exit
-        save_state(sess, saver, config)
+        save_state(sess, saver, conf)
         sess.close()
         print("--- {} seconds ---".format(round(time.time() - start_time, 2)))
 
