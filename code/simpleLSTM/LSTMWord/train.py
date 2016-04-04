@@ -136,6 +136,16 @@ def save_state(sess, saver, conf):
     save_path_config = os.path.join(conf.save_dir, 'config.p')
     pickle.dump(conf, open(save_path_config, 'wb'))
 
+def init_config(parser, data_man):
+    parser.add_argument('--start_epoch', default=0)
+    parser.add_argument('--vocab_size', default=data_man.vocab_size)
+    parser.add_argument('--word_to_id', default=data_man.word_to_id)
+    parser.add_argument('--id_to_word', default=data_man.id_to_word)
+    parser.add_argument('--cost_train', default=[])
+    parser.add_argument('--cost_valid', default=[])
+    parser.add_argument('--accuracy', default=[])
+    return parser.parse_args()
+
 def main():
     start_time = time.time()
     conf = parser.parse_args() 
@@ -149,11 +159,7 @@ def main():
 
     # Load previous model if a checkpoint path is provided
     if not conf.checkpoint_dir:
-        parser.add_argument('--start_epoch', default=0)
-        parser.add_argument('--vocab_size', default=data_man.vocab_size)
-        parser.add_argument('--word_to_id', default=data_man.word_to_id)
-        parser.add_argument('--id_to_word', default=data_man.id_to_word)
-        conf = parser.parse_args()
+        conf = init_config(parser, data_man)
     else:
         config_path = os.path.join(conf.checkpoint_dir, 'config.p')
         with open(config_path, 'rb') as f:
@@ -180,7 +186,6 @@ def main():
             saver.restore(sess, model_path)
 
         max_epoch = conf.max_epoch
-        cost_train, cost_valid, accuracy = [], [], []
         print('Training.')
         for i in range(conf.start_epoch, max_epoch):
             # Code needed for learning rate decay
@@ -190,10 +195,10 @@ def main():
 
             # Train the network and evaluate it
             cost_t, _ = run_epoch(sess, train_net, data_man, DataManager.TRAIN_SET)
-            cost_train.append(cost_t)
+            conf.cost_train.append(cost_t)
             cost_v, acc = run_epoch(sess, val_net, data_man, DataManager.VALID_SET)
-            cost_valid.append(cost_v)
-            accuracy.append(acc)
+            conf.cost_valid.append(cost_v)
+            conf.accuracy.append(acc)
 
             format_string = 'epoch {0}/{1}: , training cost: {2}, validation cost: {3}, accuracy: {4}'
             print(format_string.format(i+1, max_epoch, cost_t, cost_v, acc))
