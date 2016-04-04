@@ -61,8 +61,8 @@ def gen_init_batch(seq, batch_size, word_to_id):
     init_batch =  np.repeat(ids, batch_size, 0)
     return init_batch
 
-def gen_sentences(net, sess, word_to_id, config):
-    batch_size = config["batch_size"]
+def gen_sentences(net, sess, word_to_id, conf):
+    batch_size = conf.batch_size
     args = parser.parse_args()
 
     init_seq = args.init_seq
@@ -80,7 +80,7 @@ def gen_sentences(net, sess, word_to_id, config):
         output, current_state = sess.run([net._word_predictions, net._final_state], feed_dict=feed)
 
         if i >= num_init_words - 1:
-            next_words = choose_words(output, batch_size, config["vocab_size"])
+            next_words = choose_words(output, batch_size, conf.vocab_size)
         else:
             next_words = np.reshape(init_batch[:, i+1], [batch_size, 1])
 
@@ -97,23 +97,23 @@ def main():
     args = parser.parse_args()
 
     with open("config.p", "rb") as f:
-        config = pickle.load(f)
+        conf = pickle.load(f)
 
     with tf.variable_scope("model", reuse=False):
-        net = LSTM_Network( config["hidden_layer_size"], 
-                            config["number_of_layers"], 
-                            config["vocab_size"], 
-                            config["batch_size"])
+        net = LSTM_Network( conf.layer_size, 
+                            conf.num_layers, 
+                            conf.vocab_size, 
+                            conf.batch_size)
 
     with tf.Session() as sess:
         saver = tf.train.Saver()
         saver.restore(sess, "model.ckpt")
 
-        sentences = gen_sentences(net, sess, config["word_to_id"], config)
+        sentences = gen_sentences(net, sess, conf.word_to_id, conf)
         for i, s in enumerate(sentences):
             if i >= args.n: # Decides the number of displayed headlines
                 break
-            s = [ config["id_to_word"][w] for w in s]
+            s = [ conf.id_to_word[w] for w in s]
             print("-" * 50)
             print(" " + format_sentences(s))
 

@@ -7,8 +7,7 @@ from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 import cPickle as pickle
-import hyperParams
-import DataManager 
+import DataManager
 import eval_plot
 import argparse
 import time
@@ -18,33 +17,32 @@ import sys
 # https://www.tensorflow.org/versions/r0.7/api_docs/python/index.html
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_path', type=str, default='data/timyshakespeare',
+parser.add_argument('--data_path', type=str, default='data/input.txt',
         help='path to data set')
 parser.add_argument('--save_dir', type=str, default='results',
         help='directory to store model and graphs')
-parser.add_argument('--batch_size', type=int, default=50,
+parser.add_argument('--batch_size', type=int, default=20,
         help='number of sequences to train on in prallell')
-parser.add_argument('--max_epoch', type=int, default=50,
+parser.add_argument('--max_epoch', type=int, default=13,
         help='number of passes through the data set')
-parser.add_argument('--num_steps', type=int, default=50,
+parser.add_argument('--num_steps', type=int, default=20,
         help='number of timesteps to unroll for')
 parser.add_argument('--num_layers', type=int, default=2,
         help='number of neuron layers')
-parser.add_argument('--layer_size', type=int, default=128,
+parser.add_argument('--layer_size', type=int, default=200,
         help='number of neurons in each layer')
-parser.add_argument('--decay_start', type=int, default=10,
+parser.add_argument('--decay_start', type=int, default=4,
         help='start learning decay at this epoch')
-parser.add_argument('--learning_rate', type=float, default=0.002,
+parser.add_argument('--learning_rate', type=float, default=1.0,
         help='starter learning rate')
-parser.add_argument('--learning_decay', type=float, default=0.97,
+parser.add_argument('--learning_decay', type=float, default=0.5,
         help='learning rate decay')
 parser.add_argument('--gradient_clip', type=int, default=5,
         help='clip gradients at this value')
 parser.add_argument('--keep_prob', type=float, default=1.0,
         help='probability that input/output is kept. 1 = No dropout')
-parser.add_argument('--init_range', type=float, default = 0.08,
+parser.add_argument('--init_range', type=float, default = 0.1,
         help='initiate parameters withing this range. -/+ init_range')
-
 
 class LSTM_Network(object):
     def __init__(self, training, conf):
