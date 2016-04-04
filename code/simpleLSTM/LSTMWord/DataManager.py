@@ -29,7 +29,7 @@ class DataMan(object):
     def _tokenize(self, text):
         text = re.sub(br'\d', '0', text) # Replace all digits with zeros
         text = text.replace('\n', ' _EOS ')
-        return nltk.word_tokenize(text) 
+        return nltk.word_tokenize(text)
 
     def _build_vocab(self, text):
         self._data = self._tokenize(text)
@@ -41,15 +41,15 @@ class DataMan(object):
         self.vocab_size = len(self.word_to_id)
 
     def _create_sets(self, text, eval_ratio):
-        data = [ self.word_to_id.get(w, UNK_ID) for w in self._data ] 
+        data = [ self.word_to_id.get(w, UNK_ID) for w in self._data ]
         self.data_len = len(data)
-        eval_len = int(self.data_len * eval_ratio) 
+        eval_len = int(self.data_len * eval_ratio)
 
         test = data[:eval_len]
         valid = data[eval_len:eval_len*2]
-        train = data[eval_len*2:] 
+        train = data[eval_len*2:]
         self.data_sets = [train, valid, test]
-        
+
     def batch_iterator(self, batch_size, num_steps, data_set):
         raw_data = np.array(self.data_sets[data_set], dtype=np.int32)
         data_len = len(raw_data)
@@ -67,4 +67,4 @@ class DataMan(object):
             x = data[:, i*num_steps:(i+1)*num_steps]
             y = data[:, i*num_steps+1:(i+1)*num_steps+1]
             yield (x, y)
-        
+
