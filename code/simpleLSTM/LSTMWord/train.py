@@ -47,6 +47,8 @@ parser.add_argument('--keep_prob', type=float, default=1.0,
         help='probability that input/output is kept. 1 = No dropout')
 parser.add_argument('--init_range', type=float, default = 0.1,
         help='initiate parameters withing this range. -/+ init_range')
+parser.add_argument('--time_out', type=int, default = 3600,
+        help='stop training after this amount of seconds') 
 
 class LSTM_Network(object):
     def __init__(self, training, conf):
@@ -130,11 +132,12 @@ def run_epoch(sess, net, data_man, data_set):
     return total_cost / (i+1), total_acc / (i+1)
 
 def save_state(sess, saver, conf):
-    print('Saving model.')
+    print('Saving model...')
     save_path_model = os.path.join(conf.save_dir, 'model.ckpt')
-    saver.save(sess, save_path_model)
+    path = saver.save(sess, save_path_model)
     save_path_config = os.path.join(conf.save_dir, 'config.p')
     pickle.dump(conf, open(save_path_config, 'wb'))
+    print('Saved in ' + path)
 
 def init_config(parser, data_man):
     parser.add_argument('--start_epoch', default=0)
@@ -153,17 +156,21 @@ def main():
     data_man = DataManager.DataMan(conf.data_path, 0.05) # 5% of data for evaluation
 
     # We don not want to run anything without knowing that we can save our results
-    if not os.path.isdir(conf.save_dir):
+    save_dir = conf.save_dir
+    if not os.path.isdir(save_dir):
         print('Could not find save directory')
         sys.exit(1)
 
     # Load previous model if a checkpoint path is provided
+    checkpoint_dir = conf.checkpoint_dir
     if not conf.checkpoint_dir:
         conf = init_config(parser, data_man)
     else:
         config_path = os.path.join(conf.checkpoint_dir, 'config.p')
         with open(config_path, 'rb') as f:
             conf = pickle.load(f)
+            conf.save_dir = save_dir
+            conf.checkpoint_dir = checkpoint_dir
 
     # Create networks for training and evaluation
     initializer = tf.random_uniform_initializer(-conf.init_range, conf.init_range)
@@ -186,6 +193,7 @@ def main():
             saver.restore(sess, model_path)
 
         max_epoch = conf.max_epoch
+        quit_training = False
         print('Training.')
         for i in range(conf.start_epoch, max_epoch):
             # Code needed for learning rate decay
@@ -203,9 +211,16 @@ def main():
             format_string = 'epoch {0}/{1}: , training cost: {2}, validation cost: {3}, accuracy: {4}'
             print(format_string.format(i+1, max_epoch, cost_t, cost_v, acc))
 
-            if (i % conf.save_epoch == 0) or (i == max_epoch - 1):
+            time_stamp = time.time() - start_time
+            if time_stamp >= conf.time_out:
+                quit_training = True
+
+            if (i % conf.save_epoch == 0) or (i == max_epoch - 1) or quit_training:
                 conf.start_epoch = i+1
                 save_state(sess, saver, conf)
+                if quit_training:
+                    print('Time out.')
+                    break
 
         sess.close()
         print('Training finished.')
