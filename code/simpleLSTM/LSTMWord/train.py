@@ -153,6 +153,7 @@ def init_config(parser, data_man):
     parser.add_argument('--vocab_size', default=data_man.vocab_size)
     parser.add_argument('--word_to_id', default=data_man.word_to_id)
     parser.add_argument('--id_to_word', default=data_man.id_to_word)
+    parser.add_argument('--file_hash', default=data_man.file_hash)
     parser.add_argument('--cost_train', default=[])
     parser.add_argument('--cost_valid', default=[])
     parser.add_argument('--accuracy', default=[])
@@ -180,6 +181,9 @@ def main():
             conf.save_dir = save_dir
             conf.checkpoint_dir = checkpoint_dir
             data_man = DataManager.DataMan(conf.data_path, conf.eval_ratio, conf.threshold)
+            if data_man.file_hash != conf.file_hash:
+                print('File does not match checksum found in checkpoint.')
+                sys.exit(1)
 
     # Create networks for training and evaluation
     initializer = tf.random_uniform_initializer(-conf.init_range, conf.init_range)

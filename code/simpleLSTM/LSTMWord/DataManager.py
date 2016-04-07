@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import numpy as np
 import collections
+import hashlib
 import nltk
 import re
 
@@ -21,10 +22,18 @@ nltk.download('punkt')
 class DataMan(object):
 
     def __init__(self, filename, eval_ratio, threshold):
+        self.file_hash = self._create_hash(filename) 
         with open(filename, 'r') as f:
             text = f.read()
         self._build_vocab(text, threshold)
         self._create_sets(text, eval_ratio)
+
+    def _create_hash(self, filename):
+        hasher = hashlib.md5()
+        with open(filename, 'rb') as f:
+            buf = f.read()
+            hasher.update(buf)
+        return hasher.hexdigest()
 
     def _tokenize(self, text):
         text = re.sub(br'\d', '0', text) # Replace all digits with zeros
