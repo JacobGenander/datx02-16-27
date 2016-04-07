@@ -12,6 +12,7 @@ import argparse
 import time
 import sys
 import os
+from shutil import copy
 
 # TensorFlow's API (if you want to know what arguments we pass to the different methods)
 # https://www.tensorflow.org/versions/r0.7/api_docs/python/index.html
@@ -142,12 +143,18 @@ def run_epoch(sess, net, data_man, data_set):
         total_cost += cost
     return total_cost / (i+1), total_acc / (i+1)
 
-def save_state(sess, saver, conf):
+def save_state(sess, saver, conf, epoch):
     print('Saving model...')
     save_path_model = os.path.join(conf.save_dir, 'model.ckpt')
     path = saver.save(sess, save_path_model)
     save_path_config = os.path.join(conf.save_dir, 'config.p')
     pickle.dump(conf, open(save_path_config, 'wb'))
+    # Also save the results in a separate folder
+    dir_path = os.path.join(conf.save_dir, 'epoch' + str(epoch))
+    if not os.path.isdir(dir_path):
+        os.mkdir(dir_path)
+    copy(save_path_model, dir_path)
+    copy(save_path_config, dir_path)
     print('Saved in ' + path)
 
 def init_config(parser, data_man):
@@ -242,7 +249,7 @@ def main():
             
             if (i % conf.save_epoch == 0) or (i == max_epoch - 1) or quit_training:
                 conf.start_epoch = i+1
-                save_state(sess, saver, conf)
+                save_state(sess, saver, conf, i)
                 if quit_training:
                     print('Time out.')
                     break
