@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python -u train.py --checkpoint_dir results 
+python -u train.py --checkpoint_dir results --overwrite 

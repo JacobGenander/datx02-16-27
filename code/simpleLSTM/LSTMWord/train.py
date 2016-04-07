@@ -29,6 +29,8 @@ parser.add_argument('--save_epoch', type=int, default=1,
         help='decides how often we will save our progress')
 parser.add_argument('--time_out', type=int, default=3600,
         help='stop training after this amount of seconds') 
+parser.add_argument('--overwrite', action='store_true', default=False,
+        help='overwrite existing model in save directory')
 # -------- Parameters for data processing
 parser.add_argument('--threshold', type=int, default=1,
         help='words occuring fewer times than this will not be included')
@@ -168,6 +170,16 @@ def main():
     if not os.path.isdir(save_dir):
         print('Could not find save directory')
         sys.exit(1)
+
+    model_save_path = os.path.join(save_dir, 'model.ckpt')
+    if os.path.isfile(model_save_path) and not conf.overwrite:
+        print('Save path already conatins a model file.')
+        ans = raw_input('Overwrite and continue? (y/n) ')
+        if ans == 'y':
+            pass
+        else:
+            print('Exiting.')
+            sys.exit(0)
 
     # Load previous model if a checkpoint path is provided
     checkpoint_dir = conf.checkpoint_dir
