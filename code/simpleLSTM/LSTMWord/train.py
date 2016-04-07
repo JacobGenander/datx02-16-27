@@ -46,7 +46,7 @@ parser.add_argument('--num_layers', type=int, default=2,
 parser.add_argument('--layer_size', type=int, default=100,
         help='number of neurons in each layer')
 parser.add_argument('--decay_start', type=int, default=10,
-        help='start learning decay at this epoch')
+        help='decay learning rate after this epoch')
 parser.add_argument('--learning_rate', type=float, default=0.002,
         help='starter learning rate')
 parser.add_argument('--learning_decay', type=float, default=1.0,
@@ -162,8 +162,6 @@ def main():
     start_time = time.time()
     conf = parser.parse_args() 
 
-    data_man = DataManager.DataMan(conf.data_path, conf.eval_ratio, conf.threshold)
-
     # We don not want to run anything without knowing that we can save our results
     save_dir = conf.save_dir
     if not os.path.isdir(save_dir):
@@ -173,6 +171,7 @@ def main():
     # Load previous model if a checkpoint path is provided
     checkpoint_dir = conf.checkpoint_dir
     if not conf.checkpoint_dir:
+        data_man = DataManager.DataMan(conf.data_path, conf.eval_ratio, conf.threshold)
         conf = init_config(parser, data_man)
     else:
         config_path = os.path.join(conf.checkpoint_dir, 'config.p')
@@ -180,6 +179,7 @@ def main():
             conf = pickle.load(f)
             conf.save_dir = save_dir
             conf.checkpoint_dir = checkpoint_dir
+            data_man = DataManager.DataMan(conf.data_path, conf.eval_ratio, conf.threshold)
 
     # Create networks for training and evaluation
     initializer = tf.random_uniform_initializer(-conf.init_range, conf.init_range)

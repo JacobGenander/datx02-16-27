@@ -7,8 +7,9 @@ from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 import cPickle as pickle
-import random
+import DataManager
 import argparse
+import random
 import sys
 import os
 
@@ -22,6 +23,8 @@ parser.add_argument('--length', metavar='L', type=int, default=200,
         help='length of each sequence')
 parser.add_argument('--init_seq', type=str, default='',
         help='condition model on some initial sequence')
+parser.add_argument('--skip_unk', action='store_true', default=False,
+        help='skip _UNK when generating sequences')
 
 class LSTM_Network(object):
 
@@ -47,9 +50,14 @@ class LSTM_Network(object):
         self._word_predictions = tf.nn.softmax(z)
         self._final_state = state
 
-def choose_words(word_probs, batch_size, vocab_size):
+def choose_words(word_probs, batch_size, vocab_size, skip_unk):
     res = np.zeros([batch_size, 1], dtype=np.int32)
     for i, probs in enumerate(word_probs):
+        if skip_unk:
+            inc = probs[DataManager.UNK_ID] / (len(probs) - 1)
+            probs = [ p+inc for p in probs]
+            probs[DataManager.UNK_ID] = 0.0
+            probs /= sum(probs) # Renormalize
         j = np.random.choice(range(vocab_size), p=probs)
         res[i,0] = j
     return res
@@ -82,7 +90,7 @@ def gen_sentences(net, sess, word_to_id, conf):
         output, current_state = sess.run([net._word_predictions, net._final_state], feed_dict=feed)
 
         if i >= num_init_words - 1:
-            next_words = choose_words(output, batch_size, conf.vocab_size)
+            next_words = choose_words(output, batch_size, conf.vocab_size, args.skip_unk)
         else:
             next_words = np.reshape(init_batch[:, i+1], [batch_size, 1])
 
