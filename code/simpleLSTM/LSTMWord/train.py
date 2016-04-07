@@ -162,7 +162,7 @@ def main():
     start_time = time.time()
     conf = parser.parse_args() 
 
-    data_man = DataManager.DataMan(conf.data_path, conf.eval_ratio, conf.threshold) # 5% of data for evaluation
+    data_man = DataManager.DataMan(conf.data_path, conf.eval_ratio, conf.threshold)
 
     # We don not want to run anything without knowing that we can save our results
     save_dir = conf.save_dir
