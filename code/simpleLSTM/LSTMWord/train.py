@@ -17,38 +17,47 @@ import os
 # https://www.tensorflow.org/versions/r0.7/api_docs/python/index.html
 
 parser = argparse.ArgumentParser()
+
+# -------- Data paths and saving --------
 parser.add_argument('--data_path', type=str, default='data/data.txt',
         help='path to data set')
 parser.add_argument('--save_dir', type=str, default='results',
         help='directory to store model and graphs')
 parser.add_argument('--checkpoint_dir', type=str, default='',
         help='resume training from checkpoint found at given directory') 
-parser.add_argument('--batch_size', type=int, default=20,
-        help='number of sequences to train on in prallell')
-parser.add_argument('--max_epoch', type=int, default=13,
-        help='number of passes through the data set')
 parser.add_argument('--save_epoch', type=int, default=1,
         help='decides how often we will save our progress')
-parser.add_argument('--num_steps', type=int, default=20,
+parser.add_argument('--time_out', type=int, default=3600,
+        help='stop training after this amount of seconds') 
+# -------- Parameters for data processing
+parser.add_argument('--threshold', type=int, default=1,
+        help='words occuring fewer times than this will not be included')
+parser.add_argument('--eval_ratio', type=float, default=0.05,
+        help='amount of training data used for evaluation')
+# -------- Model parameters --------
+parser.add_argument('--batch_size', type=int, default=50,
+        help='number of sequences to train on in prallell')
+parser.add_argument('--max_epoch', type=int, default=50,
+        help='number of passes through the data set')
+parser.add_argument('--num_steps', type=int, default=50,
         help='number of timesteps to unroll for')
 parser.add_argument('--num_layers', type=int, default=2,
         help='number of neuron layers')
-parser.add_argument('--layer_size', type=int, default=200,
+parser.add_argument('--layer_size', type=int, default=100,
         help='number of neurons in each layer')
-parser.add_argument('--decay_start', type=int, default=4,
+parser.add_argument('--decay_start', type=int, default=10,
         help='start learning decay at this epoch')
-parser.add_argument('--learning_rate', type=float, default=1.0,
+parser.add_argument('--learning_rate', type=float, default=0.002,
         help='starter learning rate')
-parser.add_argument('--learning_decay', type=float, default=0.5,
+parser.add_argument('--learning_decay', type=float, default=1.0,
         help='learning rate decay')
 parser.add_argument('--gradient_clip', type=int, default=5,
         help='clip gradients at this value')
 parser.add_argument('--keep_prob', type=float, default=1.0,
         help='probability that input/output is kept. 1 = No dropout')
-parser.add_argument('--init_range', type=float, default = 0.1,
+parser.add_argument('--init_range', type=float, default=0.08,
         help='initiate parameters withing this range. -/+ init_range')
-parser.add_argument('--time_out', type=int, default = 3600,
-        help='stop training after this amount of seconds') 
+
 
 class LSTM_Network(object):
     def __init__(self, training, conf):
@@ -112,7 +121,7 @@ class LSTM_Network(object):
         # Clip the gradients
         tvars = tf.trainable_variables()
         grads, _ = tf.clip_by_global_norm(tf.gradients(cost, tvars), conf.gradient_clip)
-        # RMSProp training op
+        # Training op
         optimizer = tf.train.AdamOptimizer(self._learning_rate)
         self.train_op = optimizer.apply_gradients(zip(grads,tvars))
 
@@ -153,7 +162,7 @@ def main():
     start_time = time.time()
     conf = parser.parse_args() 
 
-    data_man = DataManager.DataMan(conf.data_path, 0.05) # 5% of data for evaluation
+    data_man = DataManager.DataMan(conf.data_path, conf.eval_ratio, conf.threshold) # 5% of data for evaluation
 
     # We don not want to run anything without knowing that we can save our results
     save_dir = conf.save_dir
@@ -208,13 +217,13 @@ def main():
             conf.cost_valid.append(cost_v)
             conf.accuracy.append(acc)
 
-            format_string = 'epoch {0}/{1}: , training cost: {2}, validation cost: {3}, accuracy: {4}'
-            print(format_string.format(i+1, max_epoch, cost_t, cost_v, acc))
-
             time_stamp = time.time() - start_time
             if time_stamp >= conf.time_out:
                 quit_training = True
 
+            format_string = '{0}s (epoch {1}/{2}): training cost: {3}, validation cost: {4}, accuracy: {5}'
+            print(format_string.format(round(time_stamp, 2), i+1, max_epoch, cost_t, cost_v, acc))
+            
             if (i % conf.save_epoch == 0) or (i == max_epoch - 1) or quit_training:
                 conf.start_epoch = i+1
                 save_state(sess, saver, conf)

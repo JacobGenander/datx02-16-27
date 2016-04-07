@@ -20,10 +20,10 @@ nltk.download('punkt')
 
 class DataMan(object):
 
-    def __init__(self, filename, eval_ratio):
+    def __init__(self, filename, eval_ratio, threshold):
         with open(filename, 'r') as f:
             text = f.read()
-        self._build_vocab(text)
+        self._build_vocab(text, threshold)
         self._create_sets(text, eval_ratio)
 
     def _tokenize(self, text):
@@ -31,12 +31,12 @@ class DataMan(object):
         text = text.replace('\n', ' _EOS ')
         return nltk.word_tokenize(text)
 
-    def _build_vocab(self, text):
+    def _build_vocab(self, text, threshold):
         self._data = self._tokenize(text)
         counter = collections.Counter(self._data)
         count_pairs = counter.most_common()
         self.id_to_word = ['_EOS', '_UNK']
-        self.id_to_word.extend([ word for word, c in count_pairs if word != '_EOS' and c > 1])
+        self.id_to_word.extend([ word for word, c in count_pairs if word != '_EOS' and c >= threshold])
         self.word_to_id = { w:i for i,w in enumerate(self.id_to_word) }
         self.vocab_size = len(self.word_to_id)
 
