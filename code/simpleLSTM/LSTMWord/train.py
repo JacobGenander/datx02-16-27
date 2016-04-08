@@ -210,6 +210,12 @@ def main():
         train_net = LSTM_Network(True, conf)
     with tf.variable_scope('model', reuse=True, initializer=initializer):
         val_net = LSTM_Network(False, conf)
+        # We need to make som adjustments for the test net
+        t_batch_size, t_num_steps = conf.batch_size, conf.num_steps
+        conf.batch_size, conf.num_steps = 1, 1
+        test_net = LSTM_Network(False, conf)
+        # Since we are saving the configuration we have to restore the old values
+        conf.batch_size, conf.num_steps = t_batch_size, t_num_steps
 
     # We always need to run this operation if not loading an old state
     init = tf.initialize_all_variables()
@@ -234,19 +240,24 @@ def main():
                 train_net.set_learning_rate(sess, conf.learning_rate * decay)
 
             # Train the network and evaluate it
-            cost_t, _ = run_epoch(sess, train_net, data_man, DataManager.TRAIN_SET)
+            cost_t, acc_t = run_epoch(sess, train_net, data_man, DataManager.TRAIN_SET)
             conf.cost_train.append(cost_t)
-            cost_v, acc = run_epoch(sess, val_net, data_man, DataManager.VALID_SET)
+            cost_v, acc_v = run_epoch(sess, val_net, data_man, DataManager.VALID_SET)
             conf.cost_valid.append(cost_v)
-            conf.accuracy.append(acc)
+            conf.accuracy.append(acc_v)
 
             time_stamp = time.time() - start_time
             if time_stamp >= conf.time_out:
                 quit_training = True
 
-            format_string = '{0}s (epoch {1}/{2}): training cost: {3}, validation cost: {4}, accuracy: {5}'
-            print(format_string.format(round(time_stamp, 2), i+1, max_epoch, cost_t, cost_v, acc))
+            # Print some results
+            print('----- Running time {0:.2f}s (epoch {1}/{2}) -----'.format(time_stamp, i+1, max_epoch))
+            print('\t\ttraining\tvalidation')
+            print('COST:\t\t{0:.4f}\t\t{1:.4f}'.format(cost_t, cost_v))
+            print('ACCURACY:\t{0:.4f}\t\t{1:.4f}'.format(acc_t, acc_v))
+            print('PERPLEXITY:\t{0:.2f}\t\t{1:.2f}'.format(np.exp(cost_t), np.exp(cost_v)))
             
+            # See if it is time to save
             if (i % conf.save_epoch == 0) or (i == max_epoch - 1) or quit_training:
                 conf.start_epoch = i+1
                 save_state(sess, saver, conf, i)
@@ -254,9 +265,16 @@ def main():
                     print('Time out.')
                     break
 
+        # Run evaluation on test set if all trainig is done
+        if not quit_training:
+            test_cost, test_acc = run_epoch(sess, test_net, data_man, DataManager.TEST_SET)
+            print('Evaluating on test set.')
+            print('PERPLEXITY:\t{0:.2f}'.format(np.exp(test_cost)))
+            print('ACCURACY:\t{0:.4f}'.format(test_acc))
+
         sess.close()
         print('Training finished.')
-        print('--- {} seconds ---'.format(round(time.time() - start_time, 2)))
+        print('----- Total running time {0:.2f}s -----'.format(time.time() - start_time))
 
 if __name__ == '__main__':
     main()
