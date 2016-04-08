@@ -1,7 +1,8 @@
 """
 A ReLU-cell as described by http://arxiv.org/pdf/1504.00941 .
 Notably the reccurent weigths are initialized to the identity
-matrix.
+matrix times a forget factor with 1 being don't forget and 0 
+being don't remember.
 
 """
 
@@ -11,6 +12,14 @@ import pdb
 
 class ReLURNNCell(tf.nn.rnn_cell.RNNCell):
   def __init__(self, num_units, forget_factor = 1):
+    """ Create a ReLURNNCell with the recurrent matrix initialized to I * forget_factor.
+     
+     Args:
+        num_units: The cell size, used both for state , input and output
+        forget_factor: A factor by wich the cell will forget its current state. 
+                       Default is 1 meaning that nothing is forgotten.
+
+    """
     self._num_units = num_units
     self._forget_factor = forget_factor
 
