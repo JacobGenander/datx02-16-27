@@ -41,7 +41,7 @@ class ReLURNNCell(tf.nn.rnn_cell.RNNCell):
 
   def __call__(self, inputs, state, scope=None):
     """ReLU RNN: output = new_state = relu(W * input + U * state + B).
-       where U is initilzed to the identity matrix"""
+       where U is initilzed to the identity matrix and the bias to 0"""
     with vs.variable_scope(scope or type(self).__name__):  # "ReLURNNCell"
       # Get or initialize the recurrent weights 
       U_init = tf.diag(tf.ones([self.output_size])) * self.forget_factor
@@ -50,14 +50,11 @@ class ReLURNNCell(tf.nn.rnn_cell.RNNCell):
       # Get or initialize the input weights, they are initialize uniformly 
       W = vs.get_variable("InputMatrix", shape = [self.output_size,self.output_size])
 
-      # Calculate the input to the activation function
-      ires = tf.matmul(inputs, W)
-      sres = tf.matmul(state, U) 
-      bias_term = vs.get_variable(
-        "Bias", [self.output_size],
-        initializer=tf.constant_initializer())
-      res = ires +  sres +  bias_term
+      # Get or initialize the bias, it is initialized to zero
+      bias_init = tf.zeros([self.output_size])
+      bias = vs.get_variable(
+        "Bias", initializer=bias_init)
 
       # Calculate the rectified linear activation
-      output = tf.nn.relu(res)
+      output = tf.nn.relu_layer(tf.concat(1,[inputs,state]),tf.concat(0, [W, U]), bias)
     return output, output
