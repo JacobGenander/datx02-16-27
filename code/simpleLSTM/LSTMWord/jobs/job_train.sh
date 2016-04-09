@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python -u train.py 
+python -u train.py --overwrite 

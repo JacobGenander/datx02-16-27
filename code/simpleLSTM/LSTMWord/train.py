@@ -110,7 +110,7 @@ class LSTM_Network(object):
         # Average negative log probability
         targets = tf.reshape(self._target, [-1])
         loss = tf.nn.sparse_softmax_cross_entropy_with_logits(z, targets)
-        self.cost = cost = tf.reduce_sum(loss) / (batch_size * num_steps)
+        self.cost = cost = tf.reduce_sum(loss) / batch_size
         # Accuracy is calculated by looking for each target in the top 5 most predicted
         correct_preds = tf.nn.in_top_k(tf.nn.softmax(z), targets, 5)
         self.accuracy = tf.reduce_mean(tf.cast(correct_preds, tf.float32))
@@ -119,7 +119,7 @@ class LSTM_Network(object):
             self.train_op = tf.no_op()
             return
 
-        self._learning_rate = tf.Variable(conf.learning_rate, trainable=False)
+        self._learning_rate = tf.Variable(0.0, trainable=False)
 
         # Clip the gradients
         tvars = tf.trainable_variables()
@@ -133,6 +133,7 @@ class LSTM_Network(object):
 
 def run_epoch(sess, net, data_man, data_set):
     total_cost, total_acc = 0.0, 0.0
+    iters = 0
     state = sess.run(net.initial_state)
     for i, (x, y) in enumerate(data_man.batch_iterator(net.batch_size, net.num_steps, data_set)):
         # Input to network
@@ -141,7 +142,8 @@ def run_epoch(sess, net, data_man, data_set):
         cost, state, acc,  _ = sess.run([net.cost, net.final_state, net.accuracy, net.train_op], feed_dict=feed)
         total_acc += acc
         total_cost += cost
-    return total_cost / (i+1), total_acc / (i+1)
+        iters += net.num_steps
+    return total_cost / iters, total_acc / (i+1)
 
 def save_state(sess, saver, conf, epoch):
     print('Saving model...')
@@ -235,9 +237,8 @@ def main():
         print('Training.')
         for i in range(conf.start_epoch, max_epoch):
             # Code needed for learning rate decay
-            if i > conf.decay_start:
-                decay = conf.learning_decay ** (i - conf.decay_start)
-                train_net.set_learning_rate(sess, conf.learning_rate * decay)
+            decay = conf.learning_decay ** max(i - conf.decay_start, 0.0)
+            train_net.set_learning_rate(sess, conf.learning_rate * decay)
 
             # Train the network and evaluate it
             cost_t, acc_t = run_epoch(sess, train_net, data_man, DataManager.TRAIN_SET)
@@ -267,8 +268,8 @@ def main():
 
         # Run evaluation on test set if all trainig is done
         if not quit_training:
-            test_cost, test_acc = run_epoch(sess, test_net, data_man, DataManager.TEST_SET)
             print('Evaluating on test set.')
+            test_cost, test_acc = run_epoch(sess, test_net, data_man, DataManager.TEST_SET)
             print('PERPLEXITY:\t{0:.2f}'.format(np.exp(test_cost)))
             print('ACCURACY:\t{0:.4f}'.format(test_acc))
 
