@@ -63,7 +63,7 @@ class Seq3SeqModel(object):
     self.target_vocab_size = target_vocab_size
     self.buckets = buckets
     self.batch_size = batch_size
-    self.learning_rate = tf.Variable(float(learning_rate), trainable=False)
+    self.learning_rate = tf.Variable(learning_rate, trainable=False)
     self.learning_rate_decay_op = self.learning_rate.assign(
         self.learning_rate * learning_rate_decay_factor)
     self.global_step = tf.Variable(0, trainable=False)
@@ -75,26 +75,16 @@ class Seq3SeqModel(object):
       cell = tf.nn.rnn_cell.MultiRNNCell([single_cell] * num_layers)
     sentence_cell = tf.nn.rnn_cell.EmbeddingWrapper(cell, FLAGS.article_vocab_size)
 
-    # Encode a sentence into a vector
-    def encode_sentence(sentence):
-      length = tf.slice(sentence, [0],[1])
-      sent = tf.split(0, FLAGS.max_sent,tf.slice(sentence,[1],[-1]))
-      pdb.set_trace()
-      (_ ,state) = tf.nn.rnn(sentence_cell, sent, sequence_length = length, dtype = tf.int32)
-      return state
-
-    # Encode a sequence of sentences into a sequence of vectors
-    def encode_article(article):
-      #lengths = tf.slice(article, [0,0],[1,-1])
-      #sents_tens   = tf.slice(article, [1,0],[-1,-1])
-      #return tf.nn.rnn(cell, sents, sequence_length=lengths, dtype = tf.float32)
-      return tfmap(encode_sentence, article)
-
     # The seq3seq function: we use embedding for the input and attention.
     def seq3seq_f(encoder_inputs, decoder_inputs, do_decode):
 
       # Encode all articles into vector sequnces
-      art_vecs = tfmap(encode_article, tf.pack(encoder_inputs))
+      batch_size = len(encoder_inputs)
+      article_stack = tf.concat(0,encoder_inputs)
+      lengths = tf.cast(tf.squeeze(tf.slice(article_stack,[0,0],[-1,1])), tf.int32)
+      sents_tens = tf.slice(article_stack,[0,1],[-1,-1])
+      sents = tf.split(1, FLAGS.max_sent, sents_tens)
+      (_,b) = tf.nn.rnn(sentence_cell,sents,sequence_length = lengths, dtype = tf.int32)
 
       # Encode the sentece vectors into an initial decoder state and attention
       # states
@@ -114,7 +104,7 @@ class Seq3SeqModel(object):
     self.decoder_inputs = []
     self.target_weights = []
     for i in xrange(buckets[-1][0]):  # Last bucket is the biggest one.
-        self.encoder_inputs.append(tf.placeholder(tf.int32, shape=[None , None,FLAGS.max_sent + 1], 
+        self.encoder_inputs.append(tf.placeholder(tf.int32, shape=[None,FLAGS.max_sent + 1], 
                                              name="encoder{0}".format(i)))
     for i in xrange(buckets[-1][1] + 1):
       self.decoder_inputs.append(tf.placeholder(tf.int32, shape=[None],
