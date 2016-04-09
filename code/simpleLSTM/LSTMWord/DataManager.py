@@ -45,7 +45,7 @@ class DataMan(object):
         counter = collections.Counter(self._data)
         count_pairs = counter.most_common()
         self.id_to_word = ['_EOS', '_UNK']
-        self.id_to_word.extend([ word for word, c in count_pairs if word != '_EOS' and c >= threshold])
+        self.id_to_word.extend([ word for word, c in count_pairs if word != '_EOS' and c >= threshold and word != '_UNK'])
         self.word_to_id = { w:i for i,w in enumerate(self.id_to_word) }
         self.vocab_size = len(self.word_to_id)
 
