@@ -73,18 +73,20 @@ class Seq3SeqModel(object):
     cell = single_cell
     if num_layers > 1:
       cell = tf.nn.rnn_cell.MultiRNNCell([single_cell] * num_layers)
-    sentence_cell = tf.nn.rnn_cell.EmbeddingWrapper(cell, FLAGS.article_vocab_size)
-
+    embeddings = tf.Variable(
+      tf.random_uniform([source_vocab_size, size], -1.0, 1.0))
+    
     # The seq3seq function: we use embedding for the input and attention.
     def seq3seq_f(encoder_inputs, decoder_inputs, do_decode):
 
       # Encode all articles into vector sequnces
-      batch_size = len(encoder_inputs)
       article_stack = tf.concat(0,encoder_inputs)
-      lengths = tf.cast(tf.squeeze(tf.slice(article_stack,[0,0],[-1,1])), tf.int32)
+      lengths = tf.squeeze(tf.slice(article_stack,[0,0],[-1,1]))
       sents_tens = tf.slice(article_stack,[0,1],[-1,-1])
-      sents = tf.split(1, FLAGS.max_sent, sents_tens)
-      (_,b) = tf.nn.rnn(sentence_cell,sents,sequence_length = lengths, dtype = tf.int32)
+      sents_tens = tf.nn.embedding_lookup(embeddings, sents_tens)
+      sents = [tf.squeeze(t, squeeze_dims=[1]) for t in tf.split(1, FLAGS.max_sent, sents_tens)]
+      _, states = tf.nn.rnn(cell, sents, sequence_length = lengths, dtype = tf.float32)
+      art_vec = tf.reshape(states, [batch_size, -1, size])
 
       # Encode the sentece vectors into an initial decoder state and attention
       # states
