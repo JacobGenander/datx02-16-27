@@ -25,7 +25,7 @@ def plot_costs(xs, *args):
     plt.grid(True)
 
     plt.savefig('costs')
-    
+
 def plot_accuracy(xs, ys):
     plt.clf()
 
@@ -36,10 +36,10 @@ def plot_accuracy(xs, ys):
     plt.grid(True)
 
     plt.savefig('accuracy')
-    
+
 def main():
     args = parser.parse_args()
-    
+
     with open(args.data_path, 'rb') as f:
         conf = pickle.load(f)
 

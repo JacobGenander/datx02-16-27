@@ -22,7 +22,7 @@ nltk.download('punkt')
 class DataMan(object):
 
     def __init__(self, filename, eval_ratio, threshold):
-        self.file_hash = self._create_hash(filename) 
+        self.file_hash = self._create_hash(filename)
         with open(filename, 'r') as f:
             text = f.read()
         self._build_vocab(text, threshold)

@@ -25,15 +25,19 @@ parser.add_argument('--data_path', type=str, default='data/data.txt',
 parser.add_argument('--save_dir', type=str, default='results',
         help='directory to store model and graphs')
 parser.add_argument('--checkpoint_dir', type=str, default='',
-        help='resume training from checkpoint found at given directory') 
+        help='resume training from checkpoint found at given directory')
 parser.add_argument('--save_epoch', type=int, default=1,
         help='decides how often we will save our progress')
 parser.add_argument('--time_out', type=int, default=3600,
-        help='stop training after this amount of seconds') 
+        help='stop training after this amount of seconds')
 parser.add_argument('--overwrite', action='store_true', default=False,
         help='overwrite existing model in save directory')
+parser.add_argument('--create_config', action='store_true', default=False,
+        help='create config file in save directory and quit')
+parser.add_argument('--embedding', type=str, default='',
+        help='path to pretrained word vector matrix (must match current hyperparameters)')
 # -------- Parameters for data processing
-parser.add_argument('--threshold', type=int, default=1,
+parser.add_argument('--threshold', type=int, default=5,
         help='words occuring fewer times than this will not be included')
 parser.add_argument('--eval_ratio', type=float, default=0.05,
         help='amount of training data used for evaluation')
@@ -46,7 +50,7 @@ parser.add_argument('--num_steps', type=int, default=50,
         help='number of timesteps to unroll for')
 parser.add_argument('--num_layers', type=int, default=2,
         help='number of neuron layers')
-parser.add_argument('--layer_size', type=int, default=100,
+parser.add_argument('--layer_size', type=int, default=200,
         help='number of neurons in each layer')
 parser.add_argument('--decay_start', type=int, default=10,
         help='decay learning rate after this epoch')
@@ -54,6 +58,8 @@ parser.add_argument('--learning_rate', type=float, default=0.002,
         help='starter learning rate')
 parser.add_argument('--learning_decay', type=float, default=1.0,
         help='learning rate decay')
+parser.add_argument('--embedding_size', type=int, default=300,
+        help='dimensionality of word vectors')
 parser.add_argument('--gradient_clip', type=int, default=5,
         help='clip gradients at this value')
 parser.add_argument('--keep_prob', type=float, default=1.0,
@@ -63,7 +69,7 @@ parser.add_argument('--init_range', type=float, default=0.08,
 
 
 class LSTM_Network(object):
-    def __init__(self, training, conf):
+    def __init__(self, training, conf, emb_init):
         self.batch_size = batch_size = conf.batch_size
         self.num_steps = num_steps = conf.num_steps
         self.size = size = conf.layer_size
@@ -76,7 +82,7 @@ class LSTM_Network(object):
 
         # Fetch embeddings
         with tf.device('/cpu:0'):
-            embedding = tf.get_variable('embedding', [vocab_size, size])
+            embedding = tf.get_variable('embedding', emb_init[1], initializer=emb_init[0])
             inputs = tf.nn.embedding_lookup(embedding, self._input)
 
         if keep_prob < 1 and training:
@@ -170,15 +176,34 @@ def init_config(parser, data_man):
     parser.add_argument('--accuracy', default=[])
     return parser.parse_args()
 
+def embedding_initializer(conf, initializer):
+    if conf.embedding:
+        conf.embedding_size = 300 # 300 is the dimensionality of word2vec
+        with open(conf.embedding, "rb") as f:
+            emb_matrix = pickle.load(f)
+        emb_initzer = tf.constant(emb_matrix, dtype=tf.float32)
+        init_shape = None
+    else:
+        emb_initzer = initializer
+        init_shape = [conf.vocab_size, conf.embedding_size]
+    emb_init = (emb_initzer, init_shape)
+    return emb_init
+
 def main():
     start_time = time.time()
-    conf = parser.parse_args() 
+    conf = parser.parse_args()
 
     # We don not want to run anything without knowing that we can save our results
     save_dir = conf.save_dir
     if not os.path.isdir(save_dir):
         print('Could not find save directory')
         sys.exit(1)
+
+    if conf.create_config:
+        save_path = os.path.join(save_dir, 'config.p')
+        pickle.dump(conf, open(save_path,'wb'))
+        print('Config file created.')
+        sys.exit(0)
 
     model_save_path = os.path.join(save_dir, 'model.ckpt')
     if os.path.isfile(model_save_path) and not conf.overwrite:
@@ -206,22 +231,24 @@ def main():
                 print('File does not match checksum found in checkpoint.')
                 sys.exit(1)
 
-    # Create networks for training and evaluation
     initializer = tf.random_uniform_initializer(-conf.init_range, conf.init_range)
+    emb_init = embedding_initializer(conf, initializer)
+
+    # Create networks for training and evaluation
     with tf.variable_scope('model', reuse=None, initializer=initializer):
-        train_net = LSTM_Network(True, conf)
+        train_net = LSTM_Network(True, conf, emb_init)
     with tf.variable_scope('model', reuse=True, initializer=initializer):
-        val_net = LSTM_Network(False, conf)
+        val_net = LSTM_Network(False, conf, emb_init)
         # We need to make som adjustments for the test net
         t_batch_size, t_num_steps = conf.batch_size, conf.num_steps
         conf.batch_size, conf.num_steps = 1, 1
-        test_net = LSTM_Network(False, conf)
+        test_net = LSTM_Network(False, conf, emb_init)
         # Since we are saving the configuration we have to restore the old values
         conf.batch_size, conf.num_steps = t_batch_size, t_num_steps
 
     # We always need to run this operation if not loading an old state
     init = tf.initialize_all_variables()
-    # This object will save our state at certain intervals 
+    # This object will save our state at certain intervals
     saver = tf.train.Saver()
 
     with tf.Session() as sess:
@@ -257,7 +284,7 @@ def main():
             print('COST:\t\t{0:.4f}\t\t{1:.4f}'.format(cost_t, cost_v))
             print('ACCURACY:\t{0:.4f}\t\t{1:.4f}'.format(acc_t, acc_v))
             print('PERPLEXITY:\t{0:.2f}\t\t{1:.2f}'.format(np.exp(cost_t), np.exp(cost_v)))
-            
+
             # See if it is time to save
             if (i % conf.save_epoch == 0) or (i == max_epoch - 1) or quit_training:
                 conf.start_epoch = i+1

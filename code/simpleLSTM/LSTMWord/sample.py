@@ -28,7 +28,7 @@ parser.add_argument('--skip_unk', action='store_true', default=False,
 
 class LSTM_Network(object):
 
-    def __init__(self, size, layers, vocab_size, batch_size):
+    def __init__(self, size, layers, vocab_size, batch_size, embedding_size):
         self._inputs = tf.placeholder(tf.int32, [batch_size, 1])
 
         cell = tf.nn.rnn_cell.BasicLSTMCell(size)
@@ -36,7 +36,7 @@ class LSTM_Network(object):
         self._initial_state = state = stacked_cell.zero_state(batch_size, tf.float32)
 
         with tf.device('/cpu:0'):
-            embedding = tf.get_variable('embedding', [vocab_size, size])
+            embedding = tf.get_variable('embedding', [vocab_size, embedding_size])
             inputs = tf.nn.embedding_lookup(embedding, self._inputs)
         inputs = [tf.squeeze(inputs, [1])]
 
@@ -114,7 +114,8 @@ def main():
         net = LSTM_Network( conf.layer_size,
                             conf.num_layers,
                             conf.vocab_size,
-                            conf.batch_size)
+                            conf.batch_size,
+                            conf.embedding_size)
 
     with tf.Session() as sess:
         saver = tf.train.Saver()
