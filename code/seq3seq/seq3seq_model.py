@@ -68,11 +68,15 @@ class Seq3SeqModel(object):
         self.learning_rate * learning_rate_decay_factor)
     self.global_step = tf.Variable(0, trainable=False)
 
-    # Create the internal multi-layer cell for our RNN.
-    single_cell = tf.nn.rnn_cell.GRUCell(size)
-    cell = single_cell
+    # Create the internal multi-layer cell for our RNN
+    # TODO: Get problems with the weights in nn.rnn_cell.linear when using same cell,
+    #       the ugly solution is to switch to LSTM for articles. 
+    sentence_cell = tf.nn.rnn_cell.GRUCell(size)
+    article_cell  = tf.nn.rnn_cell.BasicLSTMCell(size)
     if num_layers > 1:
-      cell = tf.nn.rnn_cell.MultiRNNCell([single_cell] * num_layers)
+      sentence_cell = tf.nn.rnn_cell.MultiRNNCell([sentence_cell] * num_layers)
+      article_cell = tf.nn.rnn_cell.MultiRNNCell([article_cell] * num_layers)
+    # Don't rely on the embedding wrapper cell, it's seems buggy!
     embeddings = tf.Variable(
       tf.random_uniform([source_vocab_size, size], -1.0, 1.0))
     
@@ -85,20 +89,25 @@ class Seq3SeqModel(object):
       sents_tens = tf.slice(article_stack,[0,1],[-1,-1])
       sents_tens = tf.nn.embedding_lookup(embeddings, sents_tens)
       sents = [tf.squeeze(t, squeeze_dims=[1]) for t in tf.split(1, FLAGS.max_sent, sents_tens)]
-      _, states = tf.nn.rnn(cell, sents, sequence_length = lengths, dtype = tf.float32)
+      _, states = tf.nn.rnn(sentence_cell, sents, sequence_length = lengths, dtype = tf.float32)
       art_vec = tf.reshape(states, [batch_size, -1, size])
+
+      # Rearenge from minibatch * num_sentences * sentences_dim
+      # to  num_sentences* minibatch* sentence_dim
+      art_tens = tf.transpose(art_vec, perm =[1,0,2])
+      art_list = tf.unpack(art_vec, num =art_tens.get_shape().as_list()[0])
 
       # Encode the sentece vectors into an initial decoder state and attention
       # states
-      encoder_outputs, encoder_states = tf.nn.rnn(cell,art_vec)
-      top_states = [tf.array_ops.reshape(e, [-1,1,cell.output_size]) 
+      encoder_outputs, encoder_states = tf.nn.rnn(article_cell,art_list, dtype = tf.float32)
+      top_states = [tf.reshape(e, [-1,1,article_cell.output_size]) 
                     for e in encoder_outputs]
-      attention_states = tf.array_ops.concat(1,top_states)
+      attention_states = tf.concat(1,top_states)
 
       # Decode the attention states into a headline
       return tf.nn.seq2seq.embedding_attention_decoder(
-          decoder_inputs, encoder_state, attention_states, 
-          cell,target_vocab_size, output_projection=None,
+          decoder_inputs, encoder_states, attention_states, 
+          article_cell,target_vocab_size, output_projection=None,
           feed_previous=do_decode)
 
     # Feeds for inputs.
