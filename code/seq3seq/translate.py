@@ -113,7 +113,7 @@ def read_data(source_path, target_path, max_size=None):
         source_sents = source.split(" " + str(data_utils.EOS_ID) + " ")
         
         # Put sentence length first and pad with zeros, the sentence lenght will be passed to tf.nn.rnn as sequnce_length
-        source_ids = [[len(sent)] + [int(x) for x in sent.split()][:FLAGS.max_sent] + tf.zeros(FLAGS.max_sent + 1 - len(sent)) for sent in source_sents]
+        source_ids = [[min(len(sent), FLAGS.max_sent)] + [int(x) for x in sent.split()][:FLAGS.max_sent] + np.zeros([max(0,FLAGS.max_sent + 1 - len(sent))]) for sent in source_sents]
         target_ids = [int(x) for x in target.split()]
         target_ids.append(data_utils.EOS_ID)
         
