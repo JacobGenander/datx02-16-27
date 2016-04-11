@@ -196,8 +196,8 @@ def train():
       loss += step_loss / FLAGS.steps_per_checkpoint
       current_step += 1
 
-      # Once in a while, we save checkpoint, print statistics, and run evals.
-      if current_step % FLAGS.steps_per_checkpoint == 0:
+      # Once in a while (if more than one hour has passed), we save checkpoint, print statistics, and run evals.
+      if (time.time()- start_time > 3600):
         # Print statistics for the previous epoch.
         perplexity = math.exp(loss) if loss < 300 else float('inf')
         print ("global step %d learning rate %.4f step-time %.2f perplexity "
@@ -212,6 +212,7 @@ def train():
         model.saver.save(sess, checkpoint_path, global_step=model.global_step)
         step_time, loss = 0.0, 0.0
         sys.stdout.flush()
+        break
 
 
 def decode():
