@@ -1,3 +1,5 @@
+# vim: set sw=2 ts=2 expandtab:
+
 # Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -78,11 +80,13 @@ FLAGS = tf.app.flags.FLAGS
 # Buckets are from the 100000 headline articles pairs in our small data set,
 # they are very preliminary and we also opted to pad all titles since
 # there's no apperent correlation between title and article lengths.
-_buckets = [(100, 48), (200, 48), (400, 48), (800, 48)]
+
+# Use only one bucket where articles and titles are padded to fit
+_buckets = [(200, 100)]#, (200, 48), (400, 48), (800, 48)]
 #_buckets = [(250, 36), (1000,36), (8000, 46), (44266, 36)]
 
 
-def read_data(source_path, target_path, max_size=None):
+def read_data(source_path, target_path, max_size=None, truncate_in=200, truncate_out=100):
   """Read data from source and target files and put into buckets.
 
   Args:
@@ -106,16 +110,20 @@ def read_data(source_path, target_path, max_size=None):
       counter = 0
       while source and target and (not max_size or counter < max_size):
         counter += 1
-        if counter % 100000 == 0:
+        if counter % 25000 == 0:
           print("  reading data line %d" % counter)
           sys.stdout.flush()
-        source_ids = [int(x) for x in source.split()]
-        target_ids = [int(x) for x in target.split()]
+
+        source_ids = [int(x) for x in source.split()[:truncate_in]]
+        target_ids = [int(x) for x in target.split()[:truncate_out]]
         target_ids.append(data_utils.EOS_ID)
-        for bucket_id, (source_size, target_size) in enumerate(_buckets):
-          if len(source_ids) < source_size and len(target_ids) < target_size:
-            data_set[bucket_id].append([source_ids, target_ids])
-            break
+
+        #for bucket_id, (source_size, target_size) in enumerate(_buckets):
+        #  if len(source_ids) < source_size and len(target_ids) < target_size:
+        #    data_set[bucket_id].append([source_ids, target_ids])
+        #    break
+        # Use only one bucket
+        data_set[0].append([source_ids, target_ids])
         source, target = source_file.readline(), target_file.readline()
       print("Data set read.")
   return data_set
@@ -124,10 +132,10 @@ def read_data(source_path, target_path, max_size=None):
 def create_model(session, forward_only):
   """Create translation model and initialize or load parameters in session."""
   model = seq2seq_model.Seq2SeqModel(
-      FLAGS.article_vocab_size, FLAGS.title_vocab_size, _buckets,
-      FLAGS.size, FLAGS.num_layers, FLAGS.max_gradient_norm, FLAGS.batch_size,
-      FLAGS.learning_rate, FLAGS.learning_rate_decay_factor,
-      forward_only=forward_only)
+    FLAGS.article_vocab_size, FLAGS.title_vocab_size, _buckets,
+    FLAGS.size, FLAGS.num_layers, FLAGS.max_gradient_norm, FLAGS.batch_size,
+    FLAGS.learning_rate, FLAGS.learning_rate_decay_factor,
+    forward_only=forward_only)
   ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
   if ckpt and tf.gfile.Exists(ckpt.model_checkpoint_path):
     print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
@@ -225,20 +233,29 @@ def decode():
     # Decode from three random article.
     sys.stdout.write("Decide headline for three articles:")
     sys.stdout.flush()
-    articles = random.sample(list(open(os.path.join(FLAGS.data_dir, FLAGS.article_file))),50)
+    articles = random.sample(list(open(os.path.join(FLAGS.data_dir, FLAGS.article_file))),5)
     for article in articles:
       # Get token-ids for the input sentence.
       token_ids = data_utils.sentence_to_token_ids(article, article_vocab)
       # Which bucket does it belong to?
-      bucket_id = min([b for b in xrange(len(_buckets))
-                       if _buckets[b][0] > len(token_ids)])
+      #bucket_id = min([b for b in xrange(len(_buckets))
+      #                 if _buckets[b][0] > len(token_ids)])
       # Get a 1-element batch to feed the sentence to the model.
+      bucket_id = 0
+      candidates = 25
       encoder_inputs, decoder_inputs, target_weights = model.get_batch(
           {bucket_id: [(token_ids, [])]}, bucket_id)
       # Get output logits for the sentence.
       _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
                                        target_weights, bucket_id, True)
       # This is a greedy decoder - outputs are just argmaxes of output_logits.
+      for i, logit in enumerate(output_logits):
+        #print("Logit " , i, ":\t", "(", type(logit), logit.shape, ")")
+        sorted_logits = np.argpartition(logit.flatten(), -candidates)[-candidates:]
+        for word in reversed(sorted_logits):
+          #print(word)
+          sys.stdout.write(rev_title_vocab[word] + ", ")
+        sys.stdout.write("\n")
       outputs = [int(np.argmax(logit, axis=1)) for logit in output_logits]
       # If there is an EOS symbol in outputs, cut them at that point.
       if data_utils.EOS_ID in outputs:
