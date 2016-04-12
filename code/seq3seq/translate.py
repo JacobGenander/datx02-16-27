@@ -110,11 +110,12 @@ def read_data(source_path, target_path, max_size=None):
         if counter % 50000 == 0:
           print("  reading article %d" % counter)
           sys.stdout.flush()
-        source_sents = source.split(" " + str(data_utils.EOS_ID) + " ")
+        source_strings = source.split(" " + str(data_utils.EOS_ID) + " ")
+        source_sents = [[int(x) for x in sent.split()] for sent in source_strings]
         
         # Put sentence length first and pad with zeros, the sentence lenght will be passed to tf.nn.rnn as sequnce_length
         source_ids = [[min(len(sent), FLAGS.max_sent)] +
-                      [int(x) for x in sent.split()][:FLAGS.max_sent] +
+                      sent[:FLAGS.max_sent] +
                       [0]*(FLAGS.max_sent + 1 - len(sent))
                       for sent in source_sents]
         target_ids = [int(x) for x in target.split()]
