@@ -70,7 +70,7 @@ tf.app.flags.DEFINE_integer("steps_per_checkpoint", 200,
                             "How many training steps to do per checkpoint.")
 tf.app.flags.DEFINE_boolean("decode", False,
                             "Set to True for sample decoding.")
-
+tf.app.flags.DEFINE_integer("max_runtime", 0, "if (max_runtime != 0), stops execution after max_runtime minutes")
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -179,6 +179,7 @@ def train():
     step_time, loss = 0.0, 0.0
     current_step = 0
     previous_losses = []
+    time_train_start = time.time()
     while True:
       # Choose a bucket according to data distribution. We pick a random number
       # in [0, 1] and use the corresponding interval in train_buckets_scale.
@@ -214,6 +215,15 @@ def train():
         model.saver.save(sess, checkpoint_path, global_step=model.global_step)
         step_time, loss = 0.0, 0.0
         sys.stdout.flush()
+        if FLAGS.max_runtime:
+            max_time = int(FLAGS.max_runtime) * 60
+            elapsed_time = (time.time() - time_train_start)
+            if elapsed_time >= max_time:
+                print("Terminated after %d minutes. . . (limit set to %d)" %
+                      (elapsed_time/60, max_time/60))
+                break;
+            else:
+                sys.stdout.write("%3d minutes left | " % ((max_time - elapsed_time)/60))
 
 
 def decode():
