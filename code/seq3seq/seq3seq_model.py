@@ -82,21 +82,17 @@ class Seq3SeqModel(object):
     
     # The seq3seq function: we use embedding for the input and attention.
     def seq3seq_f(encoder_inputs, decoder_inputs, do_decode):
-
       # Encode all articles into vector sequnces
+      encoder_size = len(encoder_inputs)*num_layers
       article_stack = tf.concat(0,encoder_inputs)
       lengths = tf.squeeze(tf.slice(article_stack,[0,0],[-1,1]))
       sents_tens = tf.slice(article_stack,[0,1],[-1,-1])
       sents_tens = tf.nn.embedding_lookup(embeddings, sents_tens)
       sents = [tf.squeeze(t, squeeze_dims=[1]) for t in tf.split(1, FLAGS.max_sent, sents_tens)]
       _, states = tf.nn.rnn(sentence_cell, sents, sequence_length = lengths, dtype = tf.float32)
-      art_vec = tf.reshape(states, [batch_size, -1, size])
-
-      # Rearenge from minibatch * num_sentences * sentences_dim
-      # to  num_sentences* minibatch* sentence_dim
-      art_tens = tf.transpose(art_vec, perm =[1,0,2])
-      art_list = tf.unpack(art_vec, num =art_tens.get_shape().as_list()[0])
-
+      art_vec = tf.reshape(states, [-1, batch_size, size])
+      art_list = tf.unpack(art_vec, num= encoder_size)
+  
       # Encode the sentece vectors into an initial decoder state and attention
       # states
       encoder_outputs, encoder_states = tf.nn.rnn(article_cell,art_list, dtype = tf.float32)
