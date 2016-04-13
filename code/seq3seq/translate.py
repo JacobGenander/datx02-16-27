@@ -181,6 +181,7 @@ def train():
     step_time, loss = 0.0, 0.0
     current_step = 0
     previous_losses = []
+    session_time = time.time()
     while True:
       # Choose a bucket according to data distribution. We pick a random number
       # in [0, 1] and use the corresponding interval in train_buckets_scale.
@@ -201,7 +202,7 @@ def train():
       current_step += 1
 
       # Once in a while (if more than one hour has passed), we save checkpoint, print statistics, and run evals.
-      if (time.time()- start_time > 3600):
+      if (time.time()- session_time > 3600):
         # Print statistics for the previous epoch.
         perplexity = math.exp(loss) if loss < 300 else float('inf')
         print ("global step %d learning rate %.4f step-time %.2f perplexity "
