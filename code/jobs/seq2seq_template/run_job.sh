@@ -1,4 +1,7 @@
+#!/bin/bash
 
+# TODO: Check that the paths actually work in the queue. It is possible that
+# one has to use absolute paths, which means that $PATH_CWD must be expanded
 PATH_CWD="."
 PATH_PYTHON=$(which python2)
 PATH_SCRIPT="../../seq2seq/translate.py"
@@ -9,6 +12,8 @@ FILE_STDERR="stderr"
 MODE="$1"
 
 # Arguments that are common for all GPU:s
+# NOTE: The flag --train_dir is set further down in the script and is relative
+# to the subfolder that is created for each process
 ARGS_COMMON=( \
 	--data_dir ~/ml_data/ \
 	--article_file articles_100000.txt \
@@ -16,7 +21,6 @@ ARGS_COMMON=( \
 	--article_vocab_size 2500 \
 	--title_vocab_size 2000 \
 	--num_layers 2 \
-	--train_dir ~/ml_data/results/ \
 	--steps_per_checkpoint 10
 )
 
@@ -56,8 +60,8 @@ do
 			echo "Creating folder for process running on GPU_$GPU"
 			mkdir "$PROCESS_FOLDER"
 		fi
-		CMDLINE_TRAIN=("$PATH_PYTHON" "$PATH_SCRIPT" "${ARGS_COMMON[@]}" "${ARGS_TRAIN[@]}" "${ARGS_GPU_SPECIFIC[$GPU]}")
-		CMDLINE_EVAL=("$PATH_PYTHON" "$PATH_SCRIPT" "${ARGS_COMMON[@]}" "${ARGS_EVAL[@]}" "${ARGS_GPU_SPECIFIC[$GPU]}")
+		CMDLINE_TRAIN=("$PATH_PYTHON" "$PATH_SCRIPT" --train_dir "$PROCESS_FOLDER" "${ARGS_COMMON[@]}" "${ARGS_TRAIN[@]}" "${ARGS_GPU_SPECIFIC[$GPU]}")
+		CMDLINE_EVAL=("$PATH_PYTHON" "$PATH_SCRIPT" --train_dir "$PROCESS_FOLDER" "${ARGS_COMMON[@]}" "${ARGS_EVAL[@]}" "${ARGS_GPU_SPECIFIC[$GPU]}")
 		STDOUT="$PROCESS_FOLDER/$FILE_STDOUT"
 		STDERR="$PROCESS_FOLDER/$FILE_STDERR"
 		echo -e "----GPU_$GPU parameters:"
