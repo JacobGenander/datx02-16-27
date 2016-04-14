@@ -15,12 +15,12 @@ MODE="$1"
 # NOTE: The flag --train_dir is set further down in the script and is relative
 # to the subfolder that is created for each process
 ARGS_COMMON=( \
-	--data_dir ~/ml_data/ \
-	--article_file articles_100000.txt \
-	--title_file titles_100000.txt \
-	--article_vocab_size 2500 \
-	--title_vocab_size 2000 \
-	--num_layers 2 \
+	--data_dir ~/data/ \
+	--article_file articles_500000.txt \
+	--title_file titles_500000.txt \
+	--article_vocab_size 6000 \
+	--title_vocab_size 4000 \
+	--num_layers 1 \
 	--steps_per_checkpoint 10
 )
 
@@ -40,13 +40,17 @@ ARGS_EVAL=( \
 # These arguments bust be in quotes as to not be interpreted as different
 # array elements by bash, if empty strings, "", are given. No job is started
 # on that GPU
-ARGS_GPU_SPECIFIC[0]="--size 512"
-ARGS_GPU_SPECIFIC[1]=""
+ARGS_GPU_SPECIFIC[0]=""
+ARGS_GPU_SPECIFIC[1]="--size 128"
 ARGS_GPU_SPECIFIC[2]=""
-ARGS_GPU_SPECIFIC[3]="--size 256"
+ARGS_GPU_SPECIFIC[3]="--size 64"
 
 # Used to interate
 let HIGHEST_INDEX=${#ARGS_GPU_SPECIFIC[@]}-1
+
+# Removing previous termination script
+echo "Removing previous killall script. . ."
+rm kill_all.sh
 
 # Iterate over the possible GPU:S
 for GPU in $(seq 0 $HIGHEST_INDEX)
@@ -61,6 +65,7 @@ do
 			mkdir "$PROCESS_FOLDER"
 		fi
 		CMDLINE_TRAIN=("$PATH_PYTHON" "$PATH_SCRIPT" --train_dir "$PROCESS_FOLDER" "${ARGS_COMMON[@]}" "${ARGS_TRAIN[@]}" "${ARGS_GPU_SPECIFIC[$GPU]}")
+		#CMDLINE_TRAIN=("echo lol")
 		CMDLINE_EVAL=("$PATH_PYTHON" "$PATH_SCRIPT" --train_dir "$PROCESS_FOLDER" "${ARGS_COMMON[@]}" "${ARGS_EVAL[@]}" "${ARGS_GPU_SPECIFIC[$GPU]}")
 		STDOUT="$PROCESS_FOLDER/$FILE_STDOUT"
 		STDERR="$PROCESS_FOLDER/$FILE_STDERR"
@@ -73,14 +78,15 @@ do
 		case $MODE in
 			eval|evaluation|decode|decoding)
 				echo -e "#### STARTING --==EVALUATION==-- ON GPU_$GPU. . ."
-				( ${CMDLINE_EVAL[@]} 2>> $STDERR 1>> $STDOUT & )
+				( echo "kill $BASHPID" >> kill_all.sh; CUDA_VISIBLE_DEVICES=$GPU ${CMDLINE_EVAL[@]} 2>> $STDERR 1>> $STDOUT & )
+				echo -e "#### PROCESS $! STARTED ON GPU_$GPU"
 				;;
 			train|training|encode|encoding|*)
 				echo -e "#### STARTING --==TRAINING==-- ON GPU_$GPU. . ."
-				( ${CMDLINE_TRAIN[@]} 2>> $STDERR 1>> $STDOUT & )
+				( echo "kill $BASHPID" >> kill_all.sh; CUDA_VISIBLE_DEVICES=$GPU ${CMDLINE_TRAIN[@]} 2>> $STDERR 1>> $STDOUT & echo "kill $!" >> kill_all.sh )
+				echo -e "#### PROCESS $! STARTED ON GPU_$GPU"
 				;;
 		esac
-		echo -e "#### PROCESS STARTED ON GPU_$GPU"
 	fi
 done
 

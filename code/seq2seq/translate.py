@@ -71,6 +71,7 @@ tf.app.flags.DEFINE_integer("steps_per_checkpoint", 200,
 tf.app.flags.DEFINE_boolean("decode", False,
                             "Set to True for sample decoding.")
 tf.app.flags.DEFINE_integer("max_runtime", 0, "if (max_runtime != 0), stops execution after max_runtime minutes")
+tf.app.flags.DEFINE_integer("gpu_index", 0, "Which GPU to use. ex. '0' for /gpu:0")
 
 FLAGS = tf.app.flags.FLAGS
 
