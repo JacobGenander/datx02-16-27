@@ -259,6 +259,17 @@ def main():
             model_path = os.path.join(conf.checkpoint_dir, 'model.ckpt')
             saver.restore(sess, model_path)
 
+        # Print number of parameters
+        variables = sess.run(tf.trainable_variables())
+        num_vars = 0
+        for v in variables:
+            shape = v.shape
+            num_elems = 1
+            for dim in shape:
+                num_elems *= dim
+            num_vars += num_elems
+        print('Number of parameters: {}'.format(num_vars))
+
         max_epoch = conf.max_epoch
         quit_training = False
         print('Training.')
