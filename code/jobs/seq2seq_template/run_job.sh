@@ -78,7 +78,7 @@ do
 		case $MODE in
 			eval|evaluation|decode|decoding)
 				echo -e "#### STARTING --==EVALUATION==-- ON GPU_$GPU. . ."
-				( echo "kill $BASHPID" >> kill_all.sh; CUDA_VISIBLE_DEVICES=$GPU ${CMDLINE_EVAL[@]} 2>> $STDERR 1>> $STDOUT & )
+				( echo "kill $BASHPID" >> kill_all.sh; CUDA_VISIBLE_DEVICES=$GPU ${CMDLINE_EVAL[@]} 2>> $STDERR 1>> $STDOUT & echo "kill $!" >> kill_all.sh )
 				echo -e "#### PROCESS $! STARTED ON GPU_$GPU"
 				;;
 			train|training|encode|encoding|*)
