@@ -18,10 +18,11 @@ ARGS_COMMON=( \
 	--data_dir ~/data/ \
 	--article_file articles_500000.txt \
 	--title_file titles_500000.txt \
-	--article_vocab_size 6000 \
-	--title_vocab_size 4000 \
-	--num_layers 1 \
-	--steps_per_checkpoint 10
+	--article_vocab_size 20000 \
+	--title_vocab_size 20000 \
+	--num_layers 3 \
+	--steps_per_checkpoint 25 \
+	--batch_size 8
 )
 
 # Arguments to append when $MODE is 'train'
@@ -42,6 +43,11 @@ ARGS_EVAL=( \
 # on that GPU
 ARGS_GPU_SPECIFIC[0]=""
 ARGS_GPU_SPECIFIC[1]="--size 128"
+ARGS_GPU_SPECIFIC[2]="--size 256"
+ARGS_GPU_SPECIFIC[3]="--size 64"
+
+ARGS_GPU_SPECIFIC[0]=""
+ARGS_GPU_SPECIFIC[1]=""
 ARGS_GPU_SPECIFIC[2]=""
 ARGS_GPU_SPECIFIC[3]="--size 64"
 
@@ -75,6 +81,7 @@ do
 		echo -e "\tstderr log:\t$STDERR"
 		echo -e "\tCMD (train):\t${CMDLINE_TRAIN[@]}"
 		echo -e "\tCMD (eval):\t${CMDLINE_EVAL[@]}"
+		echo "#---- Processes for $GPU ----" >> kill_all.sh 
 		case $MODE in
 			eval|evaluation|decode|decoding)
 				echo -e "#### STARTING --==EVALUATION==-- ON GPU_$GPU. . ."
