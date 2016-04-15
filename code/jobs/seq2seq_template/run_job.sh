@@ -89,4 +89,5 @@ do
 		esac
 	fi
 done
+chmod +x kill_all.sh
 
