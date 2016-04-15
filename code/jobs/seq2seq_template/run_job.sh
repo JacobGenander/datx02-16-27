@@ -18,11 +18,12 @@ ARGS_COMMON=( \
 	--data_dir ~/data/ \
 	--article_file articles_500000.txt \
 	--title_file titles_500000.txt \
-	--article_vocab_size 20000 \
-	--title_vocab_size 20000 \
-	--num_layers 3 \
-	--steps_per_checkpoint 25 \
-	--batch_size 8
+	--article_vocab_size 4000 \
+	--title_vocab_size 4000 \
+	--num_layers 2 \
+	--steps_per_checkpoint 100 \
+	--batch_size 8 \
+	--max_runtime  1
 )
 
 # Arguments to append when $MODE is 'train'
@@ -46,10 +47,10 @@ ARGS_GPU_SPECIFIC[1]="--size 128"
 ARGS_GPU_SPECIFIC[2]="--size 256"
 ARGS_GPU_SPECIFIC[3]="--size 64"
 
-ARGS_GPU_SPECIFIC[0]=""
-ARGS_GPU_SPECIFIC[1]=""
-ARGS_GPU_SPECIFIC[2]=""
-ARGS_GPU_SPECIFIC[3]="--size 64"
+#ARGS_GPU_SPECIFIC[0]=""
+#ARGS_GPU_SPECIFIC[1]=""
+#ARGS_GPU_SPECIFIC[2]="--size 128"
+#ARGS_GPU_SPECIFIC[3]=""
 
 # Used to interate
 let HIGHEST_INDEX=${#ARGS_GPU_SPECIFIC[@]}-1
@@ -87,18 +88,21 @@ do
 				echo -e "#### STARTING --==EVALUATION==-- ON GPU_$GPU. . ."
 				echo "######## STARTED EVALUATION ON GPU_$GPU ########" >> $STDOUT
 				echo "######## $(date) ########" >> $STDOUT
-				( echo "kill $BASHPID" >> kill_all.sh; CUDA_VISIBLE_DEVICES=$GPU ${CMDLINE_EVAL[@]} 2>> $STDERR 1>> $STDOUT & echo "kill $!" >> kill_all.sh )
+				( echo "kill $BASHPID" >> kill_all.sh; CUDA_VISIBLE_DEVICES=$GPU ${CMDLINE_EVAL[@]} 2>> $STDERR 1>> $STDOUT & echo "kill $!" >> kill_all.sh; wait ) &
 				echo -e "#### PROCESS $! STARTED ON GPU_$GPU"
 				;;
 			train|training|encode|encoding|*)
 				echo -e "#### STARTING --==TRAINING==-- ON GPU_$GPU. . ."
 				echo "######## STARTED TRAINING ON GPU_$GPU ########" >> $STDOUT
 				echo "######## $(date) ########" >> $STDOUT
-				( echo "kill $BASHPID" >> kill_all.sh; CUDA_VISIBLE_DEVICES=$GPU ${CMDLINE_TRAIN[@]} 2>> $STDERR 1>> $STDOUT & echo "kill $!" >> kill_all.sh )
+				( echo "kill $BASHPID" >> kill_all.sh; CUDA_VISIBLE_DEVICES=$GPU ${CMDLINE_TRAIN[@]} 2>> $STDERR 1>> $STDOUT & echo "kill $!" >> kill_all.sh; wait ) &
 				echo -e "#### PROCESS $! STARTED ON GPU_$GPU"
 				;;
 		esac
 	fi
 done
+echo "Setting executable flag on kill-script"
 chmod +x kill_all.sh
+echo "Waiting for all processes to finish"
 
+wait

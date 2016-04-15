@@ -22,7 +22,7 @@ ARGS_COMMON=( \
 	--title_vocab_size 20000 \
 	--num_layers 3 \
 	--steps_per_checkpoint 300 \
-	--batch_size 60
+	--max_train_data_size 50000
 )
 
 # Arguments to append when $MODE is 'train'
@@ -41,10 +41,11 @@ ARGS_EVAL=( \
 # These arguments bust be in quotes as to not be interpreted as different
 # array elements by bash, if empty strings, "", are given. No job is started
 # on that GPU
-ARGS_GPU_SPECIFIC[0]=""
-ARGS_GPU_SPECIFIC[1]="--size 512"
-ARGS_GPU_SPECIFIC[2]="--size 256"
-ARGS_GPU_SPECIFIC[3]="--size 1024"
+
+ARGS_GPU_SPECIFIC[0]="--size 256 --batch_size 30" 
+ARGS_GPU_SPECIFIC[1]="--size 128 --batch_size 60"
+ARGS_GPU_SPECIFIC[2]=""
+ARGS_GPU_SPECIFIC[3]=""
 
 # Used to interate
 let HIGHEST_INDEX=${#ARGS_GPU_SPECIFIC[@]}-1
@@ -96,4 +97,5 @@ do
 	fi
 done
 chmod +x kill_all.sh
-
+sleep 60m 
+kill_all.sh

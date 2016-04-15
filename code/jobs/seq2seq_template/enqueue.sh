@@ -4,7 +4,7 @@
 [ -d log ] || mkdir log 
 
 #submit job
-qsub -cwd -verify \
+qsub -cwd \
   -e ./log/error \
   -o ./log/output \
   ./$1 
