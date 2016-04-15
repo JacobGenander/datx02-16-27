@@ -70,7 +70,7 @@ tf.app.flags.DEFINE_boolean("decode", False,
                             "Set to True for sample decoding.")
 tf.app.flags.DEFINE_integer("max_sent", 250,
                             "How long the maximum sentence in an articel may be.")
-
+tf.app.flags.DEFINE_integer("max_runtime", 0, "if (max_runtime != 0), stops execution after max_runtime minutes")
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -112,7 +112,7 @@ def read_data(source_path, target_path, max_size=None):
           sys.stdout.flush()
         source_strings = source.split(" " + str(data_utils.EOS_ID) + " ")
         source_sents = [[int(x) for x in sent.split()] for sent in source_strings]
-        
+
         # Put sentence length first and pad with zeros, the sentence lenght will be passed to tf.nn.rnn as sequnce_length
         source_ids = [[min(len(sent), FLAGS.max_sent)] +
                       sent[:FLAGS.max_sent] +
@@ -120,7 +120,7 @@ def read_data(source_path, target_path, max_size=None):
                       for sent in source_sents]
         target_ids = [int(x) for x in target.split()]
         target_ids.append(data_utils.EOS_ID)
-        
+
         # Trim article to fit largest bucket that it doesn't fit into
         for bucket_id, (source_size, target_size) in sorted(enumerate(_buckets), key = lambda tup : tup[0], reverse=True):
           if len(source_ids) > source_size and len(target_ids) < target_size:
@@ -182,6 +182,7 @@ def train():
     current_step = 0
     previous_losses = []
     session_time = time.time()
+    time_train_start = time.time()
     while True:
       # Choose a bucket according to data distribution. We pick a random number
       # in [0, 1] and use the corresponding interval in train_buckets_scale.
@@ -202,7 +203,7 @@ def train():
       current_step += 1
 
       # Once in a while (if more than one hour has passed), we save checkpoint, print statistics, and run evals.
-      if (time.time()- session_time > 3600):
+      if current_step % FLAGS.steps_per_checkpoint == 0:
         # Print statistics for the previous epoch.
         perplexity = math.exp(loss) if loss < 300 else float('inf')
         print ("global step %d learning rate %.4f step-time %.2f perplexity "
@@ -217,7 +218,15 @@ def train():
         model.saver.save(sess, checkpoint_path, global_step=model.global_step)
         step_time, loss = 0.0, 0.0
         sys.stdout.flush()
-        break
+        if FLAGS.max_runtime:
+            max_time = int(FLAGS.max_runtime) * 60
+            elapsed_time = (time.time() - time_train_start)
+            if elapsed_time >= max_time:
+                print("Terminated after %d minutes. . . (limit set to %d)" %
+                      (elapsed_time/60, max_time/60))
+                break;
+            else:
+                sys.stdout.write("%3d minutes left | " % ((max_time - elapsed_time)/60))
 
 
 def decode():
