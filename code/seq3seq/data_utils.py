@@ -120,15 +120,21 @@ def initialize_vocabulary(vocabulary_path):
   else:
     raise ValueError("Vocabulary file %s not found.", vocabulary_path)
 
-def text_to_token_ids(text, vocab):
+def text_to_token_ids(text, vocab, preserve_sent=False):
   #pool = multiprocessing.Pool(8)
   tok_text = tokenizer.tokenize(text)
   tok_text = [nltk.word_tokenize(s) for s in tok_text]
   #tok_text = map(nltk.word_tokenize, tok_text)
   id_text = []
-  for sent in tok_text:
-    id_text.extend([vocab.get(w, UNK_ID) for w in sent])
-    id_text.append(EOS_ID)
+  if preserve_sent:
+    for sent in tok_text:
+      id_sent = []
+      id_sent.extend([vocab.get(w, UNK_ID) for w in sent])
+      id_text.append(id_sent)
+  else:
+    for sent in tok_text:
+      id_text.extend([vocab.get(w, UNK_ID) for w in sent])
+      id_text.append(EOS_ID)
   return id_text
 
 def data_to_token_ids(data_path, target_path, vocabulary_path):

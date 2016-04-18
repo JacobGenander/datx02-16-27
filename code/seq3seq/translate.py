@@ -36,6 +36,7 @@ import os
 import random
 import sys
 import time
+import pdb
 
 import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -237,9 +238,9 @@ def decode():
 
     # Load vocabularies.
     article_vocab_path = os.path.join(FLAGS.data_dir,
-                                 "vocab%d.article" % FLAGS.article_vocab_size)
+                                 "vocab%d.article3" % FLAGS.article_vocab_size)
     title_vocab_path = os.path.join(FLAGS.data_dir,
-                                 "vocab%d.title" % FLAGS.title_vocab_size)
+                                 "vocab%d.titles3" % FLAGS.title_vocab_size)
     article_vocab, _ = data_utils.initialize_vocabulary(article_vocab_path)
     _, rev_title_vocab = data_utils.initialize_vocabulary(title_vocab_path)
 
@@ -249,10 +250,12 @@ def decode():
     articles = random.sample(list(open(os.path.join(FLAGS.data_dir, FLAGS.article_file))),50)
     for article in articles:
       # Get token-ids for the input sentence.
-      token_ids = data_utils.sentence_to_token_ids(article, article_vocab)
+      token_ids = data_utils.text_to_token_ids(article, article_vocab, preserve_sent=True)
+      #pdb.set_trace()
       # Which bucket does it belong to?
-      bucket_id = min([b for b in xrange(len(_buckets))
-                       if _buckets[b][0] > len(token_ids)])
+      bucket_id = max([b for b in xrange(len(_buckets))
+                       if _buckets[b][0] < len(token_ids)])
+      #bucket_id = max([idx for (idx,(i, o)) in xrange(_buckets) if i < len(token_ids)])
       # Get a 1-element batch to feed the sentence to the model.
       encoder_inputs, decoder_inputs, target_weights = model.get_batch(
           {bucket_id: [(token_ids, [])]}, bucket_id)
