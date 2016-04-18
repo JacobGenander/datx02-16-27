@@ -64,7 +64,7 @@ def choose_words(word_probs, batch_size, vocab_size, skip_unk):
 
 def gen_init_batch(seq, batch_size, word_to_id):
     try:
-        ids = [[word_to_id[w] for w in list(seq)]]
+        ids = [[word_to_id[w] for w in seq.split()]]
     except KeyError:
         print('Could not find word in vocabulary')
         sys.exit(1)
@@ -83,7 +83,7 @@ def gen_sentences(net, sess, word_to_id, conf):
         inputs = np.random.randint(0, len(word_to_id), [batch_size, 1])
 
     sentences = [inputs]
-    num_init_words = len(list(init_seq))
+    num_init_words = len(init_seq.split())
     current_state = net._initial_state.eval()
     for i in range(args.length):
         feed = {net._inputs : inputs, net._initial_state : current_state}
