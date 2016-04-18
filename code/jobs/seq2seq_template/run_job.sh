@@ -86,15 +86,15 @@ do
 		case $MODE in
 			eval|evaluation|decode|decoding)
 				echo -e "#### STARTING --==EVALUATION==-- ON GPU_$GPU. . ."
-				echo "######## STARTED EVALUATION ON GPU_$GPU ########" >> $STDOUT
-				echo "######## $(date) ########" >> $STDOUT
+				echo "######### STARTED EVALUATION ON GPU_$GPU #########" | tee --append $STDOUT $STDERR
+				echo "######## $(date) ########" | tee --append $STDOUT $STDERR
 				( echo "kill $BASHPID" >> kill_all.sh; CUDA_VISIBLE_DEVICES=$GPU ${CMDLINE_EVAL[@]} 2>> $STDERR 1>> $STDOUT & echo "kill $!" >> kill_all.sh; wait ) &
 				echo -e "#### PROCESS $! STARTED ON GPU_$GPU"
 				;;
 			train|training|encode|encoding|*)
 				echo -e "#### STARTING --==TRAINING==-- ON GPU_$GPU. . ."
-				echo "######## STARTED TRAINING ON GPU_$GPU ########" >> $STDOUT
-				echo "######## $(date) ########" >> $STDOUT
+				echo "########## STARTED TRAINING ON GPU_$GPU ##########" | tee --append $STDOUT $STDERR
+				echo "######## $(date) ########" | tee --append $STDOUT $STDERR
 				( echo "kill $BASHPID" >> kill_all.sh; CUDA_VISIBLE_DEVICES=$GPU ${CMDLINE_TRAIN[@]} 2>> $STDERR 1>> $STDOUT & echo "kill $!" >> kill_all.sh; wait ) &
 				echo -e "#### PROCESS $! STARTED ON GPU_$GPU"
 				;;
