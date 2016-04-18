@@ -47,6 +47,8 @@ ARGS_GPU_SPECIFIC[1]="--size 128 --batch_size 60"
 ARGS_GPU_SPECIFIC[2]=""
 ARGS_GPU_SPECIFIC[3]=""
 
+ARGS_GPU_SPECIFIC[0]="" 
+
 # Used to interate
 let HIGHEST_INDEX=${#ARGS_GPU_SPECIFIC[@]}-1
 
@@ -81,21 +83,23 @@ do
 		case $MODE in
 			eval|evaluation|decode|decoding)
 				echo -e "#### STARTING --==EVALUATION==-- ON GPU_$GPU. . ."
-				echo "######## STARTED EVALUATION ON GPU_$GPU ########" >> $STDOUT
-				echo "######## $(date) ########" >> $STDOUT
-				( echo "kill $BASHPID" >> kill_all.sh; CUDA_VISIBLE_DEVICES=$GPU ${CMDLINE_EVAL[@]} 2>> $STDERR 1>> $STDOUT & echo "kill $!" >> kill_all.sh )
+				echo "######### STARTED EVALUATION ON GPU_$GPU #########" | tee --append $STDOUT $STDERR
+				echo "######## $(date) ########" | tee --append $STDOUT $STDERR
+				( echo "kill $BASHPID" >> kill_all.sh; CUDA_VISIBLE_DEVICES=$GPU ${CMDLINE_EVAL[@]} 2>> $STDERR 1>> $STDOUT & echo "kill $!" >> kill_all.sh; wait ) &
 				echo -e "#### PROCESS $! STARTED ON GPU_$GPU"
 				;;
 			train|training|encode|encoding|*)
 				echo -e "#### STARTING --==TRAINING==-- ON GPU_$GPU. . ."
-				echo "######## STARTED TRAINING ON GPU_$GPU ########" >> $STDOUT
-				echo "######## $(date) ########" >> $STDOUT
-				( echo "kill $BASHPID" >> kill_all.sh; CUDA_VISIBLE_DEVICES=$GPU ${CMDLINE_TRAIN[@]} 2>> $STDERR 1>> $STDOUT & echo "kill $!" >> kill_all.sh )
+				echo "########## STARTED TRAINING ON GPU_$GPU ##########" | tee --append $STDOUT $STDERR
+				echo "######## $(date) ########" | tee --append $STDOUT $STDERR
+				( echo "kill $BASHPID" >> kill_all.sh; CUDA_VISIBLE_DEVICES=$GPU ${CMDLINE_TRAIN[@]} 2>> $STDERR 1>> $STDOUT & echo "kill $!" >> kill_all.sh; wait ) &
 				echo -e "#### PROCESS $! STARTED ON GPU_$GPU"
 				;;
 		esac
 	fi
 done
+echo "Setting executable flag on kill-script"
 chmod +x kill_all.sh
-sleep 60m 
-kill_all.sh
+echo "Waiting for all processes to finish"
+
+wait
