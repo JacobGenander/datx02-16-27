@@ -24,6 +24,8 @@ import re
 import tarfile
 import nltk.data
 
+import multiprocessing
+
 from six.moves import urllib
 
 from tensorflow.python.platform import gfile
@@ -64,14 +66,17 @@ def create_vocabulary(vocabulary_path, data_path, max_vocabulary_size):
   if not gfile.Exists(vocabulary_path):
     print("Creating vocabulary %s from data %s" % (vocabulary_path, data_path))
     vocab = {}
+    #pool = multiprocessing.Pool(8)
     with gfile.GFile(data_path, mode="r") as f:
       counter = 0
       for line in f:
         counter += 1
-        if counter % 100000 == 0:
+        if counter % 10000 == 0:
           print("  processing line %d" % counter)
 
         text = tokenizer.tokenize(line)
+        text = [nltk.word_tokenize(s) for s in text]
+        #text = pool.map(nltk.word_tokenize, text)
         tokens = [tok for sent in text for tok in sent]
         for word in tokens:
           if word in vocab:
@@ -116,7 +121,10 @@ def initialize_vocabulary(vocabulary_path):
     raise ValueError("Vocabulary file %s not found.", vocabulary_path)
 
 def text_to_token_ids(text, vocab):
+  #pool = multiprocessing.Pool(8)
   tok_text = tokenizer.tokenize(text)
+  tok_text = [nltk.word_tokenize(s) for s in tok_text]
+  #tok_text = map(nltk.word_tokenize, tok_text)
   id_text = []
   for sent in tok_text:
     id_text.extend([vocab.get(w, UNK_ID) for w in sent])
@@ -146,7 +154,7 @@ def data_to_token_ids(data_path, target_path, vocabulary_path):
         counter = 0
         for line in data_file:
           counter += 1
-          if counter % 100000 == 0:
+          if counter % 10000 == 0:
             print("  tokenizing line %d" % counter)
           token_ids = text_to_token_ids(line, vocab)
           tokens_file.write(" ".join([str(tok) for tok in token_ids]) + "\n")
@@ -169,16 +177,16 @@ def prepare_news_data(data_dir, article_file, title_file, article_vocabulary_siz
   """
 
   # Create vocabularies of the appropriate sizes.
-  title_vocab_path = os.path.join(data_dir, "vocab%d.title" % title_vocabulary_size)
+  title_vocab_path = os.path.join(data_dir, "vocab%d.titles3" % title_vocabulary_size)
   title_src_path = os.path.join(data_dir, title_file)
-  article_vocab_path = os.path.join(data_dir, "vocab%d.article" % article_vocabulary_size)
+  article_vocab_path = os.path.join(data_dir, "vocab%d.article3" % article_vocabulary_size)
   article_src_path = os.path.join(data_dir, article_file)
   create_vocabulary(title_vocab_path, title_src_path, title_vocabulary_size)
   create_vocabulary(article_vocab_path, article_src_path, article_vocabulary_size)
 
   # Create token ids for the training data.
-  title_train_ids_path = ("train_ids.ids%d.title" % title_vocabulary_size)
-  article_train_ids_path =  ("train_ids.ids%d.article" % article_vocabulary_size)
+  title_train_ids_path = ("train_ids.ids%d.title3" % title_vocabulary_size)
+  article_train_ids_path =  ("train_ids.ids%d.article3" % article_vocabulary_size)
   data_to_token_ids(title_src_path, title_train_ids_path, title_vocab_path)
   data_to_token_ids(article_src_path, article_train_ids_path, article_vocab_path)
 
