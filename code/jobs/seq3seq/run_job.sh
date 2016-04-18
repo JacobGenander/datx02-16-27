@@ -47,7 +47,7 @@ ARGS_GPU_SPECIFIC[1]="--size 128 --batch_size 60"
 ARGS_GPU_SPECIFIC[2]=""
 ARGS_GPU_SPECIFIC[3]=""
 
-ARGS_GPU_SPECIFIC[0]="" 
+ARGS_GPU_SPECIFIC[1]="" 
 
 # Used to interate
 let HIGHEST_INDEX=${#ARGS_GPU_SPECIFIC[@]}-1
@@ -103,3 +103,11 @@ chmod +x kill_all.sh
 echo "Waiting for all processes to finish"
 
 wait
+
+echo "Jobs completed"
+
+echo "Enqueueing myself!"
+
+../enqueue.sh run_job.sh
+
+
