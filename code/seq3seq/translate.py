@@ -71,7 +71,7 @@ tf.app.flags.DEFINE_boolean("decode", False,
                             "Set to True for sample decoding.")
 tf.app.flags.DEFINE_integer("max_sent", 250,
                             "How long the maximum sentence in an articel may be.")
-tf.app.flags.DEFINE_integer("max_runtime", 0, "if (max_runtime != 0), stops execution after max_runtime minutes")
+tf.app.flags.DEFINE_integer("max_runtime", 60, "if (max_runtime != 0), stops execution after max_runtime minutes")
 
 FLAGS = tf.app.flags.FLAGS
 
