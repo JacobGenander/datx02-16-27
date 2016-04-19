@@ -42,7 +42,7 @@ ARGS_EVAL=( \
 # array elements by bash, if empty strings, "", are given. No job is started
 # on that GPU
 
-ARGS_GPU_SPECIFIC[0]="--size 256 --batch_size 30" 
+ARGS_GPU_SPECIFIC[0]="--size 300 --batch_size 30" 
 ARGS_GPU_SPECIFIC[1]="--size 128 --batch_size 60"
 ARGS_GPU_SPECIFIC[2]=""
 ARGS_GPU_SPECIFIC[3]=""
@@ -105,6 +105,12 @@ echo "Waiting for all processes to finish"
 wait
 
 echo "Jobs completed"
+
+echo "Shuffling data"
+
+shred myrand
+shuf --random-source=myrand train_ids.ids20000.title3   -o train_ids.ids20000.title3
+shuf --random-source=myrand train_ids.ids30000.article3 -o train_ids.ids30000.article3
 
 echo "Enqueueing myself!"
 
