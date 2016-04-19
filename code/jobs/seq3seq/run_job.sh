@@ -108,12 +108,8 @@ echo "Jobs completed"
 
 echo "Shuffling data"
 
-shred myrand
-shuf --random-source=myrand train_ids.ids20000.title3   -o train_ids.ids20000.title3
-shuf --random-source=myrand train_ids.ids30000.article3 -o train_ids.ids30000.article3
+./shuffle_data.sh
 
 echo "Enqueueing myself!"
 
 ../enqueue.sh run_job.sh
-
-
