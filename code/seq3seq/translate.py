@@ -140,6 +140,7 @@ def create_model(session, forward_only):
       FLAGS.learning_rate, FLAGS.learning_rate_decay_factor,
       forward_only=forward_only)
   ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
+  tf.train.SummaryWriter('~/tensorboard',session.graph_def)
   if ckpt and tf.gfile.Exists(ckpt.model_checkpoint_path):
     print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
     model.saver.restore(session, ckpt.model_checkpoint_path)
@@ -231,12 +232,34 @@ def train():
 
 
 def decode():
-  with tf.Session() as sess:
-    # Create model and load parameters.
-    model = create_model(sess, True)
-    model.batch_size = 1  # We decode one sentence at a time.
 
-    # Load vocabularies.
+  print("Preparing news data in %s" % FLAGS.data_dir)
+  articles_train, titles_train, _, _ = data_utils.prepare_news_data(
+      FLAGS.data_dir,
+      FLAGS.article_file,
+      FLAGS.title_file,
+      FLAGS.article_vocab_size,
+      FLAGS.title_vocab_size)
+
+  with tf.Session() as sess:
+    # Create model.
+    print("Creating %d layers of %d units." % (FLAGS.num_layers, FLAGS.size))
+    model = create_model(sess, False)
+
+    # Read data into buckets and compute their sizes.
+    print ("Reading development and training data (limit: %d)."
+           % FLAGS.max_train_data_size)
+    train_set = read_data(articles_train, titles_train, 25)
+    train_bucket_sizes = [len(train_set[b]) for b in xrange(len(_buckets))]
+    train_total_size = float(sum(train_bucket_sizes))
+
+    # A bucket scale is a list of increasing numbers from 0 to 1 that we'll use
+    # to select a bucket. Length of [scale[i], scale[i+1]] is proportional to
+    # the size if i-th training bucket, as used later.
+    train_buckets_scale = [sum(train_bucket_sizes[:i + 1]) / train_total_size
+                           for i in xrange(len(train_bucket_sizes))]
+
+
     article_vocab_path = os.path.join(FLAGS.data_dir,
                                  "vocab%d.article3" % FLAGS.article_vocab_size)
     title_vocab_path = os.path.join(FLAGS.data_dir,
@@ -244,32 +267,38 @@ def decode():
     article_vocab, _ = data_utils.initialize_vocabulary(article_vocab_path)
     _, rev_title_vocab = data_utils.initialize_vocabulary(title_vocab_path)
 
-    # Decode from three random article.
-    sys.stdout.write("Decide headline for three articles:")
-    sys.stdout.flush()
-    articles = random.sample(list(open(os.path.join(FLAGS.data_dir, FLAGS.article_file))),50)
-    for article in articles:
-      # Get token-ids for the input sentence.
-      token_ids = data_utils.text_to_token_ids(article, article_vocab, preserve_sent=True)
-      #pdb.set_trace()
-      # Which bucket does it belong to?
-      bucket_id = max([b for b in xrange(len(_buckets))
-                       if _buckets[b][0] < len(token_ids)])
-      #bucket_id = max([idx for (idx,(i, o)) in xrange(_buckets) if i < len(token_ids)])
-      # Get a 1-element batch to feed the sentence to the model.
+    # This is the training loop.
+    step_time, loss = 0.0, 0.0
+    current_step = 0
+    previous_losses = []
+    session_time = time.time()
+    time_train_start = time.time()
+    while True:
+      # Choose a bucket according to data distribution. We pick a random number
+      # in [0, 1] and use the corresponding interval in train_buckets_scale.
+      random_number_01 = np.random.random_sample()
+
+      bucket_id = min([i for i in xrange(len(train_buckets_scale))
+                       if train_buckets_scale[i] > random_number_01])
+      #print("Selected bucket %d" % bucket_id)
+
+      # Get a batch and make a step.
+      start_time = time.time()
       encoder_inputs, decoder_inputs, target_weights = model.get_batch(
-          {bucket_id: [(token_ids, [])]}, bucket_id)
-      # Get output logits for the sentence.
+          train_set, bucket_id)
       _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
-                                       target_weights, bucket_id, True)
+                                   target_weights, bucket_id, True)
+#NEW CODE
       # This is a greedy decoder - outputs are just argmaxes of output_logits.
-      outputs = [int(np.argmax(logit, axis=1)) for logit in output_logits]
+      pdb.set_trace()
+      outputs = [np.argmax(logit, axis=1) for logit in output_logits]
       # If there is an EOS symbol in outputs, cut them at that point.
       if data_utils.EOS_ID in outputs:
         outputs = outputs[:outputs.index(data_utils.EOS_ID)]
       # Print out title corresponding to outputs.
       print("-"*80)
-      print(" ".join([rev_title_vocab[output] for output in outputs]))
+      for idx in xrange(FLAGS.batch_size):
+          print(" ".join([rev_title_vocab[output[idx]] for output in outputs]))
       print("-"*80)
       print(article)
       print("-"*80)
