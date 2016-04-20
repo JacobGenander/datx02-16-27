@@ -46,7 +46,7 @@ class Seq2SeqModel(object):
   def __init__(self, source_vocab_size, target_vocab_size, buckets, size,
                num_layers, max_gradient_norm, batch_size, learning_rate,
                learning_rate_decay_factor, use_lstm=False,
-               num_samples=512, forward_only=False):
+               num_samples=512, forward_only=False, initial_embedding=None):
     """Create the model.
 
     Args:
@@ -80,6 +80,11 @@ class Seq2SeqModel(object):
     # Create the internal multi-layer cell for our RNN.
     single_cell = tf.nn.rnn_cell.GRUCell(size)
     cell = single_cell
+
+    if initial_embedding is None:
+        embedding = tf.Variable(
+                tf.random_uniform([source_vocab_size, size], -1.0, 1.0))
+
     if num_layers > 1:
       cell = tf.nn.rnn_cell.MultiRNNCell([single_cell] * num_layers)
 

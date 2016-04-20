@@ -22,8 +22,9 @@ import gzip
 import os
 import re
 import tarfile
-
 from six.moves import urllib
+
+import numpy as np
 
 from tensorflow.python.platform import gfile
 
@@ -181,6 +182,103 @@ def data_to_token_ids(data_path, target_path, vocabulary_path,
           token_ids = sentence_to_token_ids(line, vocab, tokenizer,
                                             normalize_digits)
           tokens_file.write(" ".join([str(tok) for tok in token_ids]) + "\n")
+
+
+def string_converter(s):
+    return s.decode("utf-8")
+
+
+# Reads a glove file and returns an numpy array where the first column
+# contains the words and columns > 0 contains the values in each dimension
+def read_glove(input_file, dimensions):
+
+    # The format for the words: Unicode, up to 128 characters
+    columns_datatype = [("word", np.dtype("U128"))]
+
+    # Create the datatypes for the dimensional data: 8 byte floats
+    for i in range(dimensions):
+        columns_datatype.append(("dim{}".format(i), np.dtype("f8")))
+
+    # print("Using the following datatypes for the columns\n")
+    # print(columns_datatype)
+
+    glove_data = np.genfromtxt(
+        fname=input_file,
+        dtype=columns_datatype,
+        converters={0: string_converter},
+        comments=None,
+        delimiter=' ',
+        loose=False
+    )
+    return glove_data
+
+
+def glove_data_to_dict(glove_data, dimensions):
+    index_words = "word"
+    index_vectors = []
+    for dim in range(dimensions):
+        index_vectors.append("dim{}".format(dim))
+
+    words = glove_data[index_words]
+    vectors = glove_data[index_vectors]
+    glove_dict = dict()
+
+    for i in range(glove_data.size):
+        glove_dict[words[i]] = vectors[i]
+
+    return glove_dict
+
+
+def read_glove_to_dict_of_strings(input_file):
+    with gfile.GFile(input_file, mode="r") as source_file:
+        glove_dict = dict()
+        line = source_file.readline()
+        counter = 0
+        while line:
+            counter += 1
+            if counter % 100000 == 0:
+              print("  Reading glove word %d" % counter)
+            word, _, vector = line.partition(" ")
+            glove_dict[word] = vector.rstrip()
+            line = source_file.readline()
+    return glove_dict
+
+
+def glove_vector_vocab_to_array(source_glove_vocab):
+    vectors = np.loadtxt(source_glove_vocab, dtype=np.float, delimiter=" ")
+    return vectors
+
+
+def glove_vector_vocab_from_vocabulary(source_vocab, source_glove, target_glove_vocab, dimensions, default_initializer):
+    print("Creating glove vocab at \"%s\" from vocab \"%s\" using glove vectors \"%s\"" %
+          (target_glove_vocab, source_vocab, source_glove))
+    print("Reading glove vectors. . .")
+    #glove_data = read_glove(source_glove, dimensions)
+    print("Constructing dict")
+    #glove_dict = glove_data_to_dict(glove_data, dimensions)
+    glove_dict = read_glove_to_dict_of_strings(source_glove)
+    print("Translating words from \"%s\" with vectors from \"%s\"" % 
+            (source_vocab, source_glove))
+    with gfile.GFile(source_vocab, mode="r") as source_file:
+      with gfile.GFile(target_glove_vocab, mode="w") as target_file:
+        counter = 0
+        failed_words = []
+        source_word = source_file.readline()
+        while source_word:
+          source_word = source_word.rstrip()
+          #source_word = source_word.replace("\n", "")
+          counter += 1
+          if counter % 1000 == 0:
+            print("  Glovifying word %d (%s)" % (counter, source_word))
+          vector = glove_dict.get(source_word)
+          if vector is None:
+            failed_words.append(source_word)
+            vector = default_initializer
+          target_file.write(vector + "\n")
+          source_word = source_file.readline()
+    print("Failed to match %d words: " % len(failed_words))
+    print(failed_words)
+
 
 
 def prepare_news_data(data_dir, article_file, title_file, article_vocabulary_size, title_vocabulary_size):
