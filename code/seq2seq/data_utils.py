@@ -245,18 +245,25 @@ def read_glove_to_dict_of_strings(input_file):
 
 
 def glove_vector_vocab_to_array(source_glove_vocab):
-    vectors = np.loadtxt(source_glove_vocab, dtype=np.float, delimiter=" ")
+    vectors = np.loadtxt(source_glove_vocab, dtype=np.float32, delimiter=" ")
     return vectors
 
 
-def glove_vector_vocab_from_vocabulary(source_vocab, source_glove, target_glove_vocab, dimensions, default_initializer):
+def glove_vector_vocab_from_vocabulary(source_vocab, source_glove, target_glove_vocab, dimensions, default_initializer, glove_dict=None):
+    if gfile.Exists(target_glove_vocab):
+        print("Glove vocab \"%s\" already exists" % target_glove_vocab)
+        return None
+
     print("Creating glove vocab at \"%s\" from vocab \"%s\" using glove vectors \"%s\"" %
           (target_glove_vocab, source_vocab, source_glove))
     print("Reading glove vectors. . .")
     #glove_data = read_glove(source_glove, dimensions)
-    print("Constructing dict")
-    #glove_dict = glove_data_to_dict(glove_data, dimensions)
-    glove_dict = read_glove_to_dict_of_strings(source_glove)
+    if glove_dict is None:
+        print("Constructing dict")
+        #glove_dict = glove_data_to_dict(glove_data, dimensions)
+        glove_dict = read_glove_to_dict_of_strings(source_glove)
+    else:
+        print("Reusing dict")
     print("Translating words from \"%s\" with vectors from \"%s\"" % 
             (source_vocab, source_glove))
     with gfile.GFile(source_vocab, mode="r") as source_file:
@@ -273,11 +280,12 @@ def glove_vector_vocab_from_vocabulary(source_vocab, source_glove, target_glove_
           vector = glove_dict.get(source_word)
           if vector is None:
             failed_words.append(source_word)
-            vector = default_initializer
+            vector = default_initializer()
           target_file.write(vector + "\n")
           source_word = source_file.readline()
     print("Failed to match %d words: " % len(failed_words))
     print(failed_words)
+    return glove_dict
 
 
 

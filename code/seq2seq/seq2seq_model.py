@@ -48,7 +48,7 @@ class Seq2SeqModel(object):
                num_layers, max_gradient_norm, batch_size, learning_rate,
                learning_rate_decay_factor, use_lstm=False,
                num_samples=512, forward_only=False,
-               initial_decoder_embedding=None, initial_encoder_embedding=None):
+               initial_encoder_embedding=None, initial_decoder_embedding=None):
     """Create the model.
 
     Args:
@@ -97,12 +97,11 @@ class Seq2SeqModel(object):
     def seq2seq_f(encoder_inputs, decoder_inputs, do_decode):
       
       # Embedd data
-      embedded_encoder_inputs = tf.nn.embedding_lookup(self.encoder_embedding,
+      embedded_encoder_inputs = tf.nn.embedding_lookup(initial_encoder_embedding,
               tf.pack(encoder_inputs))
-      embedded_decoder_inputs = tf.nn.embedding_lookup(self.decoder_embedding,
+      embedded_decoder_inputs = tf.nn.embedding_lookup(initial_decoder_embedding,
               tf.pack(decoder_inputs))
 
-        
       embedded_encoder_inputs = tf.unpack(embedded_encoder_inputs)
       embedded_decoder_inputs = tf.unpack(embedded_decoder_inputs)
 
