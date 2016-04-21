@@ -84,22 +84,23 @@ class Seq2SeqModel(object):
     cell = single_cell
 
     if initial_encoder_embedding is None:
-        self.encoder_embedding = tf.Variable(
-                tf.random_uniform([source_vocab_size, size], -1.0, 1.0))
+        initial_encoder_embedding = tf.random_uniform([source_vocab_size, size], -1.0, 1.0)
     if initial_decoder_embedding is None:
-        self.decoder_embedding = tf.Variable(
-                tf.random_uniform([source_vocab_size, size], -1.0, 1.0))
+        initial_decoder_embedding = tf.random_uniform([target_vocab_size, size], -1.0, 1.0)
 
     if num_layers > 1:
       cell = tf.nn.rnn_cell.MultiRNNCell([single_cell] * num_layers)
+
+    self.encoder_embedding = tf.Variable(initial_encoder_embedding, name="encoder_embedding")
+    self.decoder_embedding = tf.Variable(initial_decoder_embedding, name="decoder_embedding")
 
     # The seq2seq function: we use embedding for the input and attention.
     def seq2seq_f(encoder_inputs, decoder_inputs, do_decode):
       
       # Embedd data
-      embedded_encoder_inputs = tf.nn.embedding_lookup(initial_encoder_embedding,
+      embedded_encoder_inputs = tf.nn.embedding_lookup(self.encoder_embedding,
               tf.pack(encoder_inputs))
-      embedded_decoder_inputs = tf.nn.embedding_lookup(initial_decoder_embedding,
+      embedded_decoder_inputs = tf.nn.embedding_lookup(self.decoder_embedding,
               tf.pack(decoder_inputs))
 
       embedded_encoder_inputs = tf.unpack(embedded_encoder_inputs)

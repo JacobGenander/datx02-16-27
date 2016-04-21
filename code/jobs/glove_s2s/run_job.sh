@@ -15,7 +15,7 @@ MODE="$1"
 # NOTE: The flag --train_dir is set further down in the script and is relative
 # to the subfolder that is created for each process
 ARGS_COMMON=( \
-	--data_dir ~/data/ \
+	--data_dir /mnt/compressedstore/ml_data \
 	--article_file articles_500000.txt \
 	--title_file titles_500000.txt \
   --glove_vectors glove.6B.300d.txt \
