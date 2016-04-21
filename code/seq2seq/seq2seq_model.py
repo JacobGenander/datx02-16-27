@@ -46,7 +46,8 @@ class Seq2SeqModel(object):
   def __init__(self, source_vocab_size, target_vocab_size, buckets, size,
                num_layers, max_gradient_norm, batch_size, learning_rate,
                learning_rate_decay_factor, use_lstm=False,
-               num_samples=512, forward_only=False, initial_embedding=None):
+               num_samples=512, forward_only=False,
+               initial_decoder_embedding=None, initial_encoder_embedding=None):
     """Create the model.
 
     Args:
@@ -81,8 +82,11 @@ class Seq2SeqModel(object):
     single_cell = tf.nn.rnn_cell.GRUCell(size)
     cell = single_cell
 
-    if initial_embedding is None:
-        embedding = tf.Variable(
+    if initial_encoder_embedding is None:
+        self.encoder_embedding = tf.Variable(
+                tf.random_uniform([source_vocab_size, size], -1.0, 1.0))
+    if initial_decoder_embedding is None:
+        self.decoder_embedding = tf.Variable(
                 tf.random_uniform([source_vocab_size, size], -1.0, 1.0))
 
     if num_layers > 1:
@@ -90,10 +94,28 @@ class Seq2SeqModel(object):
 
     # The seq2seq function: we use embedding for the input and attention.
     def seq2seq_f(encoder_inputs, decoder_inputs, do_decode):
-      return tf.nn.seq2seq.embedding_attention_seq2seq(
-          encoder_inputs, decoder_inputs, cell, source_vocab_size,
-          target_vocab_size, output_projection=None,
+      
+      # Embedd data
+      embedded_encoder_inputs = tf.nn.embedding_lookup(self.encoder_embedding, encoder_inputs)
+      embedded_decoder_inputs = tf.nn.embedding_lookup(self.decoder_embedding, decoder_inputs)
+
+      encoder_outputs, encoder_state = rnn.rnn(
+          cell, embedded_encoder_inputs, dtype=tf.float32)
+
+      # First calculate a concatenation of encoder outputs to put attention on.
+      top_states = [array_ops.reshape(e, [-1, 1, cell.output_size])
+                    for e in encoder_outputs]
+      attention_states = array_ops.concat(1, top_states)
+
+      # Decoder.
+      return tf.nn.seq2seq.attention_decoder(
+          embedded_decoder_inputs, encoder_state, attention_states, cell,
           feed_previous=do_decode)
+
+      #return tf.nn.seq2seq.embedding_attention_seq2seq(
+      #    encoder_inputs, decoder_inputs, cell, source_vocab_size,
+      #    target_vocab_size, output_projection=None,
+      #    feed_previous=do_decode)
 
     # Feeds for inputs.
     self.encoder_inputs = []
