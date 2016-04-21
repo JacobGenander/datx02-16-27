@@ -24,6 +24,7 @@ import random
 import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
+from tensorflow.python.ops import array_ops
 
 from tensorflow.models.rnn.translate import data_utils
 
@@ -96,10 +97,16 @@ class Seq2SeqModel(object):
     def seq2seq_f(encoder_inputs, decoder_inputs, do_decode):
       
       # Embedd data
-      embedded_encoder_inputs = tf.nn.embedding_lookup(self.encoder_embedding, encoder_inputs)
-      embedded_decoder_inputs = tf.nn.embedding_lookup(self.decoder_embedding, decoder_inputs)
+      embedded_encoder_inputs = tf.nn.embedding_lookup(self.encoder_embedding,
+              tf.pack(encoder_inputs))
+      embedded_decoder_inputs = tf.nn.embedding_lookup(self.decoder_embedding,
+              tf.pack(decoder_inputs))
 
-      encoder_outputs, encoder_state = rnn.rnn(
+        
+      embedded_encoder_inputs = tf.unpack(embedded_encoder_inputs)
+      embedded_decoder_inputs = tf.unpack(embedded_decoder_inputs)
+
+      encoder_outputs, encoder_state = tf.nn.rnn(
           cell, embedded_encoder_inputs, dtype=tf.float32)
 
       # First calculate a concatenation of encoder outputs to put attention on.
@@ -109,8 +116,7 @@ class Seq2SeqModel(object):
 
       # Decoder.
       return tf.nn.seq2seq.attention_decoder(
-          embedded_decoder_inputs, encoder_state, attention_states, cell,
-          feed_previous=do_decode)
+          embedded_decoder_inputs, encoder_state, attention_states, cell)
 
       #return tf.nn.seq2seq.embedding_attention_seq2seq(
       #    encoder_inputs, decoder_inputs, cell, source_vocab_size,
