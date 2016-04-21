@@ -35,8 +35,7 @@ class Seq3SeqModel(object):
   """
 
   def __init__(self, source_vocab_size, target_vocab_size, buckets, size,
-               num_layers, max_gradient_norm, batch_size, learning_rate,
-               learning_rate_decay_factor, use_lstm=False,
+               num_layers, max_gradient_norm, batch_size, use_lstm=False,
                num_samples=512, forward_only=False):
     """Create the model.
 
@@ -54,8 +53,6 @@ class Seq3SeqModel(object):
       batch_size: the size of the batches used during training;
         the model construction is independent of batch_size, so it can be
         changed after initialization if this is convenient, e.g., for decoding.
-      learning_rate: learning rate to start with.
-      learning_rate_decay_factor: decay learning rate by this much when needed.
       num_samples: number of samples for sampled softmax.
       forward_only: if set, we do not construct the backward pass in the model.
     """
@@ -63,9 +60,6 @@ class Seq3SeqModel(object):
     self.target_vocab_size = target_vocab_size
     self.buckets = buckets
     self.batch_size = batch_size
-    self.learning_rate = tf.Variable(learning_rate, trainable=False)
-    self.learning_rate_decay_op = self.learning_rate.assign(
-        self.learning_rate * learning_rate_decay_factor)
     self.global_step = tf.Variable(0, trainable=False)
 
     # Create the internal multi-layer cell for our RNN
@@ -136,12 +130,12 @@ class Seq3SeqModel(object):
           lambda x, y: seq3seq_f(x, y, False),
           softmax_loss_function=None)
 
-    # Gradients and SGD update operation for training the model.
+    # Gradients and Adam update operation for training the model.
     params = tf.trainable_variables()
     if not forward_only:
       self.gradient_norms = []
       self.updates = []
-      opt = tf.train.GradientDescentOptimizer(self.learning_rate)
+      opt = tf.train.AdamOptimizer() 
       for b in xrange(len(buckets)):
         gradients = tf.gradients(self.losses[b], params)
         clipped_gradients, norm = tf.clip_by_global_norm(gradients,
