@@ -22,8 +22,8 @@ ARGS_COMMON=( \
   --size 300 \
 	--num_layers 2 \
 	--steps_per_checkpoint 100 \
-	--batch_size 8 \
-	--max_runtime 20
+	--batch_size 64 \
+	--max_runtime 60
 )
 
 # Arguments to append when $MODE is 'train'
@@ -44,12 +44,12 @@ ARGS_EVAL=( \
 # on that GPU
 ARGS_GPU_SPECIFIC[0]="--article_vocab_size 30000 --title_vocab_size 20000 --num_layers 4"
 ARGS_GPU_SPECIFIC[1]="--article_vocab_size 30000 --title_vocab_size 20000 --num_layers 1"
-ARGS_GPU_SPECIFIC[2]="--article_vocab_size 30000 --title_vocab_size 20000 --num_layers 2"
+ARGS_GPU_SPECIFIC[2]="--article_vocab_size 40000 --title_vocab_size 40000 --num_layers 2"
 ARGS_GPU_SPECIFIC[3]="--article_vocab_size 30000 --title_vocab_size 20000 --num_layers 3"
 
-ARGS_GPU_SPECIFIC[1]=""
-ARGS_GPU_SPECIFIC[2]=""
-ARGS_GPU_SPECIFIC[3]=""
+#ARGS_GPU_SPECIFIC[1]=""
+#ARGS_GPU_SPECIFIC[2]=""
+#ARGS_GPU_SPECIFIC[3]=""
 
 
 # Used to interate
@@ -106,3 +106,7 @@ chmod +x kill_all.sh
 echo "Waiting for all processes to finish"
 
 wait
+
+echo "Enqueueing myself!"
+
+../enqueue.sh run_job.sh
