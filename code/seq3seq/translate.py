@@ -246,20 +246,13 @@ def decode():
     print("Creating %d layers of %d units." % (FLAGS.num_layers, FLAGS.size))
     model = create_model(sess, False)
 
-    # Read data into buckets and compute their sizes.
-    print ("Reading development and training data (limit: %d)."
+    # Read data
+    print ("Reading evauliation data (limit: %d)."
            % FLAGS.max_train_data_size)
-    train_set = read_data(articles_train, titles_train, 25)
-    train_bucket_sizes = [len(train_set[b]) for b in xrange(len(_buckets))]
-    train_total_size = float(sum(train_bucket_sizes))
-
-    # A bucket scale is a list of increasing numbers from 0 to 1 that we'll use
-    # to select a bucket. Length of [scale[i], scale[i+1]] is proportional to
-    # the size if i-th training bucket, as used later.
-    train_buckets_scale = [sum(train_bucket_sizes[:i + 1]) / train_total_size
-                           for i in xrange(len(train_bucket_sizes))]
-
-
+    train_set = read_data(articles_train, titles_train, FLAGS.max_train_data_size)
+    
+    # Read vocabularies
+    print("Reading vacabularies.")
     article_vocab_path = os.path.join(FLAGS.data_dir,
                                  "vocab%d.article3" % FLAGS.article_vocab_size)
     title_vocab_path = os.path.join(FLAGS.data_dir,
@@ -267,40 +260,37 @@ def decode():
     article_vocab, _ = data_utils.initialize_vocabulary(article_vocab_path)
     _, rev_title_vocab = data_utils.initialize_vocabulary(title_vocab_path)
 
-    # This is the training loop.
-    step_time, loss = 0.0, 0.0
-    current_step = 0
-    previous_losses = []
-    session_time = time.time()
-    time_train_start = time.time()
-    while True:
-      # Choose a bucket according to data distribution. We pick a random number
-      # in [0, 1] and use the corresponding interval in train_buckets_scale.
-      random_number_01 = np.random.random_sample()
-
-      bucket_id = min([i for i in xrange(len(train_buckets_scale))
-                       if train_buckets_scale[i] > random_number_01])
-      #print("Selected bucket %d" % bucket_id)
-
-      # Get a batch and make a step.
-      start_time = time.time()
-      encoder_inputs, decoder_inputs, target_weights = model.get_batch(
+    # Do roulette search on batchsize number of articles from every bucket
+    for bucket_id in xrange(len(_buckets)):
+      print("Generating from bucket %d" % bucket_id)
+      encoder_inputs, decoder_inputs_true, target_weights = model.get_batch(
           train_set, bucket_id)
-      _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
+      decoder_inputs_generated = decoder_inputs_true[:1]
+      for _ in xrange(_buckets[bucket_id][1]):
+        _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
                                    target_weights, bucket_id, True)
-#NEW CODE
-      # This is a greedy decoder - outputs are just argmaxes of output_logits.
-      pdb.set_trace()
-      outputs = [np.argmax(logit, axis=1) for logit in output_logits]
-      # If there is an EOS symbol in outputs, cut them at that point.
-      if data_utils.EOS_ID in outputs:
-        outputs = outputs[:outputs.index(data_utils.EOS_ID)]
+        # For every title in the batch we draw the next word according to the logit
+        generated = [tf.arg_max(np.random.multinomial(1,logit),0) 
+                               for batch_logits in output_logits[0] 
+                               for logit in batch_logit]
+        decoder_inputs_generated.append(generated)
+
+      # Reshape from batchmajor vectors to lists of titles 
+      outputs = [[decoder_inputs_generated[w][b] for w in xrange(_buckets[bucket_id][1])]
+                 for b in xrange(FLAGS.batch_size)]
+      trues = [[decoder_inputs_true[w][b] for w in xrange(_buckets[bucket_id][1])]
+                 for b in xrange(FLAGS.batch_size)]
+
+      # If there is an EOS symbol in some output, cut it at that point.
+      for idx in xrange(batch_size):
+        if data_utils.EOS_ID in outputs[idx]:
+          outputs[idx] = outputs[idx][:outputs[idx].index(data_utils.EOS_ID)]
+
       # Print out title corresponding to outputs.
       print("-"*80)
       for idx in xrange(FLAGS.batch_size):
-          print(" ".join([rev_title_vocab[output[idx]] for output in outputs]))
-      print("-"*80)
-      print(article)
+          print("Generated: " + " ".join([rev_title_vocab[output[idx]] for output in outputs]))
+          print("     True: " + " ".join([rev_title_vocab[true[idx]] for true in trues]))  
       print("-"*80)
 
       sys.stdout.flush()
