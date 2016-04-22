@@ -74,6 +74,7 @@ tf.app.flags.DEFINE_integer("max_runtime", 0, "if (max_runtime != 0), stops exec
 tf.app.flags.DEFINE_integer("gpu_index", 0, "Which GPU to use. ex. '0' for /gpu:0")
 tf.app.flags.DEFINE_string("glove_vectors", None, "Path to glove vectors used to intialize embedding")
 tf.app.flags.DEFINE_boolean("adam_optimizer", False, "Set True to use Adam optimizer instead of SGD")
+tf.app.flags.DEFINE_string("perplexity_log", None, "Filename for logging perplexity")
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -243,6 +244,13 @@ def train():
         print ("global step %d learning rate %.4f step-time %.2f perplexity "
                "%.2f" % (model.global_step.eval(), model.learning_rate.eval(),
                          step_time, perplexity))
+        if FLAGS.perplexity_log:
+            with tf.gfile.Open(os.path.join(FLAGS.train_dir, FLAGS.perplexity_log), "a") as logfile:
+                logfile.write("%d;%.4f;%.4f;%.4f\n" % 
+                        (model.global_step.eval(), model.learning_rate.eval(),
+                            step_time, perplexity)
+                        )
+                logfile.close()
         # Decrease learning rate if no improvement was seen over last 3 times.
         if len(previous_losses) > 2 and loss > max(previous_losses[-3:]):
           sess.run(model.learning_rate_decay_op)

@@ -161,6 +161,7 @@ class Seq2SeqModel(object):
       self.gradient_norms = []
       self.updates = []
       if use_adam_optimizer:
+        print("Using Adam optimizer!")
         opt = tf.train.AdamOptimizer()
       else:
         opt = tf.train.GradientDescentOptimizer(self.learning_rate)

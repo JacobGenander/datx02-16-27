@@ -23,7 +23,8 @@ ARGS_COMMON=( \
 	--num_layers 2 \
 	--steps_per_checkpoint 100 \
 	--batch_size 64 \
-	--max_runtime 60
+	--max_runtime 50 \
+  --perplexity_log perplex.csv
 )
 
 # Arguments to append when $MODE is 'train'
@@ -42,9 +43,9 @@ ARGS_EVAL=( \
 # These arguments bust be in quotes as to not be interpreted as different
 # array elements by bash, if empty strings, "", are given. No job is started
 # on that GPU
-ARGS_GPU_SPECIFIC[0]="--article_vocab_size 30000 --title_vocab_size 20000 --num_layers 4"
+ARGS_GPU_SPECIFIC[0]="--article_vocab_size 30000 --title_vocab_size 20000 --num_layers 1 --adam_optimizer true"
 ARGS_GPU_SPECIFIC[1]="--article_vocab_size 30000 --title_vocab_size 20000 --num_layers 1"
-ARGS_GPU_SPECIFIC[2]="--article_vocab_size 40000 --title_vocab_size 40000 --num_layers 2"
+ARGS_GPU_SPECIFIC[2]="--article_vocab_size 30000 --title_vocab_size 20000 --num_layers 2 --adam_optimizer true"
 ARGS_GPU_SPECIFIC[3]="--article_vocab_size 30000 --title_vocab_size 20000 --num_layers 3"
 
 #ARGS_GPU_SPECIFIC[1]=""
@@ -109,4 +110,4 @@ wait
 
 echo "Enqueueing myself!"
 
-../enqueue.sh run_job.sh
+#../enqueue.sh run_job.sh
