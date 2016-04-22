@@ -73,6 +73,7 @@ tf.app.flags.DEFINE_boolean("decode", False,
 tf.app.flags.DEFINE_integer("max_runtime", 0, "if (max_runtime != 0), stops execution after max_runtime minutes")
 tf.app.flags.DEFINE_integer("gpu_index", 0, "Which GPU to use. ex. '0' for /gpu:0")
 tf.app.flags.DEFINE_string("glove_vectors", None, "Path to glove vectors used to intialize embedding")
+tf.app.flags.DEFINE_boolean("adam_optimizer", False, "Set True to use Adam optimizer instead of SGD")
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -140,7 +141,8 @@ def create_model(session, forward_only,
     FLAGS.learning_rate, FLAGS.learning_rate_decay_factor,
     forward_only=forward_only,
     initial_encoder_embedding=initial_encoder_embedding,
-    initial_decoder_embedding=initial_decoder_embedding)
+    initial_decoder_embedding=initial_decoder_embedding,
+    use_adam_optimizer=FLAGS.adam_optimizer)
   ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
   if ckpt and tf.gfile.Exists(ckpt.model_checkpoint_path):
     print("Reading model parameters from %s" % ckpt.model_checkpoint_path)

@@ -48,7 +48,8 @@ class Seq2SeqModel(object):
                num_layers, max_gradient_norm, batch_size, learning_rate,
                learning_rate_decay_factor, use_lstm=False,
                num_samples=512, forward_only=False,
-               initial_encoder_embedding=None, initial_decoder_embedding=None):
+               initial_encoder_embedding=None, initial_decoder_embedding=None,
+               use_adam_optimizer=False):
     """Create the model.
 
     Args:
@@ -145,7 +146,7 @@ class Seq2SeqModel(object):
       self.outputs, self.losses = tf.nn.seq2seq.model_with_buckets(
           self.encoder_inputs, self.decoder_inputs, targets,
           self.target_weights, buckets,
-		  lambda x, y: seq2seq_f(x, y, True),
+          lambda x, y: seq2seq_f(x, y, True),
           softmax_loss_function=None)
     else:
       self.outputs, self.losses = tf.nn.seq2seq.model_with_buckets(
@@ -159,7 +160,10 @@ class Seq2SeqModel(object):
     if not forward_only:
       self.gradient_norms = []
       self.updates = []
-      opt = tf.train.GradientDescentOptimizer(self.learning_rate)
+      if use_adam_optimizer:
+        opt = tf.train.AdamOptimizer()
+      else:
+        opt = tf.train.GradientDescentOptimizer(self.learning_rate)
       for b in xrange(len(buckets)):
         gradients = tf.gradients(self.losses[b], params)
         clipped_gradients, norm = tf.clip_by_global_norm(gradients,
