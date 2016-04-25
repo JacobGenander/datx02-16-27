@@ -237,7 +237,7 @@ def decode():
   with tf.Session() as sess:
     # Create model.
     print("Creating %d layers of %d units." % (FLAGS.num_layers, FLAGS.size))
-    model = create_model(sess, False)
+    model = create_model(sess, True)
 
     # Read data
     print ("Reading evauliation data (limit: %d)."
