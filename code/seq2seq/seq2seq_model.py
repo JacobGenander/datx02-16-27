@@ -92,6 +92,10 @@ class Seq2SeqModel(object):
     if num_layers > 1:
       cell = tf.nn.rnn_cell.MultiRNNCell([single_cell] * num_layers)
 
+    # Set up the decoder to output vectors the same size as the target_vocab_size.
+    # This is assumed by models_with_buckets but somewhat obscure...
+    decoder_cell = tf.nn.rnn_cell.OutputProjectionWrapper(cell, target_vocab_size)
+
     self.encoder_embedding = tf.Variable(initial_encoder_embedding, name="encoder_embedding")
     self.decoder_embedding = tf.Variable(initial_decoder_embedding, name="decoder_embedding")
 
@@ -117,7 +121,7 @@ class Seq2SeqModel(object):
 
       # Decoder.
       return tf.nn.seq2seq.attention_decoder(
-          embedded_decoder_inputs, encoder_state, attention_states, cell)
+          embedded_decoder_inputs, encoder_state, attention_states, decoder_cell)
 
       #return tf.nn.seq2seq.embedding_attention_seq2seq(
       #    encoder_inputs, decoder_inputs, cell, source_vocab_size,
