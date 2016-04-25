@@ -258,9 +258,13 @@ def decode():
       print("Generating from bucket %d" % bucket_id)
       encoder_inputs, decoder_inputs_true, target_weights = model.get_batch(
           train_set, bucket_id)
-      decoder_inputs_generated = decoder_inputs_true[:1]
+      #decoder_inputs_generated = decoder_inputs_true[:1]
+      decoder_inputs_generated = np.zeros_like(decoder_inputs_true)
+      decoder_inputs_generated[0] = decoder_inputs_true[0]
+      target_weights = np.ones_like(target_weights)
       for _ in xrange(_buckets[bucket_id][1]):
-        _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
+        pdb.set_trace()
+        _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs_generated,
                                    target_weights, bucket_id, True)
         # For every title in the batch we draw the next word according to the logit
         generated = [tf.arg_max(np.random.multinomial(1,logit),0) 
