@@ -38,6 +38,7 @@ import os
 import random
 import sys
 import time
+import pdb
 
 import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -272,12 +273,27 @@ def train():
 
 
 def decode():
-  with tf.Session() as sess:
-    # Create model and load parameters.
-    model = create_model(sess, True)
-    model.batch_size = 1  # We decode one sentence at a time.
 
-    # Load vocabularies.
+  print("Preparing news data in %s" % FLAGS.data_dir)
+  articles_train, titles_train, _, _ = data_utils.prepare_news_data(
+      FLAGS.data_dir,
+      FLAGS.article_file,
+      FLAGS.title_file,
+      FLAGS.article_vocab_size,
+      FLAGS.title_vocab_size)
+
+  with tf.Session() as sess:
+    # Create model.
+    print("Creating %d layers of %d units." % (FLAGS.num_layers, FLAGS.size))
+    model = create_model(sess, True)
+
+    # Read data
+    print ("Reading evauliation data (limit: %d)."
+           % FLAGS.max_train_data_size)
+    train_set = read_data(articles_train, titles_train, FLAGS.max_train_data_size)
+    
+    # Read vocabularies
+    print("Reading vacabularies.")
     article_vocab_path = os.path.join(FLAGS.data_dir,
                                  "vocab%d.article" % FLAGS.article_vocab_size)
     title_vocab_path = os.path.join(FLAGS.data_dir,
@@ -285,41 +301,46 @@ def decode():
     article_vocab, _ = data_utils.initialize_vocabulary(article_vocab_path)
     _, rev_title_vocab = data_utils.initialize_vocabulary(title_vocab_path)
 
-    # Decode from three random article.
-    sys.stdout.write("Decide headline for three articles:")
-    sys.stdout.flush()
-    articles = random.sample(list(open(os.path.join(FLAGS.data_dir, FLAGS.article_file))),5)
-    for article in articles:
-      # Get token-ids for the input sentence.
-      token_ids = data_utils.sentence_to_token_ids(article, article_vocab)
-      # Which bucket does it belong to?
-      #bucket_id = min([b for b in xrange(len(_buckets))
-      #                 if _buckets[b][0] > len(token_ids)])
-      # Get a 1-element batch to feed the sentence to the model.
-      bucket_id = 0
-      candidates = 25
-      encoder_inputs, decoder_inputs, target_weights = model.get_batch(
-          {bucket_id: [(token_ids, [])]}, bucket_id)
-      # Get output logits for the sentence.
-      _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
-                                       target_weights, bucket_id, True)
-      # This is a greedy decoder - outputs are just argmaxes of output_logits.
-      for i, logit in enumerate(output_logits):
-        #print("Logit " , i, ":\t", "(", type(logit), logit.shape, ")")
-        sorted_logits = np.argpartition(logit.flatten(), -candidates)[-candidates:]
-        for word in reversed(sorted_logits):
-          #print(word)
-          sys.stdout.write(rev_title_vocab[word] + ", ")
-        sys.stdout.write("\n")
-      outputs = [int(np.argmax(logit, axis=1)) for logit in output_logits]
-      # If there is an EOS symbol in outputs, cut them at that point.
-      if data_utils.EOS_ID in outputs:
-        outputs = outputs[:outputs.index(data_utils.EOS_ID)]
+    # Do roulette search on batchsize number of articles from every bucket
+    for bucket_id in xrange(len(_buckets)):
+      print("Generating from bucket %d" % bucket_id)
+      encoder_inputs, decoder_inputs_true, target_weights = model.get_batch(
+          train_set, bucket_id)
+      decoder_inputs_generated = np.zeros_like(decoder_inputs_true)
+      decoder_inputs_generated[0] = decoder_inputs_true[0]
+      target_weights = np.ones_like(target_weights)
+      pdb.set_trace()
+
+      # Data form: decoder_inputs[word_position][batch_number]
+      # Data form: output_logits[word_position][batch_number][contenders<vocab_size>]
+
+      #decoder_inputs_generated += data_utils.PAD_ID * (_buckets[bucket_id][1] - 1)
+      for _ in xrange(_buckets[bucket_id][1]):
+        _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs_generated,
+                                   target_weights, bucket_id, True)
+        # For every title in the batch we draw the next word according to the logit
+        pdb.set_trace()
+        generated = [tf.arg_max(np.random.multinomial(1,logit),0) 
+                               for batch_logits in output_logits[0] 
+                               for logit in batch_logit]
+        decoder_inputs_generated.append(generated)
+
+      # Reshape from batchmajor vectors to lists of titles 
+      outputs = [[decoder_inputs_generated[w][b] for w in xrange(_buckets[bucket_id][1])]
+                 for b in xrange(FLAGS.batch_size)]
+      trues = [[decoder_inputs_true[w][b] for w in xrange(_buckets[bucket_id][1])]
+                 for b in xrange(FLAGS.batch_size)]
+
+      # If there is an EOS symbol in some output, cut it at that point.
+      for idx in xrange(batch_size):
+        if data_utils.EOS_ID in outputs[idx]:
+          outputs[idx] = outputs[idx][:outputs[idx].index(data_utils.EOS_ID)]
+
       # Print out title corresponding to outputs.
       print("-"*80)
-      print(" ".join([rev_title_vocab[output] for output in outputs]))
-      print("-"*80)
-      print(article)
+      for idx in xrange(FLAGS.batch_size):
+          print("Generated: " + " ".join([rev_title_vocab[output[idx]] for output in outputs]))
+          print("     True: " + " ".join([rev_title_vocab[true[idx]] for true in trues]))  
       print("-"*80)
 
       sys.stdout.flush()
