@@ -87,11 +87,11 @@ FLAGS = tf.app.flags.FLAGS
 # there's no apperent correlation between title and article lengths.
 
 # Use only one bucket where articles and titles are padded to fit
-_buckets = [(200, 100)]#, (200, 48), (400, 48), (800, 48)]
+_buckets = [(200, 48)]#, (200, 48), (400, 48), (800, 48)]
 #_buckets = [(250, 36), (1000,36), (8000, 46), (44266, 36)]
 
 
-def read_data(source_path, target_path, max_size=None, truncate_in=200, truncate_out=100):
+def read_data(source_path, target_path, max_size=None, truncate_in=200, truncate_out=48):
   """Read data from source and target files and put into buckets.
 
   Args:
