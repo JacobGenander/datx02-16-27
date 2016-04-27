@@ -52,19 +52,19 @@ tf.app.flags.DEFINE_float("learning_rate_decay_factor", 0.99,
                           "Learning rate decays by this much.")
 tf.app.flags.DEFINE_float("max_gradient_norm", 5.0,
                           "Clip gradients to this norm.")
-tf.app.flags.DEFINE_integer("batch_size", 64,
+tf.app.flags.DEFINE_integer("batch_size", 5,
                             "Batch size to use during training.")
-tf.app.flags.DEFINE_integer("size", 1024, "Size of each model layer.")
-tf.app.flags.DEFINE_integer("num_layers", 3, "Number of layers in the model.")
-tf.app.flags.DEFINE_integer("article_vocab_size", 40000, "Article vocabulary size.")
-tf.app.flags.DEFINE_integer("title_vocab_size", 40000, "Title vocabulary size.")
-tf.app.flags.DEFINE_string("data_dir", "/tmp", "Data directory")
+tf.app.flags.DEFINE_integer("size", 3, "Size of each model layer.")
+tf.app.flags.DEFINE_integer("num_layers", 2, "Number of layers in the model.")
+tf.app.flags.DEFINE_integer("article_vocab_size", 400, "Article vocabulary size.")
+tf.app.flags.DEFINE_integer("title_vocab_size", 400, "Title vocabulary size.")
+tf.app.flags.DEFINE_string("data_dir", ".", "Data directory")
 tf.app.flags.DEFINE_string("article_file", "articles.txt",
                            "file containing the articles (relative to data_dir)")
 tf.app.flags.DEFINE_string("title_file", "titles.txt",
                            "file containing the titles (relative to data_dir)")
 tf.app.flags.DEFINE_string("train_dir", "/tmp", "Training directory.")
-tf.app.flags.DEFINE_integer("max_train_data_size", 0,
+tf.app.flags.DEFINE_integer("max_train_data_size", 1000,
                             "Limit on the size of training data (0: no limit).")
 tf.app.flags.DEFINE_integer("steps_per_checkpoint", 200,
                             "How many training steps to do per checkpoint.")
@@ -145,12 +145,15 @@ def create_model(session, forward_only,
     initial_decoder_embedding=initial_decoder_embedding,
     use_adam_optimizer=FLAGS.adam_optimizer)
   ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
+  merged = tf.merge_all_summaries() 
+  writer = tf.train.SummaryWriter('/tmp/tensorboard', session.graph_def)
   if ckpt and tf.gfile.Exists(ckpt.model_checkpoint_path):
     print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
     model.saver.restore(session, ckpt.model_checkpoint_path)
   else:
     print("Created model with fresh parameters.")
     session.run(tf.initialize_all_variables())
+  writer.flush()
   return model
 
 
@@ -236,6 +239,7 @@ def train():
       step_time += (time.time() - start_time) / FLAGS.steps_per_checkpoint
       loss += step_loss / FLAGS.steps_per_checkpoint
       current_step += 1
+      tf.scalar_summary("step loss", step_loss)
 
       # Once in a while, we save checkpoint, print statistics, and run evals.
       if current_step % FLAGS.steps_per_checkpoint == 0:
