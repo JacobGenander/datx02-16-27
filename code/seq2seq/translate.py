@@ -87,11 +87,11 @@ FLAGS = tf.app.flags.FLAGS
 # there's no apperent correlation between title and article lengths.
 
 # Use only one bucket where articles and titles are padded to fit
-_buckets = [(100, 5)]#, (200, 48), (400, 48), (800, 48)]
+_buckets = [(100, 12)]#, (200, 48), (400, 48), (800, 48)]
 #_buckets = [(250, 36), (1000,36), (8000, 46), (44266, 36)]
 
 
-def read_data(source_path, target_path, max_size=None, truncate_in=100, truncate_out=48):
+def read_data(source_path, target_path, max_size=None, truncate_in=100, truncate_out=12):
   """Read data from source and target files and put into buckets.
 
   Args:
@@ -327,9 +327,10 @@ def decode():
                                    target_weights, bucket_id, True)
         # For every title in the batch we draw the next word according to the logit
         #pdb.set_trace()
+        softmaxs = tf.nn.softmax(output_logits[0])
+        softmaxs = sess.run(softmaxs) # 
         generated = [tf.arg_max(np.random.multinomial(1,logit),0) 
-                               for batch_logits in output_logits[0] 
-                               for logit in batch_logits]
+                              for logit in softmaxs]
         decoder_inputs_generated.append(generated)
 
       # Reshape from batchmajor vectors to lists of titles 
