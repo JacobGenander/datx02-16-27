@@ -87,11 +87,11 @@ FLAGS = tf.app.flags.FLAGS
 # there's no apperent correlation between title and article lengths.
 
 # Use only one bucket where articles and titles are padded to fit
-_buckets = [(100, 48)]#, (200, 48), (400, 48), (800, 48)]
+_buckets = [(100, 12)]#, (200, 48), (400, 48), (800, 48)]
 #_buckets = [(250, 36), (1000,36), (8000, 46), (44266, 36)]
 
 
-def read_data(source_path, target_path, max_size=None, truncate_in=100, truncate_out=48):
+def read_data(source_path, target_path, max_size=None, truncate_in=100, truncate_out=12):
   """Read data from source and target files and put into buckets.
 
   Args:
@@ -166,33 +166,8 @@ def train():
       FLAGS.article_vocab_size,
       FLAGS.title_vocab_size)
 
-
-  if FLAGS.glove_vectors is not None:
-    glove_path = os.path.join(FLAGS.data_dir, FLAGS.glove_vectors)
-    glove_parts = os.path.basename(FLAGS.glove_vectors).split(".")
-    dimensions = int((glove_parts[-2])[:-1])
-    print("Overriding \"--size\" flag (%d -> %d)" % (FLAGS.size, dimensions))
-    FLAGS.size = dimensions
-    glove_id = glove_parts[-3]
-
-    glove_id = glove_id.replace("glove.", "").replace(".txt", "")
-    print("Creating vocabulary-specific GloVe files. . .")
-    article_glove_path = os.path.join(FLAGS.data_dir, "glove%s_%dx%d.article" %
-        (glove_id, dimensions, FLAGS.article_vocab_size))
-    title_glove_path = os.path.join(FLAGS.data_dir, "glove%s_%dx%d.title" %
-        (glove_id, dimensions, FLAGS.title_vocab_size))
-    
-    default_initializer = lambda: " ".join(map(str, np.random.normal(size=dimensions)))
-    # Save GloVe dict to reuse for titles
-    data_utils.glove_vector_vocab_from_vocabulary(article_vocab_path, glove_path, article_glove_path, dimensions, default_initializer)
-    data_utils.glove_vector_vocab_from_vocabulary(title_vocab_path, glove_path, title_glove_path, dimensions, default_initializer)
-
-    print("Reading GloVe vocabs. . .")
-    initial_encoder_embedding = data_utils.glove_vector_vocab_to_array(article_glove_path)
-    initial_decoder_embedding = data_utils.glove_vector_vocab_to_array(title_glove_path)
-  else:
-    initial_encoder_embedding = None
-    initial_decoder_embedding = None
+  initial_encoder_embedding, initial_decoder_embedding = prepare_glove(
+      article_vocab_path, title_vocab_path)
 
   with tf.Session() as sess:
     # Create model.
@@ -271,16 +246,48 @@ def train():
             else:
                 sys.stdout.write("%3d minutes left | " % ((max_time - elapsed_time)/60))
 
+def prepare_glove(article_vocab_path, title_vocab_path):
+  if FLAGS.glove_vectors is not None:
+    glove_path = os.path.join(FLAGS.data_dir, FLAGS.glove_vectors)
+    glove_parts = os.path.basename(FLAGS.glove_vectors).split(".")
+    dimensions = int((glove_parts[-2])[:-1])
+    print("Overriding \"--size\" flag (%d -> %d)" % (FLAGS.size, dimensions))
+    FLAGS.size = dimensions
+    glove_id = glove_parts[-3]
+
+    glove_id = glove_id.replace("glove.", "").replace(".txt", "")
+    print("Creating vocabulary-specific GloVe files. . .")
+    article_glove_path = os.path.join(FLAGS.data_dir, "glove%s_%dx%d.article" %
+        (glove_id, dimensions, FLAGS.article_vocab_size))
+    title_glove_path = os.path.join(FLAGS.data_dir, "glove%s_%dx%d.title" %
+        (glove_id, dimensions, FLAGS.title_vocab_size))
+    
+    default_initializer = lambda: " ".join(map(str, np.random.normal(size=dimensions)))
+    # Save GloVe dict to reuse for titles
+    data_utils.glove_vector_vocab_from_vocabulary(article_vocab_path, glove_path, article_glove_path, dimensions, default_initializer)
+    data_utils.glove_vector_vocab_from_vocabulary(title_vocab_path, glove_path, title_glove_path, dimensions, default_initializer)
+
+    print("Reading GloVe vocabs. . .")
+    initial_encoder_embedding = data_utils.glove_vector_vocab_to_array(article_glove_path)
+    initial_decoder_embedding = data_utils.glove_vector_vocab_to_array(title_glove_path)
+  else:
+    initial_encoder_embedding = None
+    initial_decoder_embedding = None
+  return (initial_encoder_embedding, initial_decoder_embedding)
+
 
 def decode():
 
   print("Preparing news data in %s" % FLAGS.data_dir)
-  articles_train, titles_train, _, _ = data_utils.prepare_news_data(
+  articles_train, titles_train, article_vocab_path, title_vocab_path = data_utils.prepare_news_data(
       FLAGS.data_dir,
       FLAGS.article_file,
       FLAGS.title_file,
       FLAGS.article_vocab_size,
       FLAGS.title_vocab_size)
+
+  initial_encoder_embedding, initial_decoder_embedding = prepare_glove(
+      article_vocab_path, title_vocab_path)
 
   with tf.Session() as sess:
     # Create model.
@@ -309,7 +316,7 @@ def decode():
       decoder_inputs_generated = np.zeros_like(decoder_inputs_true)
       decoder_inputs_generated[0] = decoder_inputs_true[0]
       target_weights = np.ones_like(target_weights)
-      pdb.set_trace()
+      #pdb.set_trace()
 
       # Data form: decoder_inputs[word_position][batch_number]
       # Data form: output_logits[word_position][batch_number][contenders<vocab_size>]
@@ -319,10 +326,11 @@ def decode():
         _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs_generated,
                                    target_weights, bucket_id, True)
         # For every title in the batch we draw the next word according to the logit
-        pdb.set_trace()
+        #pdb.set_trace()
+        softmaxs = tf.nn.softmax(output_logits[0])
+        softmaxs = sess.run(softmaxs) # 
         generated = [tf.arg_max(np.random.multinomial(1,logit),0) 
-                               for batch_logits in output_logits[0] 
-                               for logit in batch_logit]
+                              for logit in softmaxs]
         decoder_inputs_generated.append(generated)
 
       # Reshape from batchmajor vectors to lists of titles 
