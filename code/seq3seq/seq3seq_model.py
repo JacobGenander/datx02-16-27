@@ -70,8 +70,10 @@ class Seq3SeqModel(object):
     if num_layers > 1:
       sentence_cell = tf.nn.rnn_cell.MultiRNNCell([sentence_cell] * num_layers)
       article_cell = tf.nn.rnn_cell.MultiRNNCell([article_cell] * num_layers)
+    article_cell = tf.nn.rnn_cell.OutputProjectionWrapper(article_cell, target_vocab_size)
+
     # Don't rely on the embedding wrapper cell, it's seems buggy!
-    embeddings = tf.Variable(
+    self.embeddings = tf.Variable(
       tf.random_uniform([source_vocab_size, size], -1.0, 1.0))
     
     # The seq3seq function: we use embedding for the input and attention.
@@ -81,7 +83,7 @@ class Seq3SeqModel(object):
       article_stack = tf.concat(0,encoder_inputs)
       lengths = tf.squeeze(tf.slice(article_stack,[0,0],[-1,1]))
       sents_tens = tf.slice(article_stack,[0,1],[-1,-1])
-      sents_tens = tf.nn.embedding_lookup(embeddings, sents_tens)
+      sents_tens = tf.nn.embedding_lookup(self.embeddings, sents_tens)
       sents = [tf.squeeze(t, squeeze_dims=[1]) for t in tf.split(1, FLAGS.max_sent, sents_tens)]
       _, states = tf.nn.rnn(sentence_cell, sents, sequence_length = lengths, dtype = tf.float32)
       art_vec = tf.reshape(states, [-1, batch_size, size])
