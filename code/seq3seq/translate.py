@@ -78,7 +78,7 @@ FLAGS = tf.app.flags.FLAGS
 # Buckets are from the 100000 headline articles pairs in our small data set,
 # they are very preliminary and we also opted to pad all titles since
 # there's no apperent correlation between title and article lengths.
-_buckets = [(1,48),(5, 48),(7,48),(10,48),(15,48),(20,48)]
+_buckets = [(10, 10)] # ,(7,48),(10,48),(15,48),(20,48)]
 
 
 def read_data(source_path, target_path, max_size=None):
@@ -136,7 +136,6 @@ def create_model(session, forward_only):
       FLAGS.size, FLAGS.num_layers, FLAGS.max_gradient_norm, FLAGS.batch_size,
       forward_only=forward_only)
   ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
-  tf.train.SummaryWriter('~/tensorboard',session.graph_def)
   if ckpt and tf.gfile.Exists(ckpt.model_checkpoint_path):
     print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
     model.saver.restore(session, ckpt.model_checkpoint_path)
@@ -157,7 +156,7 @@ def train():
       FLAGS.article_vocab_size,
       FLAGS.title_vocab_size)
 
-  with tf.Session() as sess:
+  with tf.Session(config=tf.ConfigProto(log_device_placement = True)) as sess:
     # Create model.
     print("Creating %d layers of %d units." % (FLAGS.num_layers, FLAGS.size))
     model = create_model(sess, False)
