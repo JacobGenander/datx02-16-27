@@ -76,13 +76,18 @@ tf.app.flags.DEFINE_boolean("self_test", False,
 tf.app.flags.DEFINE_boolean("adam_optimizer", True, "Set True to use Adam optimizer instead of SGD")
 tf.app.flags.DEFINE_integer("max_runtime", 0, "if (max_runtime != 0), stops execution after max_runtime minutes")
 tf.app.flags.DEFINE_string("perplexity_log", None, "Filename for logging perplexity")
+tf.app.flags.DEFINE_integer("last_bucket_enc_len", 200, "The longest allowed input length for the encoder")
+tf.app.flags.DEFINE_integer("last_bucket_dec_len", 50, "The longest allowed input length for the decoder")
 
 FLAGS = tf.app.flags.FLAGS
 
 # We use a number of buckets and pad to the closest one for efficiency.
 # See seq2seq_model.Seq2SeqModel for details of how they work.
 #_buckets = [(5, 10), (10, 15), (20, 25), (40, 50)]
-_buckets = [(200, 50)]#, (10, 15), (20, 25), (40, 50)]
+_buckets = []#, (10, 15), (20, 25), (40, 50)]
+
+_buckets.append((FLAGS.last_bucket_enc_len, FLAGS.last_bucket_dec_len))
+print("Using buckets defined as", _buckets)
 
 
 def read_data(source_path, target_path, max_size=None):
