@@ -369,6 +369,7 @@ def decode_many():
       print(title)
       print("{:-^80}".format("Generated Title %d" % idx))
       print(" ".join([tf.compat.as_str(rev_fr_vocab[output]) for output in outputs]))
+      print("{:#^80}".format("^^^^"))
       sys.stdout.flush()
 
 
