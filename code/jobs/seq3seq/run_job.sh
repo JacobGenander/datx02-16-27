@@ -42,12 +42,14 @@ ARGS_EVAL=( \
 # array elements by bash, if empty strings, "", are given. No job is started
 # on that GPU
 
-ARGS_GPU_SPECIFIC[0]="--size 300 --batch_size 30" 
-ARGS_GPU_SPECIFIC[1]="--size 128 --batch_size 60"
+ARGS_GPU_SPECIFIC[0]="--size 128 --batch_size 60"
+ARGS_GPU_SPECIFIC[1]="--size 300 --batch_size 1" 
 ARGS_GPU_SPECIFIC[2]=""
 ARGS_GPU_SPECIFIC[3]=""
 
-ARGS_GPU_SPECIFIC[1]="" 
+ARGS_GPU_SPECIFIC[0]="" 
+ARGS_GPU_SPECIFIC[2]="" 
+ARGS_GPU_SPECIFIC[3]="" 
 
 # Used to interate
 let HIGHEST_INDEX=${#ARGS_GPU_SPECIFIC[@]}-1
@@ -110,6 +112,6 @@ echo "Shuffling data"
 
 ./shuffle_data.sh
 
-echo "Enqueueing myself!"
+#echo "Enqueueing myself!"
 
-../enqueue.sh run_job.sh
+#../enqueue.sh run_job.sh

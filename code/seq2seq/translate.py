@@ -87,7 +87,7 @@ FLAGS = tf.app.flags.FLAGS
 # there's no apperent correlation between title and article lengths.
 
 # Use only one bucket where articles and titles are padded to fit
-_buckets = [(100, 12)]#, (200, 48), (400, 48), (800, 48)]
+_buckets = [(100, 10)]#, (200, 48), (400, 48), (800, 48)]
 #_buckets = [(250, 36), (1000,36), (8000, 46), (44266, 36)]
 
 
