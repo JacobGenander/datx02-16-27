@@ -72,7 +72,7 @@ tf.app.flags.DEFINE_boolean("decode", False,
                             "Set to True for interactive decoding.")
 tf.app.flags.DEFINE_boolean("self_test", False,
                             "Run a self-test if this is set to True.")
-tf.app.flags.DEFINE_boolean("adam_optimizer", False, "Set True to use Adam optimizer instead of SGD")
+tf.app.flags.DEFINE_boolean("adam_optimizer", True, "Set True to use Adam optimizer instead of SGD")
 
 
 FLAGS = tf.app.flags.FLAGS
