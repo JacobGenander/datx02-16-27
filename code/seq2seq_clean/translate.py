@@ -78,6 +78,7 @@ tf.app.flags.DEFINE_integer("max_runtime", 0, "if (max_runtime != 0), stops exec
 tf.app.flags.DEFINE_string("perplexity_log", None, "Filename for logging perplexity")
 tf.app.flags.DEFINE_integer("last_bucket_enc_len", 200, "The longest allowed input length for the encoder")
 tf.app.flags.DEFINE_integer("last_bucket_dec_len", 50, "The longest allowed input length for the decoder")
+tf.app.flags.DEFINE_boolean("evaluation_file", False, "Use the files \"evaluation_a.txt\" and \"evaluation_t.txt\" for evaluation data")
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -287,6 +288,66 @@ def decode():
       sentence = sys.stdin.readline()
 
 
+def decode_many():
+  eval_a = "evaluation_a.txt"
+  eval_t = "evaluation_t.txt"
+  with tf.Session() as sess:
+    # Create model and load parameters.
+    model = create_model(sess, True)
+    model.batch_size = 1  # We decode one sentence at a time.
+
+    # Load vocabularies.
+    en_vocab_path = os.path.join(FLAGS.data_dir,
+                                 "vocab%d.a" % FLAGS.en_vocab_size)
+    fr_vocab_path = os.path.join(FLAGS.data_dir,
+                                 "vocab%d.t" % FLAGS.fr_vocab_size)
+    en_vocab, _ = data_utils.initialize_vocabulary(en_vocab_path)
+    _, rev_fr_vocab = data_utils.initialize_vocabulary(fr_vocab_path)
+
+    # Decode from standard input.
+    sys.stdout.write("> ")
+    sys.stdout.flush()
+    
+    articles = []
+    titles = []
+
+    with tf.gfile.Open(os.path.join(FLAGS.data_dir, eval_a), "r") as evaluation_file_a:
+      for line in evaluation_file_a:
+        articles.append(line)
+    with tf.gfile.Open(os.path.join(FLAGS.data_dir, eval_t), "r") as evaluation_file_t:
+      for line in evaluation_file_t:
+        titles.append(line)
+
+    article_title_pairs = zip(articles, titles)
+
+    for (idx, (article, title)) in enumerate(article_title_pairs):
+      # Get token-ids for the input sentence.
+      token_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(article), en_vocab)[:(_buckets[-1][0]-1)]
+      # Which bucket does it belong to?
+      bucket_id = min([b for b in xrange(len(_buckets))
+                       if _buckets[b][0] > len(token_ids)])
+      # Get a 1-element batch to feed the sentence to the model.
+      encoder_inputs, decoder_inputs, target_weights = model.get_batch(
+          {bucket_id: [(token_ids, [])]}, bucket_id)
+      # Get output logits for the sentence.
+      _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
+                                       target_weights, bucket_id, True)
+      # This is a greedy decoder - outputs are just argmaxes of output_logits.
+      outputs = [int(np.argmax(logit, axis=1)) for logit in output_logits]
+      # If there is an EOS symbol in outputs, cut them at that point.
+      if data_utils.EOS_ID in outputs:
+        outputs = outputs[:outputs.index(data_utils.EOS_ID)]
+      # Print out French sentence corresponding to outputs.
+      print("{:#^80}".format("Article %d" % idx))
+      print(article)
+      print("{:-^80}".format("Real Title %d" % idx))
+      print(title)
+      print("{:-^80}".format("Generated Title %d" % idx))
+      print(" ".join([tf.compat.as_str(rev_fr_vocab[output]) for output in outputs]))
+      sys.stdout.flush()
+
+
+
 def self_test():
   """Test the translation model."""
   with tf.Session() as sess:
@@ -311,7 +372,10 @@ def main(_):
   if FLAGS.self_test:
     self_test()
   elif FLAGS.decode:
-    decode()
+    if FLAGS.evaluation_file:
+      decode_many()
+    else:
+      decode()
   else:
     train()
 
