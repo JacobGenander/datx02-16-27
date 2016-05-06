@@ -253,9 +253,9 @@ def decode():
 
     # Load vocabularies.
     en_vocab_path = os.path.join(FLAGS.data_dir,
-                                 "vocab%d.en" % FLAGS.en_vocab_size)
+                                 "vocab%d.a" % FLAGS.en_vocab_size)
     fr_vocab_path = os.path.join(FLAGS.data_dir,
-                                 "vocab%d.fr" % FLAGS.fr_vocab_size)
+                                 "vocab%d.t" % FLAGS.fr_vocab_size)
     en_vocab, _ = data_utils.initialize_vocabulary(en_vocab_path)
     _, rev_fr_vocab = data_utils.initialize_vocabulary(fr_vocab_path)
 
@@ -265,7 +265,7 @@ def decode():
     sentence = sys.stdin.readline()
     while sentence:
       # Get token-ids for the input sentence.
-      token_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(sentence), en_vocab)
+      token_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(sentence), en_vocab)[:(_buckets[-1][0]-1)]
       # Which bucket does it belong to?
       bucket_id = min([b for b in xrange(len(_buckets))
                        if _buckets[b][0] > len(token_ids)])
