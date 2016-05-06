@@ -1,4 +1,5 @@
 # vim: set sw=2 ts=2 expandtab:
+
 # Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -73,7 +74,8 @@ tf.app.flags.DEFINE_boolean("decode", False,
 tf.app.flags.DEFINE_boolean("self_test", False,
                             "Run a self-test if this is set to True.")
 tf.app.flags.DEFINE_boolean("adam_optimizer", False, "Set True to use Adam optimizer instead of SGD")
-
+tf.app.flags.DEFINE_integer("max_runtime", 0, "if (max_runtime != 0), stops execution after max_runtime minutes")
+tf.app.flags.DEFINE_string("perplexity_log", None, "Filename for logging perplexity")
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -175,6 +177,7 @@ def train():
     step_time, loss = 0.0, 0.0
     current_step = 0
     previous_losses = []
+    time_train_start = time.time()
     while True:
       # Choose a bucket according to data distribution. We pick a random number
       # in [0, 1] and use the corresponding interval in train_buckets_scale.
@@ -199,6 +202,13 @@ def train():
         print ("global step %d learning rate %.4f step-time %.2f perplexity "
                "%.2f" % (model.global_step.eval(), model.learning_rate.eval(),
                          step_time, perplexity))
+        if FLAGS.perplexity_log:
+            with tf.gfile.Open(os.path.join(FLAGS.train_dir, FLAGS.perplexity_log), "a") as logfile:
+                logfile.write("%d;%.4f;%.4f;%.4f\n" % 
+                        (model.global_step.eval(), model.learning_rate.eval(),
+                            step_time, perplexity)
+                        )
+                logfile.close()
         # Decrease learning rate if no improvement was seen over last 3 times.
         if len(previous_losses) > 2 and loss > max(previous_losses[-3:]):
           sess.run(model.learning_rate_decay_op)
@@ -219,6 +229,15 @@ def train():
         #  eval_ppx = math.exp(eval_loss) if eval_loss < 300 else float('inf')
         #  print("  eval: bucket %d perplexity %.2f" % (bucket_id, eval_ppx))
         sys.stdout.flush()
+        if FLAGS.max_runtime:
+          max_time = int(FLAGS.max_runtime) * 60
+          elapsed_time = (time.time() - time_train_start)
+          if elapsed_time >= max_time:
+            print("Terminated after %d minutes. . . (limit set to %d)" %
+                (elapsed_time/60, max_time/60))
+            break;
+          else:
+            sys.stdout.write("%3d minutes left | " % ((max_time - elapsed_time)/60))
 
 
 def decode():
