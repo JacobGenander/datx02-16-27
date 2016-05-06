@@ -305,7 +305,6 @@ def decode_many():
     _, rev_fr_vocab = data_utils.initialize_vocabulary(fr_vocab_path)
 
     # Decode from standard input.
-    sys.stdout.write("> ")
     sys.stdout.flush()
     
     articles = []
@@ -317,23 +316,49 @@ def decode_many():
     with tf.gfile.Open(os.path.join(FLAGS.data_dir, eval_t), "r") as evaluation_file_t:
       for line in evaluation_file_t:
         titles.append(line)
-
+    model.batch_size = len(articles)
+    print("Reading evaluation data")
     article_title_pairs = zip(articles, titles)
-
+    id_pairs = []
     for (idx, (article, title)) in enumerate(article_title_pairs):
       # Get token-ids for the input sentence.
       token_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(article), en_vocab)[:(_buckets[-1][0]-1)]
-      # Which bucket does it belong to?
-      bucket_id = min([b for b in xrange(len(_buckets))
-                       if _buckets[b][0] > len(token_ids)])
-      # Get a 1-element batch to feed the sentence to the model.
-      encoder_inputs, decoder_inputs, target_weights = model.get_batch(
-          {bucket_id: [(token_ids, [])]}, bucket_id)
-      # Get output logits for the sentence.
+      id_pairs.append((token_ids, []))
+    
+
+    # Which bucket does it belong to?
+    bucket_id = min([b for b in xrange(len(_buckets))
+                     if _buckets[b][0] > len(token_ids)])
+    # Get a 1-element batch to feed the sentence to the model.
+    encoder_inputs, decoder_inputs, target_weights = model.get_batch(
+        {bucket_id: id_pairs}, bucket_id)
+    # Get output logits for the sentence.
+    target_weights = np.ones_like(target_weights)
+    print("|decoder_inputs|=%d" % len(decoder_inputs))
+    print("|target_weights|=%d" % len(target_weights))
+    print("|encoder_inputs|=%d" % len(encoder_inputs))
+    print("Stepping through evaluation data (pairs: %d), word:\n" % model.batch_size)
+    for word_idx in xrange(_buckets[-1][1] - 1):
+      sys.stdout.write("%d, " % word_idx)
+      sys.stdout.flush()
       _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
-                                       target_weights, bucket_id, True)
+          target_weights, bucket_id, True)
+      current_word_logit = output_logits[word_idx]
+      softmax_op = tf.nn.softmax(current_word_logit)
+      # softmaxes[word_idx]<batch><candidates>
+      softmaxes = sess.run(softmax_op)
+      # chosen_words<batch>=id
+      chosen_words = [np.random.choice(list(xrange(len(softmax))), p=softmax) for softmax in softmaxes]
+      #pdb.set_trace()
+      #decoder_inputs[word_idx]<batch>=id
+      decoder_inputs[word_idx + 1] = chosen_words
+
+    
+    for (idx, (article, title)) in enumerate(article_title_pairs):
       # This is a greedy decoder - outputs are just argmaxes of output_logits.
-      outputs = [int(np.argmax(logit, axis=1)) for logit in output_logits]
+      outputs = [word_position[idx] for word_position in decoder_inputs[1:]] 
+          # [int(np.argmax(logit, axis=1)) for logit in output_logits]
+      #pdb.set_trace()
       # If there is an EOS symbol in outputs, cut them at that point.
       if data_utils.EOS_ID in outputs:
         outputs = outputs[:outputs.index(data_utils.EOS_ID)]
