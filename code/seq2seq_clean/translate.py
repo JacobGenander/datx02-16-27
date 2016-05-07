@@ -79,6 +79,8 @@ tf.app.flags.DEFINE_string("perplexity_log", None, "Filename for logging perplex
 tf.app.flags.DEFINE_integer("last_bucket_enc_len", 200, "The longest allowed input length for the encoder")
 tf.app.flags.DEFINE_integer("last_bucket_dec_len", 50, "The longest allowed input length for the decoder")
 tf.app.flags.DEFINE_boolean("evaluation_file", False, "Use the files \"evaluation_a.txt\" and \"evaluation_t.txt\" for evaluation data")
+tf.app.flags.DEFINE_boolean("use_roulette_search", False, "Set to true to use roulette search in decoder (much slower)")
+tf.app.flags.DEFINE_integer("use_specific_checkpoint", 0, "Integer specifying which checkpoint to use when resoring the model")
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -143,10 +145,16 @@ def create_model(session, forward_only):
       FLAGS.learning_rate, FLAGS.learning_rate_decay_factor,
       forward_only=forward_only,
       use_adam_optimizer=FLAGS.adam_optimizer)
-  ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
-  if ckpt and tf.gfile.Exists(ckpt.model_checkpoint_path):
-    print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
-    model.saver.restore(session, ckpt.model_checkpoint_path)
+  if FLAGS.use_specific_checkpoint:
+    print("Using specific checkpoint: %d" % FLAGS.use_specific_checkpoint)
+    checkpoint_path = os.path.join(FLAGS.train_dir, ("translate.ckpt-%d" % FLAGS.use_specific_checkpoint))
+    ckpt = False
+  else:
+    ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
+    checkpoint_path = ckpt.model_checkpoint_path
+  if (ckpt or FLAGS.use_specific_checkpoint) and tf.gfile.Exists(checkpoint_path):
+    print("Reading model parameters from %s" % checkpoint_path)
+    model.saver.restore(session, checkpoint_path)
   else:
     print("Created model with fresh parameters.")
     session.run(tf.initialize_all_variables())
@@ -287,8 +295,67 @@ def decode():
       sys.stdout.flush()
       sentence = sys.stdin.readline()
 
+def decode_many_slow_and_greedy():
+  eval_a = "evaluation_a.txt"
+  eval_t = "evaluation_t.txt"
+  with tf.Session() as sess:
+    # Create model and load parameters.
+    model = create_model(sess, True)
+    model.batch_size = 1  # We decode one sentence at a time.
 
-def decode_many():
+    # Load vocabularies.
+    en_vocab_path = os.path.join(FLAGS.data_dir,
+                                 "vocab%d.a" % FLAGS.en_vocab_size)
+    fr_vocab_path = os.path.join(FLAGS.data_dir,
+                                 "vocab%d.t" % FLAGS.fr_vocab_size)
+    en_vocab, _ = data_utils.initialize_vocabulary(en_vocab_path)
+    _, rev_fr_vocab = data_utils.initialize_vocabulary(fr_vocab_path)
+
+    # Decode from standard input.
+    sys.stdout.write("> ")
+    sys.stdout.flush()
+    
+    articles = []
+    titles = []
+
+    with tf.gfile.Open(os.path.join(FLAGS.data_dir, eval_a), "r") as evaluation_file_a:
+      for line in evaluation_file_a:
+        articles.append(line)
+    with tf.gfile.Open(os.path.join(FLAGS.data_dir, eval_t), "r") as evaluation_file_t:
+      for line in evaluation_file_t:
+        titles.append(line)
+
+    article_title_pairs = zip(articles, titles)
+
+    for (idx, (article, title)) in enumerate(article_title_pairs):
+      # Get token-ids for the input sentence.
+      token_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(article), en_vocab)[:(_buckets[-1][0]-1)]
+      # Which bucket does it belong to?
+      bucket_id = min([b for b in xrange(len(_buckets))
+                       if _buckets[b][0] > len(token_ids)])
+      # Get a 1-element batch to feed the sentence to the model.
+      encoder_inputs, decoder_inputs, target_weights = model.get_batch(
+          {bucket_id: [(token_ids, [])]}, bucket_id)
+      # Get output logits for the sentence.
+      _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
+                                       target_weights, bucket_id, True)
+      # This is a greedy decoder - outputs are just argmaxes of output_logits.
+      outputs = [int(np.argmax(logit, axis=1)) for logit in output_logits]
+      # If there is an EOS symbol in outputs, cut them at that point.
+      if data_utils.EOS_ID in outputs:
+        outputs = outputs[:outputs.index(data_utils.EOS_ID)]
+      # Print out French sentence corresponding to outputs.
+      print("{:-^80}".format("Article %d" % idx))
+      print(article)
+      print("{:-^80}".format("Real Title %d" % idx))
+      print(title)
+      print("{:-^80}".format("Generated Title %d" % idx))
+      print(" ".join([tf.compat.as_str(rev_fr_vocab[output]) for output in outputs]))
+      print("\n{:#^80}".format(""))
+      print("{:#^80}\n".format(""))
+      sys.stdout.flush()
+
+def decode_many(use_roulette_search=False):
   eval_a = "evaluation_a.txt"
   eval_t = "evaluation_t.txt"
   with tf.Session() as sess:
@@ -310,6 +377,7 @@ def decode_many():
     articles = []
     titles = []
 
+    print("Reading evaluation data")
     with tf.gfile.Open(os.path.join(FLAGS.data_dir, eval_a), "r") as evaluation_file_a:
       for line in evaluation_file_a:
         articles.append(line)
@@ -317,9 +385,10 @@ def decode_many():
       for line in evaluation_file_t:
         titles.append(line)
     model.batch_size = len(articles)
-    print("Reading evaluation data")
     article_title_pairs = zip(articles, titles)
     id_pairs = []
+
+    print("Tokenizing evaluation data")
     for (idx, (article, title)) in enumerate(article_title_pairs):
       # Get token-ids for the input sentence.
       token_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(article), en_vocab)[:(_buckets[-1][0]-1)]
@@ -333,43 +402,55 @@ def decode_many():
     encoder_inputs, decoder_inputs, target_weights = model.get_batch(
         {bucket_id: id_pairs}, bucket_id)
     # Get output logits for the sentence.
-    target_weights = np.ones_like(target_weights)
-    print("|decoder_inputs|=%d" % len(decoder_inputs))
-    print("|target_weights|=%d" % len(target_weights))
-    print("|encoder_inputs|=%d" % len(encoder_inputs))
-    print("Stepping through evaluation data (pairs: %d), word:\n" % model.batch_size)
-    for word_idx in xrange(_buckets[-1][1] - 1):
-      sys.stdout.write("%d, " % word_idx)
-      sys.stdout.flush()
+
+    if use_roulette_search:
+      target_weights = np.ones_like(target_weights)
+      #print("|decoder_inputs|=%d" % len(decoder_inputs))
+      #print("|target_weights|=%d" % len(target_weights))
+      #print("|encoder_inputs|=%d" % len(encoder_inputs))
+      print("Stepping through evaluation data (pairs: %d), word:\n" % model.batch_size)
+      for word_idx in xrange(_buckets[-1][1] - 1):
+        sys.stdout.write("%d, " % word_idx)
+        sys.stdout.flush()
+        _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
+            target_weights, bucket_id, True)
+        current_word_logit = output_logits[word_idx]
+        softmax_op = tf.nn.softmax(current_word_logit)
+        # softmaxes[word_idx]<batch><candidates>
+        softmaxes = sess.run(softmax_op)
+        # chosen_words<batch>=id
+        chosen_words = [np.random.choice(list(xrange(len(softmax))), p=softmax) for softmax in softmaxes]
+        #pdb.set_trace()
+        #decoder_inputs[word_idx]<batch>=id
+        decoder_inputs[word_idx + 1] = chosen_words
+    else:
       _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
           target_weights, bucket_id, True)
-      current_word_logit = output_logits[word_idx]
-      softmax_op = tf.nn.softmax(current_word_logit)
-      # softmaxes[word_idx]<batch><candidates>
-      softmaxes = sess.run(softmax_op)
-      # chosen_words<batch>=id
-      chosen_words = [np.random.choice(list(xrange(len(softmax))), p=softmax) for softmax in softmaxes]
-      #pdb.set_trace()
-      #decoder_inputs[word_idx]<batch>=id
-      decoder_inputs[word_idx + 1] = chosen_words
 
     
     for (idx, (article, title)) in enumerate(article_title_pairs):
-      # This is a greedy decoder - outputs are just argmaxes of output_logits.
-      outputs = [word_position[idx] for word_position in decoder_inputs[1:]] 
-          # [int(np.argmax(logit, axis=1)) for logit in output_logits]
-      #pdb.set_trace()
+      if use_roulette_search:
+        outputs = [word_position[idx] for word_position in decoder_inputs[1:]] 
+      else:
+        #print(output_logits)
+        #print(len(output_logits))
+        #print((output_logits[0].shape))
+        pdb.set_trace()
+        outputs = [int(np.argmax(word_position[idx])) for word_position in output_logits]
+        # This is a greedy decoder - outputs are just argmaxes of output_logits.
+        #pdb.set_trace()
       # If there is an EOS symbol in outputs, cut them at that point.
       if data_utils.EOS_ID in outputs:
         outputs = outputs[:outputs.index(data_utils.EOS_ID)]
       # Print out French sentence corresponding to outputs.
-      print("{:#^80}".format("Article %d" % idx))
+      print("{:-^80}".format("Article %d" % idx))
       print(article)
       print("{:-^80}".format("Real Title %d" % idx))
       print(title)
       print("{:-^80}".format("Generated Title %d" % idx))
       print(" ".join([tf.compat.as_str(rev_fr_vocab[output]) for output in outputs]))
-      print("{:#^80}".format("^^^^"))
+      print("\n{:#^80}".format(""))
+      print("{:#^80}\n".format(""))
       sys.stdout.flush()
 
 
@@ -399,7 +480,11 @@ def main(_):
     self_test()
   elif FLAGS.decode:
     if FLAGS.evaluation_file:
-      decode_many()
+      use_slow_and_greedy_method = True
+      if use_slow_and_greedy_method:
+        decode_many_slow_and_greedy()
+      else:
+        decode_many(FLAGS.use_roulette_search)
     else:
       decode()
   else:
