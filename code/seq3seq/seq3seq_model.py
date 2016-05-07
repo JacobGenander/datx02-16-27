@@ -25,7 +25,6 @@ import pdb
 import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
-from tensorflow.python.ops.control_flow_ops import map as tfmap
 import data_utils
 
 FLAGS = tf.app.flags.FLAGS
@@ -62,7 +61,25 @@ class Seq3SeqModel(object):
     self.batch_size = batch_size
     self.global_step = tf.Variable(0, trainable=False)
 
-    # Create the internal multi-layer cell for our RNN
+    # If we use sampled softmax, we need an output projection.
+    output_projection = None
+    softmax_loss_function = None
+    # Sampled softmax only makes sense if we sample less than vocabulary size.
+    if num_samples > 0 and num_samples < self.target_vocab_size:
+      with tf.device("/cpu:0"):
+        w = tf.get_variable("proj_w", [size, self.target_vocab_size])
+        w_t = tf.transpose(w)
+        b = tf.get_variable("proj_b", [self.target_vocab_size])
+      output_projection = (w, b)
+
+      def sampled_loss(inputs, labels):
+        with tf.device("/cpu:0"):
+          labels = tf.reshape(labels, [-1, 1])
+          return tf.nn.sampled_softmax_loss(w_t, b, inputs, labels, num_samples,
+                                            self.target_vocab_size)
+      softmax_loss_function = sampled_loss
+
+    # Create the internal multi-layer cell for our RNN.
     # TODO: Get problems with the weights in nn.rnn_cell.linear when using same cell,
     #       the ugly solution is to switch to LSTM for articles. 
     sentence_cell = tf.nn.rnn_cell.GRUCell(size)
@@ -70,12 +87,9 @@ class Seq3SeqModel(object):
     if num_layers > 1:
       sentence_cell = tf.nn.rnn_cell.MultiRNNCell([sentence_cell] * num_layers)
       article_cell = tf.nn.rnn_cell.MultiRNNCell([article_cell] * num_layers)
-    article_cell = tf.nn.rnn_cell.OutputProjectionWrapper(article_cell, target_vocab_size)
-
-    # Don't rely on the embedding wrapper cell, it's seems buggy!
+    
     self.embeddings = tf.Variable(
       tf.random_uniform([source_vocab_size, size], -1.0, 1.0))
-    
     # The seq3seq function: we use embedding for the input and attention.
     def seq3seq_f(encoder_inputs, decoder_inputs, do_decode):
       # Encode all articles into vector sequnces
@@ -99,7 +113,7 @@ class Seq3SeqModel(object):
       # Decode the attention states into a headline
       return tf.nn.seq2seq.embedding_attention_decoder(
           decoder_inputs, encoder_states, attention_states, 
-          article_cell,target_vocab_size, output_projection=None,
+          article_cell,target_vocab_size, output_projection=output_projection,
           feed_previous=do_decode)
 
     # Feeds for inputs.
@@ -124,13 +138,20 @@ class Seq3SeqModel(object):
       self.outputs, self.losses = tf.nn.seq2seq.model_with_buckets(
           self.encoder_inputs, self.decoder_inputs, targets,
           self.target_weights, buckets, lambda x, y: seq3seq_f(x, y, True),
-          softmax_loss_function=None)
+          softmax_loss_function=softmax_loss_function)
+      # If we use output projection, we need to project outputs for decoding.
+      if output_projection is not None:
+        for b in xrange(len(buckets)):
+          self.outputs[b] = [
+              tf.matmul(output, output_projection[0]) + output_projection[1]
+              for output in self.outputs[b]
+          ]
     else:
       self.outputs, self.losses = tf.nn.seq2seq.model_with_buckets(
           self.encoder_inputs, self.decoder_inputs, targets,
           self.target_weights, buckets,
           lambda x, y: seq3seq_f(x, y, False),
-          softmax_loss_function=None)
+          softmax_loss_function=softmax_loss_function)
 
     # Gradients and Adam update operation for training the model.
     params = tf.trainable_variables()
@@ -254,6 +275,7 @@ class Seq3SeqModel(object):
       batch_decoder_inputs.append(
           np.array([decoder_inputs[batch_idx][length_idx]
                     for batch_idx in xrange(self.batch_size)], dtype=np.int32))
+
       # Create target_weights to be 0 for targets that are padding.
       batch_weight = np.ones(self.batch_size, dtype=np.float32)
       for batch_idx in xrange(self.batch_size):
