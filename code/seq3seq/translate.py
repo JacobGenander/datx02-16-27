@@ -46,14 +46,17 @@ import data_utils
 import seq3seq_model
 
 
+tf.app.flags.DEFINE_float("learning_rate", 0.5, "Learning rate.")
+tf.app.flags.DEFINE_float("learning_rate_decay_factor", 0.99,
+                          "Learning rate decays by this much.")
 tf.app.flags.DEFINE_float("max_gradient_norm", 5.0,
                           "Clip gradients to this norm.")
-tf.app.flags.DEFINE_integer("batch_size", 6,
+tf.app.flags.DEFINE_integer("batch_size", 32,
                             "Batch size to use during training.")
-tf.app.flags.DEFINE_integer("size", 300, "Size of each model layer.")
+tf.app.flags.DEFINE_integer("size", 1024, "Size of each model layer.")
 tf.app.flags.DEFINE_integer("num_layers", 3, "Number of layers in the model.")
-tf.app.flags.DEFINE_integer("article_vocab_size", 20000, "Article vocabulary size.")
-tf.app.flags.DEFINE_integer("title_vocab_size", 20000, "Title vocabulary size.")
+tf.app.flags.DEFINE_integer("article_vocab_size", 40000, "Article vocabulary size.")
+tf.app.flags.DEFINE_integer("title_vocab_size", 40000, "Title vocabulary size.")
 tf.app.flags.DEFINE_string("data_dir", ".", "Data directory")
 tf.app.flags.DEFINE_string("article_file", "articles.txt",
                            "file containing the articles (relative to data_dir)")
@@ -78,7 +81,7 @@ FLAGS = tf.app.flags.FLAGS
 # Buckets are from the 100000 headline articles pairs in our small data set,
 # they are very preliminary and we also opted to pad all titles since
 # there's no apperent correlation between title and article lengths.
-_buckets = [(10, 10)] # ,(7,48),(10,48),(15,48),(20,48)]
+_buckets = [(10, 50)] # ,(7,48),(10,48),(15,48),(20,48)]
 
 
 def read_data(source_path, target_path, max_size=None):
@@ -105,7 +108,7 @@ def read_data(source_path, target_path, max_size=None):
       counter = 0
       while source and target and (not max_size or counter < max_size):
         counter += 1
-        if counter % 50000 == 0:
+        if counter % 25000 == 0:
           print("  reading article %d" % counter)
           sys.stdout.flush()
         source_strings = source.split(" " + str(data_utils.EOS_ID) + " ")
@@ -125,7 +128,10 @@ def read_data(source_path, target_path, max_size=None):
             data_set[bucket_id].append([source_ids[:source_size], target_ids])
             break
         source, target = source_file.readline(), target_file.readline()
-      print("Data set read.")
+      print("Length of bucket %d (%d, %d): %d" %
+                (bucket_id, source_size, target_size, len(data_set[bucket_id]))
+        )
+
   return data_set
 
 
@@ -147,6 +153,10 @@ def create_model(session, forward_only):
 
 def train():
   """Train a article->title translation model using news data."""
+
+  # Start training timer.
+  time_train_start = time.time()
+
   # Prepare news data.
   print("Preparing news data in %s" % FLAGS.data_dir)
   articles_train, titles_train, _, _ = data_utils.prepare_news_data(
@@ -156,7 +166,7 @@ def train():
       FLAGS.article_vocab_size,
       FLAGS.title_vocab_size)
 
-  with tf.Session(config=tf.ConfigProto(log_device_placement = True)) as sess:
+  with tf.Session() as sess:
     # Create model.
     print("Creating %d layers of %d units." % (FLAGS.num_layers, FLAGS.size))
     model = create_model(sess, False)
@@ -179,7 +189,6 @@ def train():
     current_step = 0
     previous_losses = []
     session_time = time.time()
-    time_train_start = time.time()
     while True:
       # Choose a bucket according to data distribution. We pick a random number
       # in [0, 1] and use the corresponding interval in train_buckets_scale.
