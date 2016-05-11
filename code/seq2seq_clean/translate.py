@@ -298,6 +298,7 @@ def decode():
 def decode_many_slow_and_greedy():
   eval_a = "evaluation_a.txt"
   eval_t = "evaluation_t.txt"
+  eval_g = "evaluation_g"
   with tf.Session() as sess:
     # Create model and load parameters.
     model = create_model(sess, True)
@@ -324,6 +325,11 @@ def decode_many_slow_and_greedy():
     with tf.gfile.Open(os.path.join(FLAGS.data_dir, eval_t), "r") as evaluation_file_t:
       for line in evaluation_file_t:
         titles.append(line)
+    if FLAGS.use_specific_checkpoint:
+      gen_file_suffix = "_%d.txt" % FLAGS.use_specific_checkpoint
+    else:
+      gen_file_suffix = ".txt"
+    evaluation_file_g = tf.gfile.Open(os.path.join(FLAGS.train_dir, eval_g + gen_file_suffix), "w")
 
     article_title_pairs = zip(articles, titles)
 
@@ -350,10 +356,13 @@ def decode_many_slow_and_greedy():
       print("{:-^80}".format("Real Title %d" % idx))
       print(title)
       print("{:-^80}".format("Generated Title %d" % idx))
-      print(" ".join([tf.compat.as_str(rev_fr_vocab[output]) for output in outputs]))
+      title_gen = " ".join([tf.compat.as_str(rev_fr_vocab[output]) for output in outputs])
+      print(title_gen)
+      evaluation_file_g.write(title_gen + "\n")
       print("\n{:#^80}".format(""))
       print("{:#^80}\n".format(""))
       sys.stdout.flush()
+    evaluation_file_g.close()
 
 def decode_many(use_roulette_search=False):
   eval_a = "evaluation_a.txt"
