@@ -67,8 +67,8 @@ articles = open("%s_%d.txt" % (article_file, sample_size), 'w')
 
 print "Writing..."
 for (tit, art) in sample_pairs:
-    titles.write("%s\n" % tit.encode("utf8").replace("\n", " "))
-    articles.write("%s\n" % art.encode("utf8").replace("\n", " "))
+    titles.write("%s\n" % tit.encode("ascii", "ignore").replace("\n", " ").lower())
+    articles.write("%s\n" % art.encode("ascii", "ignore").replace("\n", " ").lower())
 
 titles.close()
 articles.close()
