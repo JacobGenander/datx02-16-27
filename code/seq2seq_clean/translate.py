@@ -306,12 +306,12 @@ def decode_many_slow_and_greedy():
     model.batch_size = 1  # We decode one sentence at a time.
 
     # Load vocabularies.
-    en_vocab_path = os.path.join(FLAGS.data_dir,
+    a_vocab_path = os.path.join(FLAGS.data_dir,
                                  "vocab%d.a" % FLAGS.en_vocab_size)
-    fr_vocab_path = os.path.join(FLAGS.data_dir,
+    t_vocab_path = os.path.join(FLAGS.data_dir,
                                  "vocab%d.t" % FLAGS.fr_vocab_size)
-    en_vocab, _ = data_utils.initialize_vocabulary(en_vocab_path)
-    _, rev_fr_vocab = data_utils.initialize_vocabulary(fr_vocab_path)
+    a_vocab, rev_a_vocab = data_utils.initialize_vocabulary(a_vocab_path)
+    t_vocab, rev_t_vocab = data_utils.initialize_vocabulary(t_vocab_path)
 
     # Decode from standard input.
     sys.stdout.write("> ")
@@ -339,13 +339,14 @@ def decode_many_slow_and_greedy():
 
     for (idx, (article, title)) in enumerate(article_title_pairs):
       # Get token-ids for the input sentence.
-      token_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(article), en_vocab)[:(_buckets[-1][0]-1)]
+      token_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(article), a_vocab)[:(_buckets[-1][0]-1)]
+      title_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(title), t_vocab)[:(_buckets[-1][1]-1)]
       # Which bucket does it belong to?
       bucket_id = min([b for b in xrange(len(_buckets))
                        if _buckets[b][0] > len(token_ids)])
       # Get a 1-element batch to feed the sentence to the model.
       encoder_inputs, decoder_inputs, target_weights = model.get_batch(
-          {bucket_id: [(token_ids, [])]}, bucket_id)
+          {bucket_id: [(token_ids, title_ids)]}, bucket_id)
       # Get output logits for the sentence.
       _, loss, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
           target_weights, bucket_id, True)
@@ -361,7 +362,7 @@ def decode_many_slow_and_greedy():
       print("{:-^80}".format("Real Title %d" % idx))
       print(title)
       print("{:-^80}".format("Generated Title %d (loss: %f, perplexity: %f)" % (idx, loss, perplexity)))
-      title_gen = " ".join([tf.compat.as_str(rev_fr_vocab[output]) for output in outputs])
+      title_gen = " ".join([tf.compat.as_str(rev_t_vocab[output]) for output in outputs])
       print(title_gen)
       evaluation_file_g.write(title_gen + "\n")
       evaluation_file_p.write("%f\t%f\n" % (loss, perplexity))
