@@ -299,6 +299,7 @@ def decode_many_slow_and_greedy():
   eval_a = "evaluation_a.txt"
   eval_t = "evaluation_t.txt"
   eval_g = "evaluation_g"
+  eval_p = "evaluation_p" # File for logging perplexity of the generated sentences
   with tf.Session() as sess:
     # Create model and load parameters.
     model = create_model(sess, True)
@@ -327,9 +328,12 @@ def decode_many_slow_and_greedy():
         titles.append(line)
     if FLAGS.use_specific_checkpoint:
       gen_file_suffix = "_%d.txt" % FLAGS.use_specific_checkpoint
+      per_file_suffix = "_%d.txt" % FLAGS.use_specific_checkpoint
     else:
       gen_file_suffix = ".txt"
+      per_file_suffix = ".txt"
     evaluation_file_g = tf.gfile.Open(os.path.join(FLAGS.train_dir, eval_g + gen_file_suffix), "w")
+    evaluation_file_p = tf.gfile.Open(os.path.join(FLAGS.train_dir, eval_p + per_file_suffix), "w")
 
     article_title_pairs = zip(articles, titles)
 
@@ -343,8 +347,9 @@ def decode_many_slow_and_greedy():
       encoder_inputs, decoder_inputs, target_weights = model.get_batch(
           {bucket_id: [(token_ids, [])]}, bucket_id)
       # Get output logits for the sentence.
-      _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
-                                       target_weights, bucket_id, True)
+      _, loss, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
+          target_weights, bucket_id, True)
+      perplexity = math.exp(loss) if loss < 300 else float('inf')
       # This is a greedy decoder - outputs are just argmaxes of output_logits.
       outputs = [int(np.argmax(logit, axis=1)) for logit in output_logits]
       # If there is an EOS symbol in outputs, cut them at that point.
@@ -355,14 +360,16 @@ def decode_many_slow_and_greedy():
       print(article)
       print("{:-^80}".format("Real Title %d" % idx))
       print(title)
-      print("{:-^80}".format("Generated Title %d" % idx))
+      print("{:-^80}".format("Generated Title %d (loss: %f, perplexity: %f)" % (idx, loss, perplexity)))
       title_gen = " ".join([tf.compat.as_str(rev_fr_vocab[output]) for output in outputs])
       print(title_gen)
       evaluation_file_g.write(title_gen + "\n")
+      evaluation_file_p.write("%f\t%f\n" % (loss, perplexity))
       print("\n{:#^80}".format(""))
       print("{:#^80}\n".format(""))
       sys.stdout.flush()
     evaluation_file_g.close()
+    evaluation_file_p.close()
 
 def decode_many(use_roulette_search=False):
   eval_a = "evaluation_a.txt"
