@@ -102,9 +102,10 @@ set(gcf,'units','centimeters','position',[0, 0, plot_width, plot_height])
 pause(1)
 saveas(gcf, filename_model1_word2vec, save_format)
 %% Model 2 --- Perplexity on training set
+lines_read = 110
 
-pp1 = dlmread('perplex_1.csv', ';', [0, 0, 100, 3]);
-pp2 = dlmread('perplex_2.csv', ';', [0, 0, 100, 3]);
+pp1 = dlmread('perplex_1.csv', ';', [0, 0, lines_read, 3]);
+pp2 = dlmread('perplex_2.csv', ';', [0, 0, lines_read, 3]);
 
 data_set_size = 500000
 batch_1 = 32
@@ -126,7 +127,7 @@ hold(axes1,'on');
 semilogy(percentage_1, perplex_1, '-o', percentage_2, perplex_2, '-x', 'LineWidth', 2)
 
 title('Perplexity for the conditioned model')
-xlabel('Portion of training set read')
+xlabel('Percentage of training set')
 ylabel('Perplexity')
 legend('2*1024 cells', '4*512 cells')
 %grid on
@@ -140,10 +141,28 @@ end
 box(axes1,'on');
 grid(axes1,'on');
 % Set the remaining axes properties
-set(axes1,'YMinorTick','on','YScale','log','YTick',[10 25 50 100 250 500 1000 2500],...
-    'YTickLabel',{'10','25','50','100','250','500','1000','2500'});
+
+x_tics = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+y_tics = [1, 10, 25, 50, 100, 250, 500, 1000, 2500]
+x_labels = arrayfun(@(n) strcat(num2str(n), '%') , x_tics, 'unif', 0)
+y_labels = arrayfun(@num2str, y_tics, 'unif', 0)
+x_tics = x_tics./100
+
+set(axes1,'YMinorTick','on','YScale','log', ...
+    'XTick', x_tics, 'XTickLabel', x_labels, ...
+    'YTick', y_tics, 'YTickLabel', y_labels);
 % Create legend
 legend(axes1,'show');
+
+text(percentage_1(end), perplex_1(end), ...
+    sprintf('%2.2f', perplex_1(end)), ...
+    'HorizontalAlignment', 'left', ...
+    'VerticalAlignment', 'bottom')
+
+text(percentage_2(end), perplex_2(end), ...
+    sprintf('%2.2f', perplex_2(end)), ...
+    'HorizontalAlignment', 'left', ...
+    'VerticalAlignment', 'bottom')
 
 ylim([0, max(perplex_1(1), perplex_2(1))])
 
