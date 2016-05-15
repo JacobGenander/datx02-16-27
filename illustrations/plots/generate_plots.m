@@ -15,8 +15,6 @@ files = {filename_model1_training_cost, filename_model1_validation_cost, ...
     filename_model1_word2vec, filename_model2_perplexity}
 
 % At the end of this script there is code that crop the generated PDF:s
-% if crop is set
-crop=1
 crop_margins = 10
 
 
