@@ -81,6 +81,7 @@ tf.app.flags.DEFINE_integer("last_bucket_dec_len", 50, "The longest allowed inpu
 tf.app.flags.DEFINE_boolean("evaluation_file", False, "Use the files \"evaluation_a.txt\" and \"evaluation_t.txt\" for evaluation data")
 tf.app.flags.DEFINE_boolean("use_roulette_search", False, "Set to true to use roulette search in decoder (much slower)")
 tf.app.flags.DEFINE_integer("use_specific_checkpoint", 0, "Integer specifying which checkpoint to use when resoring the model")
+tf.app.flags.DEFINE_integer("droptarget_percentage", 0, "Percentage of words in title that don't generate cost.")
 
 FLAGS = tf.app.flags.FLAGS
 
