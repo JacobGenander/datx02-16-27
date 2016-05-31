@@ -1,0 +1,1249 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language swedish
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation skip
+\defskip bigskip
+\quotes_language swedish
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Opposition DATx02_16_07_av_27
+\end_layout
+
+\begin_layout Author
+Grupp DATX02_16_27
+\end_layout
+
+\begin_layout Date
+2016-05-25
+\end_layout
+
+\begin_layout Section
+Rapportens upplägg och struktur
+\end_layout
+
+\begin_layout Standard
+Rapporten har ett bra upplägg och en tydlig struktur.
+ Vissa avsnitt hade kunnat delas upp i fler underrubriker för att isolera
+ viktiga nyckelkoncept som syfte, hypotes med mera, vilket också hade underlätta
+t för att senare kunna referera bakåt till dessa.
+\end_layout
+
+\begin_layout Section
+Problemdefinition
+\end_layout
+
+\begin_layout Standard
+Då projektet är av undersökande karaktär är något problem inte tydligt definiera
+t, å andra sidan är man tydlig med vilka aspekter som kommer att undersökas.
+ Man skulle kunna vara tydligare med att beskriva hur strukturernas rigiditet
+ är en viktig faktor i de olika sjukdomarna som nämns (om så är fallet).
+ Vår förståelse är att strukturerna ackumuleras p.g.a.
+ av de inte bryts ned naturligt.
+ De aspekter som undersöks har ingen självklar koppling till problemdefinitionen.
+ Är vinklar och riktningar orsaker till stabiliteten i strukturerna?
+\end_layout
+
+\begin_layout Section
+Metod/genomförande
+\end_layout
+
+\begin_layout Standard
+Metodavsnittet beskriver analysmetoderna, nämligen visuell inspektion av
+ 3D-modeller och beräkning av intressanta aspekter.
+ Detta görs på ett tydligt sätt och de två metoderna verkar komplettera
+ varandra väl, eftersom man kan utgå från den visuella inspektionen för
+ att både komma fram till hur beräkningarna ska genomföras och för att jämföra
+ resultat.
+\end_layout
+
+\begin_layout Standard
+Valet av de aspekter som beräknas kunde motiverats bättre.
+ Då projektet verkar vara av undersökande natur, känns analysens starka
+ fokus på de valda aspekterna omotiverat.
+ Hade exempelvis andra geometriska och strukturella samband varit intressanta
+ att undersöka?
+\end_layout
+
+\begin_layout Section
+Avgränsningar
+\end_layout
+
+\begin_layout Standard
+Trots att man bortser från ett antal variabler som exempelvis pH, tryck
+ och temperatur, presenteras rikligt med resultat, varför vi tycker att
+ avgränsningarna verkar nödvändiga och på vår begränsade kunskapsnivå även
+ lämpliga.
+\end_layout
+
+\begin_layout Section
+Teori
+\end_layout
+
+\begin_layout Standard
+I introduktionen nämns att amyloida fibriller kan skada celler, detta utvecklas
+ inte senare i rapporten.
+ Deras strukturer presenteras mycket tydligt med bra illustrationer, men
+ vi saknar en koppling till dess påstådda skadeverkan.
+ Om detta är områden utan tydliga svar kan detta förtydligas.
+ Rapportens teknisk nivå är väl avvägd, och man lyckas presentera ett komplext
+ fält på ett förståeligt sätt genom välskriven text i kombination med bra
+ illustrationer.
+ Även om teoridelen ger en bra grundförståelse som underlättar läsning av
+ de senare avsnitten, missas vissa begrepp.
+ Två exempel på begrepp som kunnat förklaras är “cross-
+\begin_inset Formula $\beta$
+\end_inset
+
+ structures” och “residue”
+\end_layout
+
+\begin_layout Section
+Analys
+\end_layout
+
+\begin_layout Standard
+Diskussion förs på ett utförligt sätt kring de utförda experimenten och
+ analyserna.
+ Vi saknar dock en analys kring valet av dessa experiment och analyser.
+ Man skulle då även kunna återkoppla till ett tidigare avsnitt där de valda
+ metoderna motiveras.
+\end_layout
+
+\begin_layout Standard
+Innebörden av vissa resultat diskuteras inte utförligt.
+ Man kommer exempelvis fram till att laddade aminosyror tenderar att vara
+ vända utåt, relativt fibrillens kärna, men utvecklar inte vad detta innebär.
+ Kanske skulle man kunna göra det tydligt från början av analysen vad man
+ kom (eller inte kom) fram till, för att förhindra att läsaren övertolkar
+ resultat som inte pekar på något speciellt.
+\end_layout
+
+\begin_layout Standard
+Man nämner på flera ställen att resultaten överensstämmer med hypoteser.
+ Exempel på detta är 
+\begin_inset Quotes sld
+\end_inset
+
+Regarding the alignment of the aromatic rings within a stack, the initial
+ hypothesis was that they would align in a uniform manner when present in
+ 
+\begin_inset Formula $\beta$
+\end_inset
+
+-sheets.
+\begin_inset Quotes srd
+\end_inset
+
+, men vi kan inte se att denna hypotes presenterades tidigare.
+ Om den gjorde det skulle den kunna tydliggöras.
+\end_layout
+
+\begin_layout Section
+Resultat och resultatanalys
+\end_layout
+
+\begin_layout Standard
+Resultatdelen är mycket omfattande, och läsaren får en komplett inblick
+ i de resultat som tagits fram.
+ Då resultaten är många till antalet och presenteras med mycket beskrivande
+ text, hade det känts naturligt att slå ihop resultat- och diskussionsdelarna.
+ Detta hade kunnat leda till en bättre insikt om vad resultaten faktiskt
+ har för betydelse.
+ 
+\end_layout
+
+\begin_layout Standard
+Resultaten presenteras på ett bra sätt och håller en vetenskaplig ton, där
+ viktiga strukturella samband lyfts fram i beskrivningarna.
+ Vi saknar emellertid en återkoppling till de problem som amyloida fibriller
+ kan orsaka.
+\end_layout
+
+\begin_layout Section
+Rapportens utformning och formalia
+\end_layout
+
+\begin_layout Standard
+Språknivån är passande och rapporten håller genomgående en enhetlig stil.
+ Övergångar mellan kapitel och även mellan avsnitt görs på ett naturligt
+ sätt, med bra referenser bakåt för att påminna läsaren om vad som precis
+ behandlats.
+\end_layout
+
+\begin_layout Standard
+I avsnitt med matematisk ekvationer, används ibland inkonsekvent eller felaktig
+ notation.
+ Exempelvis förekommer två olika sorters vektornotation (fetstil och pilnotation
+), och variabler angivna i löpande text är inte typsatta kursivt.
+ Matematiska funktioner som “sin” har typsatts kursivt, men borde vara upprätta,
+ detsamma gäller även textindex till variabler.
+ Detta är dock inget som hämmar förståelsen.
+\end_layout
+
+\begin_layout Standard
+Illustrationerna är genomgående bra, och kompletterar den beskrivande texten
+ på ett mycket bra sätt.
+ Bilderna på proteinerna är inkluderade i hög kvalitet, men grafer är ofta
+ lågupplösta, och hade sett mycket bättre ut om dessa inkluderats i vektorformat.
+ Vissa av de illustrativa graferna innehåller onödig information, och vissa
+ av dessa hade med fördel beskurits snävare (zoomats in).
+\end_layout
+
+\begin_layout Section
+Sammanfattning
+\end_layout
+
+\begin_layout Standard
+Det som är beskrivet är beskrivet på ett bra sätt.
+ Däremot saknar vi som inte är insatta i fältet sedan tidigare en bättre
+ inblick i hur projektets resultat skulle kunna komma att användas för att
+ beskriva uppkomsten eller nedbrytningen av amyloida fibriller.
+ De intressanta aspekterna hos proteiner är inte självklara för en läsare
+ på vår nivå, och mer motivation till varför dessa undersöks hade varit
+ önskvärt.
+ Rapporten känns mycket genomarbetad, är väl skriven och använder illustrationer
+ på ett bra och effektivt sätt, men mindre tekniska korrigeringar hade kunnat
+ höja den visuella nivån på arbetet.
+ 
+\end_layout
+
+\begin_layout Standard
+Vi har inkluderat de detaljanteckningar som vi använt för att ta fram opposition
+srapporten som appendix.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Part*
+\start_of_appendix
+Appendix
+\end_layout
+
+\begin_layout Section
+Generella intryck
+\end_layout
+
+\begin_layout Itemize
+Iband används fraser som “This report investigates...”
+\end_layout
+
+\begin_layout Itemize
+En bild som visar vilket mått som beräknas där axeln och proteinstrukturerna
+ finns med samtidigt hade varit bra att ha med.
+\end_layout
+
+\begin_layout Itemize
+Ekvationer och matematik
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Textindex skall vara upprätt stil (
+\backslash
+textnormal{})
+\end_layout
+
+\begin_layout Itemize
+Vektorer betecknas på vissa ställen med fetstil, på andra ställen med 
+\backslash
+vec{}-pilar
+\end_layout
+
+\begin_layout Itemize
+Matematiska funktioner ska anges med deras LaTeX-kommando (
+\backslash
+sin, 
+\backslash
+cos mm.)
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Illustrationer:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Många skulle kunna göras om/exporterats i vektorformat (Dock ej proteinbilderna,
+ men dessa är tillräckligt högupplösta ändå)
+\end_layout
+
+\begin_layout Itemize
+Många av graferna verkar vara tagna från screenshots, och de innehåller
+ därför subpixel-hinting och aliasing.
+ Vissa innehåller dessutom extra ramar från bakgrunden.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Dessa skulle kunna exporterats till vektorformat från programmet där de
+ ritats upp direkt för att få bli skarpare med snyggare text.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Illustration 4.9 och 4.10 är vektoriserade, Kanske skulle även Figur 2.2 kunna
+ ritas upp med samma verktyg.
+\end_layout
+
+\end_deeper
+\begin_layout Section
+Innehåll
+\end_layout
+
+\begin_layout Itemize
+Är problemet/frågeställningen klart formulerad? 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Syftet “försvinner” lite i den långa texten under “Purpose and objectives”
+\end_layout
+
+\begin_layout Itemize
+Vissa stycken (ex.
+ 3) under denna del kanske passar bättre i tidigare introduktionsavsnitt
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Är syftet kopplat till problemet?
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Projektet syftar till att analysera amyloida fibriller, vilket är tydligt.
+ Det är mindre tydligt vad ett eventuellt resultat skulle kunna innebära
+ med avseende på sjukdomarna som nämns och varför just de valda metoderna
+ är bra analysverktyg.
+\end_layout
+
+\begin_layout Itemize
+Skulle ytterligare information kring amyloida fibrillers sammansättningar
+ kunna bidra till ökad förståelse till vilka proteiner som riskerar felvikas
+ till dessa strukturer?
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Är målet tydligt, visar det vad som skall studeras? 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Existerar inte, öppet mål (ligger i uppgiftens natur)
+\end_layout
+
+\begin_layout Itemize
+Kanske önskvärt att ha en tydligare hypotes (resultat- och diskussionsdelen
+ beskriver ibland väntade eller icke väntade resultat.
+ Dessa väntvärden beskrivs inte tidigare)
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Har tillräckliga/för stora avgränsningar gjorts i relation till problemställning
+en? 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Avgränsningarna känns relevanta och nödvändiga, då projektet redan verkar
+ vara väldigt omfattande.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Har en lämplig mängd litteratur använts i förhållande till problemet? Har
+ den använda litteraturen granskats på ett kritiskt sätt? Har den uppsökta
+ litteraturen använts för att besvara de frågor som ställts ut? 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Referenser har använts där de behövs.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Har en lämplig metodik använts med avseende till problemet? Har andra metoder
+ kritiskt värderats? Finns för och nackdelar med vald metod? 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Metodiken verkar lämplig med avseende på problemet.
+ Kanske är andra aspekter än vinklar och distribution av intresse vid analys.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Finns tillräckligt med resultat redovisade samt är de trovärdiga? Är resultaten
+ beskrivna på ett förståeligt vis? 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Ja.
+ “Varför” saknas vid presentation av många resultat.
+ Ibland är saker “väntade” eller “oväntade” men man förklarar inte alltid
+ varför.
+ Det hade varit bra för läsaren som inte är inläst på ämnet sen tidigare.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Har en tillräcklig analys av resultaten gjorts? Är analysen kopplad till
+ teorin?
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Ja, men vad har de undersökta aspekterna för relevans? Analysen är kopplad
+ till teorin.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Ger resultaten svar på de frågor som ställts upp? Är diskussionen och slutsatser
+na väl underbyggda? 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Med tanke på den öppna frågeställningen, ja.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Uppvisar arbetet fördjupade kunskaper samt metodkunskaper inom huvudområdet/inri
+ktningen?
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Absolut.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Uppvisar arbetet förmåga till kritisk utvärdering av resultaten?
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Ja, men saknar motivering av de framtagna resultatens relevans (varför valdes
+ vinklar och distributioner?).
+\end_layout
+
+\end_deeper
+\begin_layout Section
+Struktur och språkbehandling
+\end_layout
+
+\begin_layout Itemize
+Finns en titelsida samt är titeln adekvat? 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Subtitel känns för viktig för att inte inkluderas i den huvudsakliga titeln
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Är sammanfattningen förståelig även om resten av rapporten inte lästs?
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Ja, man får en bra uppfattning.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Finns innehållsförteckning, inledning, litteraturgenomgång, metodbeskrivning,
+ resultatbeskrivning, diskussion och slutsatser, källförteckning, och eventuella
+ bilagor med? Ger rubrikerna god vägledning samt är styckesindelningen sådan
+ att rapporten blir lättläst? 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Bra referenser bakåt
+\end_layout
+
+\begin_layout Itemize
+Bra metatext i början av nya kapittel
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Är figurer och tabeller tydliga och fyller de en funktion?
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Majoriteten av illustrationerna bidrar till ökad förståelse, och har en
+ bra koppling till texten.
+\end_layout
+
+\begin_layout Itemize
+Bild 4.7 är för utzoomad, Om axlarnas markerade värden inte är av relevans
+ borde dessa tas bort.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Dessa bilder hade kunnat omarbetas så att axlar/absoluta värden tas bort
+ när dessa inte är av relevans
+\end_layout
+
+\begin_layout Itemize
+Större bilder hade varit önskvärt på vissa ställen
+\end_layout
+
+\begin_layout Itemize
+Vektoriserade bilder hade sett bättre ut, om detta går att lösa rent tekniskt.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Itemize
+Är storheter och beteckningar skrivna så att de stämmer med vad som generellt
+ är praxis?
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Ibland används inte matteläge när ekvationer förekommer.
+ Det förekommer även blandad notation där “display-mode”-ekvationer är i
+ mattematiktypsnitt, och ekvationer och variabler angivna i flytande text
+ är angivna i vanligt typsnitt.
+\end_layout
+
+\begin_layout Itemize
+Exempel på ställen där detta behöver fixas:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+2.1.1 Sista stycket “4n+2 
+\begin_inset Formula $\pi$
+\end_inset
+
+-...” och “where n is zero” kan skrivas om med matematisk notation
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Itemize
+Är alla referenser i texten med i referenslistan samt är de fullständiga
+ och korrekt skrivna
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Ja.
+\end_layout
+
+\end_deeper
+\begin_layout Section
+Kapitelspecifik kritik
+\end_layout
+
+\begin_layout Itemize
+1.0 “comes” -> “come” ?
+\end_layout
+
+\begin_layout Itemize
+1.2.
+ Stycke 3.
+ “Residues” förklaras ej 
+\end_layout
+
+\begin_layout Itemize
+2.1 Önskvärt med mer koppling till projektet ?
+\end_layout
+
+\begin_layout Itemize
+2.1.1 sista stycket, ekvationer som inte är i “math-mode”
+\end_layout
+
+\begin_layout Itemize
+2.1.1 stycke 2, “contain” -> “contains”
+\end_layout
+
+\begin_layout Itemize
+2.1.1 stycke 4, “does” -> “do”
+\end_layout
+
+\begin_layout Itemize
+2.1.2 “The primary structure...”, hade varit trevligt med bild på detta (föreställer
+ bild 2.1 en sådan struktur?) 
+\end_layout
+
+\begin_layout Itemize
+2.1.2 Vad är en 
+\begin_inset Formula $\beta$
+\end_inset
+
+-strand, och varför förklaras dessa.
+ (==protein?)
+\end_layout
+
+\begin_layout Itemize
+2.1.2 Vad menas med “joined together”? Från bilden ser de ut att bara vara
+ nära varandra, avser man med “joining” de olika bindningstyper som beskrivs
+ senare?
+\end_layout
+
+\begin_layout Itemize
+2.1.2 “N-->C-terminus”, Varför avgör denna “riktningen” och varför är denna
+ riktning viktig?
+\end_layout
+
+\begin_layout Itemize
+Figure 1.1 “PDB-entry” kunde med fördel förklaras i introduktionen eller
+ ha en fotnot första gången det nämns.
+\end_layout
+
+\begin_layout Itemize
+2.1.2 “Four structural level”, är detta i grader av storlek (dvs högre nivåer
+ beskriver större sammanstättningar av proteiner)
+\end_layout
+
+\begin_layout Itemize
+Figure 2.4: Är detta bara slumpmässiga proteiner, eller varför är dessa med?
+\end_layout
+
+\begin_layout Itemize
+2.1.2 Implicerar “polar” möjligheten till “hydrogen bonds”?
+\end_layout
+
+\begin_layout Itemize
+2.1.2 sista stycket “assembles” -> “assemble” 
+\end_layout
+
+\begin_layout Itemize
+2.2 “aggregated unbranched filamentous proteins“, förklara, vad är detta?
+\end_layout
+
+\begin_layout Itemize
+2.2 “Cross-
+\begin_inset Formula $\beta$
+\end_inset
+
+” beskrivs inte tidigare.
+ En mening som förklarar vad detta är.
+\end_layout
+
+\begin_layout Itemize
+2.2 Stycke 2 “are” -> “is”
+\end_layout
+
+\begin_layout Itemize
+2.2 Stycke 2 “amyloid fibrils formed by shorter...” Varför är denna information
+ viktig? Vad används den till? Är detta något som kommer att byggas vidare
+ på/undersökas senare?
+\end_layout
+
+\begin_layout Itemize
+2.2 Cross-
+\begin_inset Formula $\beta$
+\end_inset
+
+ verkar vara mycket viktigt för definitionen av amyloida fibriller, men
+ detta begrepp har som sagt inte förklarats
+\end_layout
+
+\begin_layout Itemize
+2.2 “These distances will not be lifted”, Varför, av vilken anledning är
+ axeln och vinklarna viktigare aspekter?
+\end_layout
+
+\begin_layout Itemize
+2.2 “Worth mentioning”, varför? Har detta relevans vid datoranalys?
+\end_layout
+
+\begin_layout Itemize
+2.2 “fibrils” -> “fibrils’” eller “fibril’s”
+\end_layout
+
+\begin_layout Itemize
+2.2 “Proteolytic cleavage” vad är detta, beskriv med någon mening
+\end_layout
+
+\begin_layout Itemize
+2.2 “Insolubility, crystalize… important for analysis”, Why? Exempelvis förklaran
+de mening som “because crystalization of proteins are a common method of…”.
+ Nästa mening förklarar att det försvårar, men inte varför.
+ ?
+\end_layout
+
+\begin_layout Itemize
+2.2 “Native Proteins” What are those?
+\end_layout
+
+\begin_layout Itemize
+2.2 “Interfaces” almännbildning inom biokemi? Annars: vad är detta?
+\end_layout
+
+\begin_layout Itemize
+2.2 “Low dielectric environment” Vad menas? Lägre än något speciellt, relativt
+ andra proteiner?
+\end_layout
+
+\begin_layout Itemize
+2.2 “Help to further stabilize”, Vad innebär detta, om stabiliteten hos AF
+ är viktig, tryck på detta tidigare.
+\end_layout
+
+\begin_layout Itemize
+Innan ekvation 2.1: E borde vara math-mode
+\end_layout
+
+\begin_layout Itemize
+2.2 “When considering”, man talar om att placera laddade aminosyror.
+ Analyserar man inte färdiga strukturer? Syftar man på en modell eller liknande?
+\end_layout
+
+\begin_layout Itemize
+2.2 Energiberäkningarna och avstånden sätts inte i perspektiv, varför det
+ är svårt att utläsa vad som menas i de senare resonomangen.
+\end_layout
+
+\begin_layout Itemize
+2.2 sista stycket, konstigt komma efter “3.7 Å”
+\end_layout
+
+\begin_layout Itemize
+2.2.1 Tidigare stycke presentar annat än svårigheter? Hade man haft fler underrubr
+iker hade man kunnat referera till en specifik sådan för att peka till var
+ svårigheterna beskrivs.
+\end_layout
+
+\begin_layout Itemize
+2.2.1 “If the sequence...”, Konstig mening, kanske lista upp de egenskaper/händelser
+ som krävs för att uppfylla kriteriet.
+\end_layout
+
+\begin_layout Itemize
+Vad innebär “self-complimentary manner”
+\end_layout
+
+\begin_layout Itemize
+Vad innebär “Dry interface”
+\end_layout
+
+\begin_layout Itemize
+2.2.1 “Represented” -> “Represents”
+\end_layout
+
+\begin_layout Itemize
+2.2.1 “in vitro, in vivo” Begrepp som inte är självklara för målgruppen.
+\end_layout
+
+\begin_layout Itemize
+2.3 “Include parts of” Menas analysera i ert projekt?
+\end_layout
+
+\begin_layout Itemize
+2.3, stycke 2, “chains” -> “chain”
+\end_layout
+
+\begin_layout Itemize
+2.3, detaljer om “axial rise”, vad ska man läsa ut ur detta, kommer denna
+ egenskap studeras vidare?
+\end_layout
+
+\begin_layout Itemize
+2.3 “face the solvent”, vad innebär detta.
+ Vad är lösningen?
+\end_layout
+
+\begin_layout Itemize
+3 Använd komma ist.
+ För mellanrum i engelsk text (tips: använd paketet 
+\backslash
+usepackage{sistyle} och inställningen 
+\backslash
+SIthousandsep{,}.
+ Nummer kan då skrivas med 
+\backslash
+num{100000})
+\end_layout
+
+\begin_layout Itemize
+3 “analyses are the one containing”, “one” -> “ones”
+\end_layout
+
+\begin_layout Itemize
+3.1 “homologous”, vad betyder det?
+\end_layout
+
+\begin_layout Itemize
+Stycke 2, “fibrils more”, använd komma emellan.
+\end_layout
+
+\begin_layout Itemize
+3.1 “File Biological assembly” Vad är detta? En fil?
+\end_layout
+
+\begin_layout Itemize
+3.1 stycke 3, “this include” -> “this includes” eller “these include”
+\end_layout
+
+\begin_layout Itemize
+Table 3.1 Kan PDB-code-elementen ha båda eller ingen av egenskaperna “Parallel
+ 
+\begin_inset Formula $\beta$
+\end_inset
+
+-sheets” och “Anti-parallel 
+\begin_inset Formula $\beta$
+\end_inset
+
+-sheets” om inte, slå ihop kollumnerna
+\end_layout
+
+\begin_layout Itemize
+3.1 Sista stycket på sidan 15, “originates” -> “originate”
+\end_layout
+
+\begin_layout Itemize
+3.1 Första stycket på sidan 16, “No homology has been determined”, punkt,
+ ny mening.
+ 
+\end_layout
+
+\begin_layout Itemize
+3.1 Sista stycket, “Another difference between the data set”, “set” -> “sets”
+ eller förtydliga med “between this data set and the previous”
+\end_layout
+
+\begin_layout Itemize
+3.2 Första stycket, “similar” -> “similarly” ?
+\end_layout
+
+\begin_layout Itemize
+3.2 Sista stycket, “contain” -> “contains”
+\end_layout
+
+\begin_layout Itemize
+4.1 Första stycket, varför analyseras just dessa egenskaper hos dessa grupper?
+\end_layout
+
+\begin_layout Itemize
+4.1 “Information about...” “are” -> “is”
+\end_layout
+
+\begin_layout Itemize
+4.1 Stycke 3, “turn”, menar ni “bend”?
+\end_layout
+
+\begin_layout Itemize
+4.1 Sista stycket, “There was no…” “were” -> “was”.
+ Kanske ändra hela meningen till “No specific segment…”
+\end_layout
+
+\begin_layout Itemize
+4.1 Sista meningen, vad menas med “saved”? Varför detta kriterie?
+\end_layout
+
+\begin_layout Itemize
+4.2.1 Stycke 3, använd “math-mode” för X, Y och Z i texten.
+ (X, Y, Z -> 
+\begin_inset Formula $X,Y,Z$
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Itemize
+4.2.1 Stycke 3, “difference” -> “differences”
+\end_layout
+
+\begin_layout Itemize
+4.2.1 Stycke 3, “distance” -> “distances”
+\end_layout
+
+\begin_layout Itemize
+Figure 4.5 Städa upp figur (siffror ovanför bild etc.).
+\end_layout
+
+\begin_layout Itemize
+4.2.2 “was decide”, ta bort
+\end_layout
+
+\begin_layout Itemize
+4.2.2 “the the”, ta bort ett “the”
+\end_layout
+
+\begin_layout Itemize
+4.2.2 Näst sista stycket, “a plane”, lägg till komma innan “the vector”
+\end_layout
+
+\begin_layout Itemize
+4.2.2 “origination” -> “originating” ?
+\end_layout
+
+\begin_layout Itemize
+4.2.3 “Deprecated method”, Använde ni den inte alls? I så fall bör det förtydligas
+ tidigare.
+\end_layout
+
+\begin_layout Itemize
+4.2.3 “axis were” -> “was”
+\end_layout
+
+\begin_layout Itemize
+Figure 4.7 För utzoomad bild.
+\end_layout
+
+\begin_layout Itemize
+5.1.1 Första stycket, “contain”->”contains”
+\end_layout
+
+\begin_layout Itemize
+Figure 5.1 “i very common”, “i”->”is”
+\end_layout
+
+\begin_layout Itemize
+5.1.1 “...could have two explanations”, är inte detta mer diskussion än resultat?
+\end_layout
+
+\begin_layout Itemize
+5.1.1 “...the definition of the direction favours the outward direction”, varför
+ gör den det?
+\end_layout
+
+\begin_layout Itemize
+Figure 5.2 “The pie chart shows...” Kanske kan utelämnas ?
+\end_layout
+
+\begin_layout Itemize
+5.1.2 “abundant”, är det ett överflöd? Kanske använda “most common” istället.
+\end_layout
+
+\begin_layout Itemize
+5.1.2 Första stycket, sidan 31 “it was not possible to register the direction
+ of Glycine”, varför inte?
+\end_layout
+
+\begin_layout Itemize
+Sidan 34, sista stycket, “residues has” -> ”residues have”
+\end_layout
+
+\begin_layout Itemize
+Fotnot på sida 35 kan förväxlöas med matematisk text.
+ 
+\end_layout
+
+\begin_layout Itemize
+5.1.3 Efter Figur 5.11, “it is a complex structure to assign...”, menar ni complex
+ problem/task? Förslag: “It’s complex structure makes it difficult to assign....”
+\end_layout
+
+\begin_layout Itemize
+Figure 5.17 ”at around at...”, ta bort sista “at”.
+\end_layout
+
+\begin_layout Itemize
+Figure 5.17, Kanske ha en vanlig kolumngraf istället för en staplad för att
+ tydligare visa de individuella gruppernas distribution (om nu detta är
+ av intresse).
+\end_layout
+
+\begin_layout Itemize
+Första stycket på sidan 40, “opposite direction then intended”, “then” ->
+ “than”
+\end_layout
+
+\begin_layout Itemize
+Figure 5.23 “saknas” en stapel
+\end_layout
+
+\begin_layout Itemize
+Sidan 43, “2LMQ does not”, “does”->”do”, “the rings does”, “does”->”do”
+\end_layout
+
+\begin_layout Itemize
+Sidan 43, sista stycket, “this an”->”this is an”
+\end_layout
+
+\begin_layout Itemize
+Sidan 43, sista stycket, “tryptophan are”, “are”->”is”? Eller tryptophanes
+ i plural?
+\end_layout
+
+\begin_layout Itemize
+Sidan 43, sista stycket, “Tryptophanes in 2NNT are found”, “are”->”is”?
+\end_layout
+
+\begin_layout Itemize
+Sidan 43, sista stycket, “structures”->”structures’” eller “structure’s”
+\end_layout
+
+\begin_layout Itemize
+6.1.1 Första stycket, “bends amyloid” -> “bends of/in amyloid”
+\end_layout
+
+\begin_layout Itemize
+6.1.1 Första stycket, “similar patterns was”, “was”->”were”
+\end_layout
+
+\begin_layout Itemize
+6.1.1 Första stycket, “representative the data set”, ta bort “the”
+\end_layout
+
+\begin_layout Itemize
+6.1.1 “Considering the hypothesis...” , var ställer ni upp denna hypotes? Hypotesen
+ kunde fötjänat en hel subsection.
+\end_layout
+
+\begin_layout Itemize
+Sidan 45, första stycket, “oppose” -> “opposed”
+\end_layout
+
+\begin_layout Itemize
+Sidan 45, “within the same direction”, “with”? Eller menar ni inom ett visst
+ gradintervall? I så fall är within ok.
+\end_layout
+
+\begin_layout Itemize
+Sidan 45, första stycket, lätt att misstolka “half the amount of the basic”.
+ Fick läsa om för att förstå att det var de basiska aminosyrorna som ni
+ syftar på.
+ Första gången läste vi “basic” som i “simple”.
+\end_layout
+
+\begin_layout Itemize
+Sidan 45, andra stycket, “differs” -> “differ”
+\end_layout
+
+\begin_layout Itemize
+Sidan 45, andra stycket, “due the”, heter det kanske “due to the” ?
+\end_layout
+
+\begin_layout Itemize
+Sidan 45, första stycket, “apart from”->”in addition to”?
+\end_layout
+
+\begin_layout Itemize
+Sidan 45, första stycket,”with its surroundings having an...”, “surroundings,
+ thus having...” eller dela upp i två meningar (meningen känns lite för lång).
+\end_layout
+
+\begin_layout Itemize
+Figure 6.1, förstår vad illustrationen ska visa, men vet inte var i den jag
+ ska titta för att se det.
+ Är det följden “sheet-bend-sheet-bend-sheet”? Hur gör det att man går miste
+ om aminosyror?
+\end_layout
+
+\begin_layout Itemize
+6.1.2 Första stycket sidan 47, “Polar amino acids has”, “has” -> “have”
+\end_layout
+
+\begin_layout Itemize
+Sidan 47, första stycket, “Polar amino acids has”, “has” -> “have”
+\end_layout
+
+\begin_layout Itemize
+Sidan 47, andra stycket, “tends”->”tend”
+\end_layout
+
+\begin_layout Itemize
+Sidan 47, andra stycket, “influences” -> ”influence”
+\end_layout
+
+\begin_layout Itemize
+6.2 sidan 48, första stycket, “does” -> “do”
+\end_layout
+
+\begin_layout Itemize
+Första stycket, sidan 48, “The latter might be more likely, since a random
+\end_layout
+
+\begin_layout Itemize
+6.1.2, sista styck distribution probably would not...”, förstår inte varför det
+ skulle vara mer sannolikt? Vidareutveckla.
+\end_layout
+
+\begin_layout Itemize
+Sidan 48, sista stycket, “the initial hypothesis…”, har ni tagit upp den
+ förut? I så fall kanske det kan göras tydligare.
+\end_layout
+
+\begin_layout Itemize
+6.3 “are efficient...”, relativt vad?
+\end_layout
+
+\begin_layout Itemize
+Sidan 49, sista stycket, “torsion angles”, vad betyder detta?
+\end_layout
+
+\begin_layout Itemize
+Sidan 49, sista stycket, “would also useful”, lägg till “be” mellan “also”
+ och “useful”
+\end_layout
+
+\begin_layout Section
+Kapitelspecifik beröm 
+\end_layout
+
+\begin_layout Itemize
+Bra fotnot på sida 1
+\end_layout
+
+\begin_layout Itemize
+1.1 Bra förklaring av projektets koppling till verkligheten 
+\end_layout
+
+\begin_layout Itemize
+1.4 Bra att detta finns med
+\end_layout
+
+\begin_layout Itemize
+2.1.2 Bra att ni nämner vilken struktur (
+\begin_inset Formula $\beta$
+\end_inset
+
+-sheets) som är viktig i er rapport.
+ Kanske nämna detta lite tidigare i avsnittet.
+\end_layout
+
+\begin_layout Itemize
+2.2 Specifierar vad fokus huvudsakligen ligger på.
+\end_layout
+
+\begin_layout Itemize
+Figure 2.7 kopplar bra till texten
+\end_layout
+
+\begin_layout Itemize
+2.2.1 Bra övergång som pekar bakåt till föregående avsnitt och går vidare.
+\end_layout
+
+\begin_layout Itemize
+3.2 Sista stycket, “using the search terms...”, bra för att kunna repetera experimen
+tet
+\end_layout
+
+\begin_layout Itemize
+4 Logisk övergång från föregående kapitel
+\end_layout
+
+\begin_layout Itemize
+Figure 4.3, bra överblick på arbetsprocessen.
+ Om möjligt, gör om till vektorgrafik.
+\end_layout
+
+\begin_layout Itemize
+4.2.1 “To summarize...”, jättebra med en sammanfattning.
+\end_layout
+
+\begin_layout Itemize
+6.1.2 Första stycket sidan 47, bra med “As mentioned in Sectnion 2.2…” så man
+ blir påmind.
+ 
+\end_layout
+
+\begin_layout Itemize
+Figur 5.11 Bra illustration som visar hur den elektrostatiska attraktionen
+ mellan lagren uppstår.
+\end_layout
+
+\begin_layout Itemize
+Andra stycket på sidan 41, “This might indicate whether the stacks...”, bra
+ att ni förklarar varför ni gör något.
+ Mer av detta.
+\end_layout
+
+\begin_layout Itemize
+Andra stycket på sidan 41,”those in the bottom of the stack does not”, “does”->”
+do”
+\end_layout
+
+\begin_layout Itemize
+Första stycket, Sidan 47, åter igen bra med “as mentioned in section 2.2…”
+\end_layout
+
+\begin_layout Itemize
+6.1.2, sista stycket, “However, the results show that the vast...”, mycket bra
+ med konkret resultat/slutsats.
+\end_layout
+
+\end_body
+\end_document
